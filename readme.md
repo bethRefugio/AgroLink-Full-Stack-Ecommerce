@@ -1,6 +1,6 @@
-# Binkeyit Full Stack MERN App
+## AgroLink Full Stack MERN App
 
-# install packages
+#### install packages
  cd server
  npm install
 
@@ -8,15 +8,15 @@
  npm install
 
 
-# SERVER SIDE
-# set-up the mongoDB cloud database 
- the email used is bethrefugio16@gmail.com
+### SERVER SIDE
+#### set-up the mongoDB cloud database 
+the email used is bethrefugio16@gmail.com
 https://cloud.mongodb.com/account
 
 resend.com email verification
 cloudinary for uploading images
 
 
-# to run the server
+#### to run the server
  npm run dev
 
