@@ -2,9 +2,11 @@
 
 #### install packages
  cd server
+
  npm install
 
  cd client
+ 
  npm install
 
 
