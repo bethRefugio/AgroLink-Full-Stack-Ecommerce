@@ -125,24 +125,30 @@ const Header = () => {
                                                 <button onClick={redirectToLoginPage} className='text-lg px-2'>Login</button>
                                             )
                                         }
-                                        <button onClick={()=>setOpenCartSection(true)} className='flex items-center gap-2 bg-green-800 hover:bg-green-700 px-3 py-2 rounded text-white'>
-                                            {/**add to card icons */}
+                                        {/* Show cart only if user is NOT a seller */}
+                                        {user?.role !== "SELLER" && (
+                                            <button 
+                                            onClick={() => setOpenCartSection(true)} 
+                                            className='flex items-center gap-2 bg-green-800 hover:bg-green-700 px-3 py-2 rounded text-white'
+                                            >
+                                            {/**add to cart icons */}
                                             <div className='animate-bounce'>
                                                 <BsCart4 size={26}/>
                                             </div>
                                             <div className='font-semibold text-sm'>
                                                 {
-                                                    cartItem[0] ? (
-                                                        <div>
-                                                            <p>{totalQty} Items</p>
-                                                            <p>{DisplayPriceInRupees(totalPrice)}</p>
-                                                        </div>
-                                                    ) : (
-                                                        <p>My Cart</p>
-                                                    )
+                                                cartItem[0] ? (
+                                                    <div>
+                                                    <p>{totalQty} Items</p>
+                                                    <p>{DisplayPriceInRupees(totalPrice)}</p>
+                                                    </div>
+                                                ) : (
+                                                    <p>My Cart</p>
+                                                )
                                                 }
                                             </div>    
-                                        </button>
+                                            </button>
+                                            )}
                                     </div>
                                 </div>
                 </div>

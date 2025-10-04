@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
 import { HiOutlineExternalLink } from "react-icons/hi";
 import isAdmin from '../utils/isAdmin'
+import isSeller from '../utils/isSeller'
 
 const UserMenu = ({close}) => {
    const user = useSelector((state)=> state.user)
@@ -72,19 +73,23 @@ const UserMenu = ({close}) => {
             }
 
             {
-              isAdmin(user.role) && (
+              (isAdmin(user.role) || isSeller(user.role)) && (
                 <Link onClick={handleClose} to={"/dashboard/upload-product"} className='px-2 hover:bg-orange-200 py-1'>Upload Product</Link>
               )
             }
 
             {
-              isAdmin(user.role) && (
+              (isAdmin(user.role) || isSeller(user.role)) && (
                 <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>Product</Link>
               )
             }
+            
 
-            <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>My Orders</Link>
-
+            {
+              user.role !== "SELLER" && (
+                <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>My Orders</Link>
+              )
+            }
             <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>Save Address</Link>
 
             <button onClick={handleLogout} className='text-left px-2 hover:bg-orange-200 py-1'>Log Out</button>
