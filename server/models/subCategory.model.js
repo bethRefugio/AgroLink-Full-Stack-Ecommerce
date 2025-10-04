@@ -5,6 +5,10 @@ const subCategorySchema = new mongoose.Schema({
         type : String,
         default : ""
     },
+    description: {
+        type: String,
+        default: "" // Add description field with default value
+    },
     image : {
         type : String,
         default : ""

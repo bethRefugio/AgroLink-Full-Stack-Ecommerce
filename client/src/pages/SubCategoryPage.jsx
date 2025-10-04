@@ -15,7 +15,7 @@ import toast from 'react-hot-toast'
 
 const SubCategoryPage = () => {
   const [openAddSubCategory,setOpenAddSubCategory] = useState(false)
-  const [data,setData] = useState([])
+  const [data,setData] = useState([]) 
   const [loading,setLoading] = useState(false)
   const columnHelper = createColumnHelper()
   const [ImageURL,setImageURL] = useState("")
@@ -27,7 +27,8 @@ const SubCategoryPage = () => {
       _id : ""
   })
   const [openDeleteConfirmBox,setOpenDeleteConfirmBox] = useState(false)
-
+  const [openDescriptionModal, setOpenDescriptionModal] = useState(false)
+  const [selectedDescription, setSelectedDescription] = useState("")
 
   const fetchSubCategory = async()=>{
     try {
@@ -38,6 +39,11 @@ const SubCategoryPage = () => {
         const { data : responseData } = response
 
         if(responseData.success){
+          console.log("SubCategory Data:", responseData.data) // Add this line
+          // Check if description exists in the data
+          responseData.data.forEach((item, index) => {
+           console.log(`Item ${index}:`, item.name, "Description:", item.description)
+        })
           setData(responseData.data)
         }
     } catch (error) {
@@ -51,9 +57,58 @@ const SubCategoryPage = () => {
     fetchSubCategory()
   },[])
 
+  const DescriptionModal = () => {
+    return (
+      <div className='fixed inset-0 bg-black/50 flex justify-center items-center z-50'>
+        <div className='bg-white p-6 rounded-lg max-w-md w-full mx-4'>
+          <div className='flex justify-between items-center mb-4'>
+            <h3 className='font-semibold text-lg'>Description</h3>
+            <button 
+              onClick={() => setOpenDescriptionModal(false)}
+              className='text-gray-500 hover:text-gray-700'
+            >
+              ✕
+            </button>
+          </div>
+          <div className='max-h-96 overflow-y-auto'>
+            <p className='text-gray-700 whitespace-pre-wrap'>
+              {selectedDescription || "No description provided"}
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const column = [
     columnHelper.accessor('name',{
       header : "Name"
+    }),
+    columnHelper.accessor('description',{
+      header : "Description",
+      cell : ({row})=>{
+        const description = row.original.description || "No description provided"
+        const isLongDescription = description.length > 50
+        
+        return (
+          <div className='max-w-[200px]'>
+            <div className='truncate' title={description}>
+              {description}
+            </div>
+            {isLongDescription && (
+              <button 
+                onClick={() => {
+                  setSelectedDescription(description)
+                  setOpenDescriptionModal(true)
+                }}
+                className='text-xs text-blue-600 hover:text-blue-800 mt-1 underline'
+              >
+                See More
+              </button>
+            )}
+          </div>
+        )
+      }
     }),
     columnHelper.accessor('image',{
       header : "Image",
@@ -174,6 +229,12 @@ const SubCategoryPage = () => {
               close={()=>setOpenDeleteConfirmBox(false)}
               confirm={handleDeleteSubCategory}
             />
+          )
+        }
+
+        {
+          openDescriptionModal && (
+            <DescriptionModal />
           )
         }
     </section>
