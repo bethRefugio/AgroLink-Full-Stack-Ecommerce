@@ -1,5 +1,6 @@
 import ProductModel from "../models/product.model.js";
 
+
 export const createProductController = async(request,response)=>{
     try {
         const { 
@@ -13,9 +14,10 @@ export const createProductController = async(request,response)=>{
             discount,
             description,
             more_details,
+            userId,
         } = request.body 
 
-        if(!name || !image[0] || !category[0] || !subCategory[0] || !unit || !price || !description ){
+        if(!name || !image[0] || !category[0] || !subCategory[0] || !unit || !price || !description || !userId ){
             return response.status(400).json({
                 message : "Enter required fields",
                 error : true,
@@ -34,6 +36,7 @@ export const createProductController = async(request,response)=>{
             discount,
             description,
             more_details,
+            userId
         })
         const saveProduct = await product.save()
 

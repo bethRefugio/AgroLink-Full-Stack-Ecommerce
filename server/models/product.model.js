@@ -47,6 +47,11 @@ const productSchema = new mongoose.Schema({
     publish : {
         type : Boolean,
         default : true
+    },
+    userId: {
+        type : mongoose.Schema.ObjectId,
+        ref : 'User',
+        required : true
     }
 },{
     timestamps : true
