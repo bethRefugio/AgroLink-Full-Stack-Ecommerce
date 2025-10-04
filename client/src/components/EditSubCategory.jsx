@@ -11,6 +11,7 @@ const EditSubCategory = ({close,data,fetchData}) => {
     const [subCategoryData,setSubCategoryData] = useState({
         _id : data._id,
         name : data.name,
+        description : data.description || "",
         image : data.image,
         category : data.category || []
     })
@@ -101,6 +102,18 @@ const EditSubCategory = ({close,data,fetchData}) => {
                             value={subCategoryData.name}
                             onChange={handleChange}
                             className='p-3 bg-blue-50 border outline-none focus-within:border-primary-200 rounded '
+                        />
+                    </div>
+                    <div className='grid gap-1'>
+                        <label htmlFor='description'>Description</label>
+                        <textarea 
+                            id='description'
+                            name='description'
+                            value={subCategoryData.description}
+                            onChange={handleChange}
+                            className='p-3 bg-blue-50 border outline-none focus-within:border-primary-200 rounded resize-none'
+                            rows="3"
+                            placeholder="Enter subcategory description"
                         />
                     </div>
                     <div className='grid gap-1'>

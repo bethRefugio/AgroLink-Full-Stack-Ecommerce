@@ -25,7 +25,6 @@ const CategoryPage = () => {
     })
     // const allCategory = useSelector(state => state.product.allCategory)
 
-
     // useEffect(()=>{
     //     setCategoryData(allCategory)
     // },[allCategory])
@@ -93,17 +92,23 @@ const CategoryPage = () => {
                                 src={category.image}
                                 className='w-full object-scale-down'
                             />
-                            <div className='items-center h-9 flex gap-2'>
+                            {/* Category Name Label */}
+                            <div className='p-2 text-center border-b'>
+                                <p className='font-bold text-sm truncate' title={category.name}>
+                                    {category.name}
+                                </p>
+                            </div>
+                            <div className='items-center h-9 flex gap-2 p-2'>
                                 <button onClick={()=>{
                                     setOpenEdit(true)
                                     setEditData(category)
-                                }} className='flex-1 bg-green-100 hover:bg-green-200 text-green-600 font-medium py-1 rounded'>
+                                }} className='flex-1 bg-green-100 hover:bg-green-200 text-green-600 font-medium py-1 rounded text-xs'>
                                     Edit
                                 </button>
                                 <button onClick={()=>{
                                     setOpenConfirmBoxDelete(true)
                                     setDeleteCategory(category)
-                                }} className='flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-1 rounded'>
+                                }} className='flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-1 rounded text-xs'>
                                     Delete
                                 </button>
                             </div>
