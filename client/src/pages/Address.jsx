@@ -49,11 +49,10 @@ const Address = () => {
                   return(
                       <div className={`border rounded p-3 flex gap-3 bg-white ${!address.status && 'hidden'}`}>
                           <div className='w-full'>
-                            <p>{address.address_line}</p>
+                            <p>{address.purok_house}</p>
+                            <p>{address.barangay}</p>
                             <p>{address.city}</p>
-                            <p>{address.state}</p>
                             <p>{address.country} - {address.pincode}</p>
-                            <p>{address.mobile}</p>
                           </div>
                           <div className=' grid gap-10'>
                             <button onClick={()=>{

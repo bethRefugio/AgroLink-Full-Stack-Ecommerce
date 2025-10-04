@@ -9,6 +9,7 @@ import { useGlobalContext } from '../provider/GlobalProvider'
 
 const AddAddress = ({close}) => {
     const { register, handleSubmit,reset } = useForm()
+    
     const { fetchAddress } = useGlobalContext()
 
     const onSubmit = async(data)=>{
@@ -18,12 +19,11 @@ const AddAddress = ({close}) => {
             const response = await Axios({
                 ...SummaryApi.createAddress,
                 data : {
-                    address_line :data.addressline,
+                    purok_house :data.purok_house,
+                    barangay : data.barangay,
                     city : data.city,
-                    state : data.state,
-                    country : data.country,
-                    pincode : data.pincode,
-                    mobile : data.mobile
+                    zipcode : data.zipcode,
+                    country : data.country 
                 }
             })
 
@@ -52,16 +52,25 @@ const AddAddress = ({close}) => {
             </div>
             <form className='mt-4 grid gap-4' onSubmit={handleSubmit(onSubmit)}>
                 <div className='grid gap-1'>
-                    <label htmlFor='addressline'>Address Line :</label>
+                    <label htmlFor='purok_house'>Purok/Street/House No.:</label>
                     <input
                         type='text'
-                        id='addressline' 
+                        id='purok_house' 
                         className='border bg-blue-50 p-2 rounded'
-                        {...register("addressline",{required : true})}
+                        {...register("purok_house",{required : true})}
                     />
                 </div>
                 <div className='grid gap-1'>
-                    <label htmlFor='city'>City :</label>
+                    <label htmlFor='barangay'>Barangay:</label>
+                    <input
+                        type='text'
+                        id='barangay' 
+                        className='border bg-blue-50 p-2 rounded'
+                        {...register("barangay",{required : true})}
+                    />
+                </div>
+                <div className='grid gap-1'>
+                    <label htmlFor='city'>City:</label>
                     <input
                         type='text'
                         id='city' 
@@ -70,39 +79,21 @@ const AddAddress = ({close}) => {
                     />
                 </div>
                 <div className='grid gap-1'>
-                    <label htmlFor='state'>State :</label>
+                    <label htmlFor='zipcode'>Zip Code:</label>
                     <input
                         type='text'
-                        id='state' 
+                        id='zipcode' 
                         className='border bg-blue-50 p-2 rounded'
-                        {...register("state",{required : true})}
+                        {...register("zipcode",{required : true})}
                     />
                 </div>
                 <div className='grid gap-1'>
-                    <label htmlFor='pincode'>Pincode :</label>
-                    <input
-                        type='text'
-                        id='pincode' 
-                        className='border bg-blue-50 p-2 rounded'
-                        {...register("pincode",{required : true})}
-                    />
-                </div>
-                <div className='grid gap-1'>
-                    <label htmlFor='country'>Country :</label>
+                    <label htmlFor='country'>Country:</label>
                     <input
                         type='text'
                         id='country' 
                         className='border bg-blue-50 p-2 rounded'
                         {...register("country",{required : true})}
-                    />
-                </div>
-                <div className='grid gap-1'>
-                    <label htmlFor='mobile'>Mobile No. :</label>
-                    <input
-                        type='text'
-                        id='mobile' 
-                        className='border bg-blue-50 p-2 rounded'
-                        {...register("mobile",{required : true})}
                     />
                 </div>
 
