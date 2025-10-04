@@ -37,6 +37,8 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
   const [openAddField, setOpenAddField] = useState(false)
   const [fieldName, setFieldName] = useState("")
 
+  const user = useSelector(state => state.user);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -117,7 +119,10 @@ const EditProductAdmin = ({ close ,data : propsData,fetchProductData}) => {
     try {
       const response = await Axios({
         ...SummaryApi.updateProductDetails,
-        data: data
+        data: {
+          ...data,
+          userId: user?._id // <-- add userId here
+        }
       })
       const { data: responseData } = response
 

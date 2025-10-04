@@ -6,6 +6,7 @@ import Loading from '../components/Loading'
 import ProductCardAdmin from '../components/ProductCardAdmin'
 import { IoSearchOutline } from "react-icons/io5";
 import EditProductAdmin from '../components/EditProductAdmin'
+import { useSelector } from 'react-redux'
 
 const ProductAdmin = () => {
   const [productData,setProductData] = useState([])
@@ -13,7 +14,8 @@ const ProductAdmin = () => {
   const [loading,setLoading] = useState(false)
   const [totalPageCount,setTotalPageCount] = useState(1)
   const [search,setSearch] = useState("")
-  
+  const user = useSelector(state => state.user);
+
   const fetchProductData = async()=>{
     try {
         setLoading(true)
@@ -22,7 +24,8 @@ const ProductAdmin = () => {
            data : {
               page : page,
               limit : 12,
-              search : search 
+              search : search,
+              userId : user?._id
            }
         })
 
