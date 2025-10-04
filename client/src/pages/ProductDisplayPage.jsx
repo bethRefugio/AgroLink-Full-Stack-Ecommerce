@@ -11,6 +11,8 @@ import image2 from '../assets/Best_Prices_Offers.png'
 import image3 from '../assets/Wide_Assortment.png'
 import { pricewithDiscount } from '../utils/PriceWithDiscount'
 import AddToCartButton from '../components/AddToCartButton'
+import { useSelector } from 'react-redux';
+
 
 const ProductDisplayPage = () => {
   const params = useParams()
@@ -22,6 +24,8 @@ const ProductDisplayPage = () => {
   const [image,setImage] = useState(0)
   const [loading,setLoading] = useState(false)
   const imageContainer = useRef()
+  const user = useSelector((state) => state?.user);
+
 
   const fetchProductDetails = async()=>{
     try {
@@ -157,14 +161,18 @@ const ProductDisplayPage = () => {
                 ) 
                 : (
                   // <button className='my-4 px-4 py-1 bg-green-600 hover:bg-green-700 text-white rounded'>Add</button>
-                  <div className='my-4'>
-                    <AddToCartButton data={data}/>
-                  </div>
+                  <>
+                  {user?.role !== "SELLER" && (
+                    <div className='my-4'>
+                      <AddToCartButton data={data}/>
+                    </div>
+                  )}
+    </>
                 )
               }
            
 
-            <h2 className='font-semibold'>Why shop from binkeyit? </h2>
+            <h2 className='font-semibold'>Why shop from AgroLink? </h2>
             <div>
                   <div className='flex  items-center gap-4 my-4'>
                       <img

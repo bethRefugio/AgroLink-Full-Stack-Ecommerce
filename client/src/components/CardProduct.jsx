@@ -10,10 +10,12 @@ import toast from 'react-hot-toast'
 import { useState } from 'react'
 import { useGlobalContext } from '../provider/GlobalProvider'
 import AddToCartButton from './AddToCartButton'
+import { useSelector } from 'react-redux'
 
 const CardProduct = ({data}) => {
     const url = `/product/${valideURLConvert(data.name)}-${data._id}`
     const [loading,setLoading] = useState(false)
+    const user = useSelector((state) => state?.user)
   
   return (
     <Link to={url} className='border py-2 lg:p-4 grid gap-1 lg:gap-3 min-w-36 lg:min-w-52 rounded cursor-pointer bg-white' >
@@ -25,7 +27,7 @@ const CardProduct = ({data}) => {
       </div>
       <div className='flex items-center gap-1'>
         <div className='rounded text-xs w-fit p-[1px] px-2 text-green-600 bg-green-50'>
-              10 min 
+              20 min 
         </div>
         <div>
             {
@@ -56,7 +58,7 @@ const CardProduct = ({data}) => {
             data.stock == 0 ? (
               <p className='text-red-500 text-sm text-center'>Out of stock</p>
             ) : (
-              <AddToCartButton data={data} />
+              user?.role !== "SELLER" && <AddToCartButton data={data} />
             )
           }
             
