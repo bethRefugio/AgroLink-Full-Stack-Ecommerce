@@ -3,18 +3,8 @@ import UserModel from "../models/user.model.js";
 
 export const addAddressController = async(request,response)=>{
     try {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-        const userId = request.userId 
-        const { purok_house, barangay, city, pincode, country } = request.body
-=======
         const userId = request.userId // middleware
         const { purok_house, barangay, city, zipcode, country } = request.body
->>>>>>> Stashed changes
-=======
-        const userId = request.userId // middleware
-        const { purok_house, barangay, city, zipcode, country } = request.body
->>>>>>> Stashed changes
 
         const createAddress = new AddressModel({
             purok_house,
