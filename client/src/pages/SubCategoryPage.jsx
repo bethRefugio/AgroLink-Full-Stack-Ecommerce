@@ -39,8 +39,7 @@ const SubCategoryPage = () => {
         const { data : responseData } = response
 
         if(responseData.success){
-          console.log("SubCategory Data:", responseData.data) // Add this line
-          // Check if description exists in the data
+          console.log("SubCategory Data:", responseData.data) 
           responseData.data.forEach((item, index) => {
            console.log(`Item ${index}:`, item.name, "Description:", item.description)
         })
@@ -241,4 +240,4 @@ const SubCategoryPage = () => {
   )
 }
 
-export default SubCategoryPage
+export default SubCategoryPage;

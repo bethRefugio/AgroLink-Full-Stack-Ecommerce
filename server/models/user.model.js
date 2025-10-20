@@ -69,7 +69,13 @@ const userSchema = new mongoose.Schema({
         type : String,
         enum : ['ADMIN',"BUYER","SELLER","COOPERATIVE"],
         default : "BUYER"
-    }
+    },
+    addPreferences: [
+        {
+            category: { type: String, required: true },
+            subCategory: { type: String, required: true }
+        }
+    ]
 },{
     timestamps : true
 })

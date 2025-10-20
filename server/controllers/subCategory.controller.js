@@ -14,7 +14,7 @@ export const AddSubCategoryController = async(request,response)=>{
 
         const payload = {
             name,
-            description: description || "", // Add description with default value
+            description: description || "",
             image,
             category
         }
@@ -72,10 +72,10 @@ export const updateSubCategoryController = async(request,response)=>{
 
         const updateSubCategory = await SubCategoryModel.findByIdAndUpdate(_id,{
             name,
-            description: description || "", // Add description with default value
+            description: description || "", 
             image,
             category
-        }, { new: true }) // Add { new: true } to return updated document
+        }, { new: true }) 
 
         return response.json({
             message : 'Updated Successfully',
