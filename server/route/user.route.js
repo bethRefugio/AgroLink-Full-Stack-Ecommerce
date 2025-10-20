@@ -16,6 +16,7 @@ userRouter.put('/verify-forgot-password-otp',verifyForgotPasswordOtp)
 userRouter.put('/reset-password',resetpassword)
 userRouter.post('/refresh-token',refreshToken)
 userRouter.get('/user-details',auth,userDetails)
+userRouter.post('/verify-email', verifyEmailController)
 
 
 
