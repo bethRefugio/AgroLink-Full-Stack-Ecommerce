@@ -35,6 +35,7 @@ const UploadProduct = () => {
 
   const [openAddField,setOpenAddField] = useState(false)
   const [fieldName,setFieldName] = useState("")
+  const user = useSelector(state => state.user);
 
 
   const handleChange = (e)=>{
@@ -116,7 +117,10 @@ const UploadProduct = () => {
     try {
       const response = await Axios({
           ...SummaryApi.createProduct,
-          data : data
+          data : { 
+          ...data,
+          userId : user?._id
+          }
       })
       const { data : responseData} = response
 

@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
 import { HiOutlineExternalLink } from "react-icons/hi";
 import isAdmin from '../utils/isAdmin'
+import isSeller from '../utils/isSeller'
 
 const UserMenu = ({close}) => {
    const user = useSelector((state)=> state.user)
@@ -45,7 +46,12 @@ const UserMenu = ({close}) => {
     <div>
         <div className='font-semibold'>My Account</div>
         <div className='text-sm flex items-center gap-2'>
-          <span className='max-w-52 text-ellipsis line-clamp-1'>{user.name || user.mobile} <span className='text-medium text-red-600'>{user.role === "ADMIN" ? "(Admin)" : "" }</span></span>
+          <span className='max-w-52 text-ellipsis line-clamp-1'>{user.name || user.mobile} <span className='text-medium text-red-600'>
+            {user.role === "ADMIN" && "(Admin)" }
+            {user.role === "BUYER" && "(Buyer)" }
+            {user.role === "SELLER" && "(Seller)" }
+            {user.role === "COOPERATIVE" && "(Cooperative)" }
+          </span></span>
           <Link onClick={handleClose} to={"/dashboard/profile"} className='hover:text-primary-200'>
             <HiOutlineExternalLink size={15}/>
           </Link>
@@ -67,20 +73,35 @@ const UserMenu = ({close}) => {
             }
 
             {
-              isAdmin(user.role) && (
+              (isAdmin(user.role) || isSeller(user.role)) && (
                 <Link onClick={handleClose} to={"/dashboard/upload-product"} className='px-2 hover:bg-orange-200 py-1'>Upload Product</Link>
               )
             }
 
             {
+<<<<<<< HEAD
               isAdmin(user.role) && (
                 <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>Products</Link>
+=======
+              (isAdmin(user.role) || isSeller(user.role)) && (
+                <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>Product</Link>
+>>>>>>> 4cead8378d2ff0c7b22def22cfa73124cc7c7d81
               )
             }
+            
 
+<<<<<<< HEAD
             <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>Orders</Link>
 
             <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>Users Table</Link>
+=======
+            {
+              user.role !== "SELLER" && (
+                <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>My Orders</Link>
+              )
+            }
+            <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>Save Address</Link>
+>>>>>>> 4cead8378d2ff0c7b22def22cfa73124cc7c7d81
 
             <button onClick={handleLogout} className='text-left px-2 hover:bg-orange-200 py-1'>Log Out</button>
 

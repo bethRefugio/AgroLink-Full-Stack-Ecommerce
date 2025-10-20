@@ -12,7 +12,8 @@ const Register = () => {
         name: "",
         email: "",
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
+        role: "" 
     })
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -58,7 +59,8 @@ const Register = () => {
                     name : "",
                     email : "",
                     password : "",
-                    confirmPassword : ""
+                    confirmPassword : "",
+                    role: ""
                 })
                 navigate("/login")
             }
@@ -146,6 +148,21 @@ const Register = () => {
                                 }
                             </div>
                         </div>
+                    </div>
+                    <div className='grid gap-1'>
+                        <label htmlFor='role'>Role :</label>
+                        <select
+                            id='role'
+                            className='bg-blue-50 p-2 border rounded outline-none focus:border-primary-200'
+                            name='role'
+                            value={data.role}
+                            onChange={handleChange}
+                        >
+                            <option value="" disabled>Select your role</option>
+                            <option value='BUYER'>Buyer</option>
+                            <option value='SELLER'>Seller</option>
+                            <option value='COOPERATIVE'>Cooperative</option>
+                        </select>
                     </div>
 
                     <button disabled={!valideValue} className={` ${valideValue ? "bg-green-800 hover:bg-green-700" : "bg-gray-500" }    text-white py-2 rounded font-semibold my-3 tracking-wide`}>Register</button>

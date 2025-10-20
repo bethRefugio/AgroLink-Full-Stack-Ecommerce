@@ -6,6 +6,7 @@ import Loading from '../components/Loading'
 import ProductCardAdmin from '../components/ProductCardAdmin'
 import { IoSearchOutline } from "react-icons/io5";
 import EditProductAdmin from '../components/EditProductAdmin'
+import { useSelector } from 'react-redux'
 
 const ProductAdmin = () => {
   const [productData,setProductData] = useState([])
@@ -13,32 +14,41 @@ const ProductAdmin = () => {
   const [loading,setLoading] = useState(false)
   const [totalPageCount,setTotalPageCount] = useState(1)
   const [search,setSearch] = useState("")
-  
-  const fetchProductData = async()=>{
-    try {
-        setLoading(true)
-        const response = await Axios({
-           ...SummaryApi.getProduct,
-           data : {
-              page : page,
-              limit : 12,
-              search : search 
-           }
-        })
+  const user = useSelector(state => state.user);
 
-        const { data : responseData } = response 
+  const fetchProductData = async () => {
+  try {
+    setLoading(true);
 
-        if(responseData.success){
-          setTotalPageCount(responseData.totalNoPage)
-          setProductData(responseData.data)
-        }
+    const requestData = {
+      page: page,
+      limit: 12,
+      search: search,
+    };
 
-    } catch (error) {
-      AxiosToastError(error)
-    }finally{
-      setLoading(false)
+    // Only send userId if role is SELLER
+    if (user?.role === "SELLER") {
+      requestData.userId = user._id;
     }
+
+    const response = await Axios({
+      ...SummaryApi.getProduct,
+      data: requestData,
+    });
+
+    const { data: responseData } = response;
+
+    if (responseData.success) {
+      setTotalPageCount(responseData.totalNoPage);
+      setProductData(responseData.data);
+    }
+  } catch (error) {
+    AxiosToastError(error);
+  } finally {
+    setLoading(false);
   }
+};
+
   
   useEffect(()=>{
     fetchProductData()
@@ -79,7 +89,9 @@ const ProductAdmin = () => {
   return (
     <section className=''>
         <div className='p-2  bg-white shadow-md flex items-center justify-between gap-4'>
-                <h2 className='font-semibold'>Product</h2>
+                <h2 className='font-semibold'>
+                  {user?.role === "SELLER" ? "My Products" : "All Products"}
+                </h2>
                 <div className='h-full min-w-24 max-w-56 w-full ml-auto bg-blue-50 px-4 flex items-center gap-3 py-2 rounded  border focus-within:border-primary-200'>
                   <IoSearchOutline size={25}/>
                   <input

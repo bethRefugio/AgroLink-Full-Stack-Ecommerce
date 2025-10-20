@@ -11,11 +11,11 @@ import jwt from 'jsonwebtoken'
 
 export async function registerUserController(request,response){
     try {
-        const { name, email , password } = request.body
+        const { name, email , password, role } = request.body
 
-        if(!name || !email || !password){
+        if(!name || !email || !password || !role){
             return response.status(400).json({
-                message : "provide email, name, password",
+                message : "provide email, name, password, role",
                 error : true,
                 success : false
             })
@@ -37,7 +37,8 @@ export async function registerUserController(request,response){
         const payload = {
             name,
             email,
-            password : hashPassword
+            password : hashPassword,
+            role
         }
 
         const newUser = new UserModel(payload)
@@ -47,7 +48,7 @@ export async function registerUserController(request,response){
 
         const verifyEmail = await sendEmail({
             sendTo : email,
-            subject : "Verify email from binkeyit",
+            subject : "Verify email from AgroLink",
             html : verifyEmailTemplate({
                 name,
                 url : VerifyEmailUrl
