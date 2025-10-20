@@ -131,7 +131,12 @@ const ProductDisplayPage = () => {
 
         <div className='p-4 lg:pl-7 text-base lg:text-lg'>
             <p className='bg-green-300 w-fit px-2 rounded-full'>10 Min</p>
-            <h2 className='text-lg font-semibold lg:text-3xl'>{data.name}</h2>  
+            <h2 className='text-lg font-semibold lg:text-3xl'>{data.name}</h2>
+            {data.userId && (
+              <p className='text-base text-neutral-600 mb-2'>
+                Seller: <span className='font-semibold'>{data.userId.name}</span>
+              </p>
+            )}  
             <p className=''>{data.unit}</p> 
             <Divider/>
             <div>

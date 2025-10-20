@@ -519,3 +519,27 @@ export async function userDetails(request,response){
         })
     }
 }
+
+export async function addPreferences(request, response) {
+    try {
+        const { category, subCategory } = request.body;
+
+        if (!category || !subCategory) {
+            return response.status(400).json({
+                success: false,
+                message: "Category and SubCategory are required"
+            });
+        }
+
+        const user = await UserModel.findById(request.userId);
+        if (!user) return response.status(404).json({ success: false, message: "User not found" });
+
+        // Add preference
+        user.preferences.push({ category, subCategory });
+        await user.save();
+
+        return response.json({ success: true, message: "Preference added", data: user.preferences });
+    } catch (error) {
+        return response.status(500).json({ success: false, message: error.message });
+    }
+}

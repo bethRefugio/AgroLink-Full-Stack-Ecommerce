@@ -11,7 +11,7 @@ const resend = new Resend(process.env.RESEND_API);
 const sendEmail = async({sendTo, subject, html })=>{
     try {
         const { data, error } = await resend.emails.send({
-            from: 'AgroLink <onboarding@resend.dev>',
+            from: 'AgroLink <no-reply@agrolinkph.tech>',
             to: sendTo,
             subject: subject,
             html: html,
