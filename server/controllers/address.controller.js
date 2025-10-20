@@ -133,14 +133,8 @@ export const getSellerPickupAddressController = async (request, response) => {
 
 export const updateAddressController = async(request,response)=>{
     try {
-<<<<<<< Updated upstream
         const userId = request.userId 
-=======
-        const userId = request.userId // middleware auth 
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
         const { _id, purok_house, barangay, city, zipcode, country } = request.body
 
         const updateAddress = await AddressModel.updateOne({ _id : _id, userId : userId },{
