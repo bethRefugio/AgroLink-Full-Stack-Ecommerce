@@ -4,13 +4,13 @@ import UserModel from "../models/user.model.js";
 export const addAddressController = async(request,response)=>{
     try {
         const userId = request.userId // middleware
-        const { purok_house, barangay, city, zipcode, country } = request.body
+        const { purok_house, barangay, city, pincode, country } = request.body
 
         const createAddress = new AddressModel({
             purok_house,
             barangay,
             city,
-            zipcode,
+            pincode,
             country,
             userId : userId
         })
@@ -62,13 +62,13 @@ export const getAddressController = async(request,response)=>{
 export const updateAddressController = async(request,response)=>{
     try {
         const userId = request.userId // middleware auth 
-        const { _id, purok_house, barangay, city, zipcode, country } = request.body
+        const { _id, purok_house, barangay, city, pincode, country } = request.body
 
         const updateAddress = await AddressModel.updateOne({ _id : _id, userId : userId },{
             purok_house,
             barangay,
             city,
-            zipcode,
+            pincode,
             country
         })
 
