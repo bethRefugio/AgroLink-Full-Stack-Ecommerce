@@ -52,7 +52,7 @@ const Address = () => {
                             <p>{address.purok_house}</p>
                             <p>{address.barangay}</p>
                             <p>{address.city}</p>
-                            <p>{address.country} - {address.pincode}</p>
+                            <p>{address.country} - {address.zipcode}</p>
                           </div>
                           <div className=' grid gap-10'>
                             <button onClick={()=>{

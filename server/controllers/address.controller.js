@@ -3,14 +3,24 @@ import UserModel from "../models/user.model.js";
 
 export const addAddressController = async(request,response)=>{
     try {
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
         const userId = request.userId 
         const { purok_house, barangay, city, pincode, country } = request.body
+=======
+        const userId = request.userId // middleware
+        const { purok_house, barangay, city, zipcode, country } = request.body
+>>>>>>> Stashed changes
+=======
+        const userId = request.userId // middleware
+        const { purok_house, barangay, city, zipcode, country } = request.body
+>>>>>>> Stashed changes
 
         const createAddress = new AddressModel({
             purok_house,
             barangay,
             city,
-            pincode,
+            zipcode,
             country,
             userId : userId
         })
@@ -133,14 +143,21 @@ export const getSellerPickupAddressController = async (request, response) => {
 
 export const updateAddressController = async(request,response)=>{
     try {
+<<<<<<< Updated upstream
         const userId = request.userId 
+=======
+        const userId = request.userId // middleware auth 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         const { _id, purok_house, barangay, city, zipcode, country } = request.body
 
         const updateAddress = await AddressModel.updateOne({ _id : _id, userId : userId },{
             purok_house,
             barangay,
             city,
-            pincode,
+            zipcode,
             country
         })
 

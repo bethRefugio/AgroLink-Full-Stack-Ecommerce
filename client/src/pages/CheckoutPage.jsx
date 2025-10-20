@@ -58,6 +58,7 @@ const fetchSellerPickupAddresses = async () => {
     } finally {
         setLoadingSellerAddresses(false);
     }
+<<<<<<< Updated upstream
 };
 
     
@@ -85,6 +86,35 @@ const fetchSellerPickupAddresses = async () => {
             if (!addressId) {
                 toast.error("Seller's pickup address is not available.");
                 return;
+=======
+  }
+  return (
+    <section className='bg-blue-50'>
+      <div className='container mx-auto p-4 flex flex-col lg:flex-row w-full gap-5 justify-between'>
+        <div className='w-full'>
+          {/***address***/}
+          <h3 className='text-lg font-semibold'>Choose your address</h3>
+          <div className='bg-white p-2 grid gap-4'>
+            {
+              addressList.map((address, index) => {
+                return (
+                  <label htmlFor={"address" + index} className={!address.status && "hidden"}>
+                    <div className='border rounded p-3 flex gap-3 hover:bg-blue-50'>
+                      <div>
+                        <input id={"address" + index} type='radio' value={index} onChange={(e) => setSelectAddress(e.target.value)} name='address' />
+                      </div>
+                      <div>
+                        <p>{address.address_line}</p>
+                        <p>{address.city}</p>
+                        <p>{address.state}</p>
+                        <p>{address.country} - {address.zipcode}</p>
+                        <p>{address.mobile}</p>
+                      </div>
+                    </div>
+                  </label>
+                )
+              })
+>>>>>>> Stashed changes
             }
         } else { 
             if (!addressList.length) {

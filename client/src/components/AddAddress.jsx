@@ -22,7 +22,7 @@ const AddAddress = ({close}) => {
                     purok_house :data.purok_house,
                     barangay : data.barangay,
                     city : data.city,
-                    pincode : data.pincode,
+                    zipcode : data.zipcode,
                     country : data.country 
                 }
             })
@@ -79,12 +79,12 @@ const AddAddress = ({close}) => {
                     />
                 </div>
                 <div className='grid gap-1'>
-                    <label htmlFor='pincode'>Pin Code:</label>
+                    <label htmlFor='zipcode'>Zip Code:</label>
                     <input
                         type='text'
-                        id='pincode' 
+                        id='zipcode' 
                         className='border bg-blue-50 p-2 rounded'
-                        {...register("pincode",{required : true})}
+                        {...register("zipcode",{required : true})}
                     />
                 </div>
                 <div className='grid gap-1'>
