@@ -17,6 +17,7 @@ const Profile = () => {
         name : user.name,
         email : user.email,
         mobile : user.mobile,
+        address : user.address_details,
     })
     const [loading,setLoading] = useState(false)
     const dispatch = useDispatch()
@@ -26,6 +27,7 @@ const Profile = () => {
             name : user.name,
             email : user.email,
             mobile : user.mobile,
+            address : user.address_details,
         })
     },[user])
 
@@ -90,7 +92,7 @@ const Profile = () => {
             )
         }
 
-        {/**name, mobile , email, change password */}
+        {/**name, mobile , email, change password, address*/}
         <form className='my-4 grid gap-4' onSubmit={handleSubmit}>
             <div className='grid'>
                 <label>Name</label>
@@ -126,6 +128,19 @@ const Profile = () => {
                     className='p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded'
                     value={userData.mobile}
                     name='mobile'
+                    onChange={handleOnChange}
+                    required
+                />
+            </div>
+            <div className='grid'>
+                <label htmlFor='address'>Address</label>
+                <input
+                    type='text'
+                    id='address'
+                    placeholder='Enter your address' 
+                    className='p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded'
+                    value={user.address}
+                    name='address'
                     onChange={handleOnChange}
                     required
                 />
