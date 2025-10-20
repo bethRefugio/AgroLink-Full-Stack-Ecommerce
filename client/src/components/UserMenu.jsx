@@ -19,7 +19,7 @@ const UserMenu = ({close}) => {
    const handleLogout = async()=>{
         try {
           const response = await Axios({
-             ...SummaryApi.logout
+              ...SummaryApi.logout
           })
           console.log("logout",response)
           if(response.data.success){
@@ -84,9 +84,8 @@ const UserMenu = ({close}) => {
               )
             }
             
-
             {
-              user.role !== "SELLER" && (
+              user.role && ( 
                 <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>My Orders</Link>
               )
             }
