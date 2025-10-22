@@ -24,6 +24,8 @@ import CheckoutPage from "../pages/CheckoutPage";
 import Success from "../pages/Success";
 import Cancel from "../pages/Cancel";
 import VerifyEmail from "../pages/VerifyEmail";
+import AllOrders from "../pages/AllOrders";
+import UsersTable from "../pages/UsersTable";
 
 const router = createBrowserRouter([
     {
@@ -81,6 +83,14 @@ const router = createBrowserRouter([
                     {
                         path : "address",
                         element : <Address/>
+                    },
+                    {
+                        path : "allorders",
+                        element : <AdminPermision><AllOrders/></AdminPermision>
+                    },
+                    {
+                        path : "userstable",
+                        element : <AdminPermision><UsersTable/></AdminPermision>
                     },
                     {
                         path : 'category',

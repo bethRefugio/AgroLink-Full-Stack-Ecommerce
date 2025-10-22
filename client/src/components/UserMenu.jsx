@@ -10,6 +10,7 @@ import AxiosToastError from '../utils/AxiosToastError'
 import { HiOutlineExternalLink } from "react-icons/hi";
 import isAdmin from '../utils/isAdmin'
 import isSeller from '../utils/isSeller'
+import isBuyer from '../utils/isBuyer'
 
 const UserMenu = ({close}) => {
    const user = useSelector((state)=> state.user)
@@ -77,26 +78,37 @@ const UserMenu = ({close}) => {
                 <Link onClick={handleClose} to={"/dashboard/upload-product"} className='px-2 hover:bg-orange-200 py-1'>Upload Product</Link>
               )
             }
-
+              
             {
-<<<<<<< HEAD
-              isAdmin(user.role) && (
-                <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>Products</Link>
-=======
               (isAdmin(user.role) || isSeller(user.role)) && (
-                <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>Product</Link>
->>>>>>> 4cead8378d2ff0c7b22def22cfa73124cc7c7d81
+                <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>Products</Link>              
               )
+              
             }
             
-
             {
-              user.role && ( 
+              user.role === "BUYER" && ( 
                 <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>My Orders</Link>
               )
             }
+
+            {
+              isAdmin(user.role) && (
+                <Link onClick={handleClose} to={"/dashboard/allorders"} className='px-2 hover:bg-orange-200 py-1'>All Orders</Link>
+              )
+            }
+
+            {
+              (isBuyer (user.role) || isSeller (user.role)) && (
             <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>Save Address</Link>
->>>>>>> 4cead8378d2ff0c7b22def22cfa73124cc7c7d81
+              )
+            }
+
+            {
+              isAdmin(user.role) && (
+                <Link onClick={handleClose} to={"/dashboard/userstable"} className='px-2 hover:bg-orange-200 py-1'>Users Table</Link>
+              )
+            }
 
             <button onClick={handleLogout} className='text-left px-2 hover:bg-orange-200 py-1'>Log Out</button>
 
