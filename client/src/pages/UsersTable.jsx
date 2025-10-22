@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { createColumnHelper } from "@tanstack/react-table";
 import UsersDisplayTable from "../components/UsersDisplayTable";
 import ConfirmBox from "../components/CofirmBox";
+import SummaryApi from "../common/SummaryApi";
 import { HiPencil } from "react-icons/hi";
 import { MdDelete, MdVisibility } from "react-icons/md";
 
@@ -25,14 +26,13 @@ const UsersTable = () => {
 
   const columnHelper = createColumnHelper();
 
-  const USERS_LIST_ENDPOINT = "/api/user/get-all";
   const USER_DELETE_ENDPOINT = "/api/user/delete";
 
   // Fetch all users
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await Axios({ url: USERS_LIST_ENDPOINT, method: "get" });
+      const res = await Axios({...SummaryApi.getUsersTable });
       const { data } = res;
       console.debug('fetchUsers response:', data)
       if (data?.success) setUsers(data.data || []);
@@ -348,7 +348,7 @@ const UsersTable = () => {
         {filteredUsers.length === 0 ? (
           <p className="text-center text-gray-500">No users available.</p>
         ) : (
-          <UsersDisplayTable data={filteredUsers} columns={columns} loading={loading} />
+          <UsersDisplayTable data={filteredUsers} column={columns} loading={loading} />
         )}
       </div>
 
