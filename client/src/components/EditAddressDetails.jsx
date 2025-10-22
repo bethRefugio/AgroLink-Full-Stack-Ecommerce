@@ -22,7 +22,7 @@ const EditAddressDetails = ({ close, data }) => {
         barangay: data.barangay || "",
         city: data.city || "",
         country: data.country || "",
-        pincode: data.pincode || "",
+        zipcode: data.zipcode || "",
       })
     }
   }, [data, reset])
@@ -89,12 +89,12 @@ const EditAddressDetails = ({ close, data }) => {
           </div>
 
           <div className='grid gap-1'>
-            <label htmlFor='pincode'>Pin Code :</label>
+            <label htmlFor='zipcode'>Zip Code :</label>
             <input
               type='text'
-              id='pincode'
+              id='zipcode'
               className='border bg-blue-50 p-2 rounded'
-              {...register("pincode", { required: true })}
+              {...register("zipcode", { required: true })}
             />
           </div>
 
