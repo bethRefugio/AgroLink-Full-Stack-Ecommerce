@@ -109,6 +109,40 @@ export async function paymentController(request,response){
     }
 }
 
+export async function getAllOrdersController(req, res) {
+  try {
+    if (req.user.role !== 'ADMIN') {
+        return res.status(403).json({ success: false, message: 'Access denied' })
+    }
+
+    // Get all orders with buyer and seller info
+    const orders = await OrderModel.find()
+      .populate({
+        path: 'userId', // buyer
+        select: 'name email'
+      })
+      .populate({
+        path: 'productId', // product
+        populate: {
+          path: 'userId', // seller
+          select: 'name email'
+        },
+      })
+      .sort({ createdAt: -1 })
+
+    res.json({
+      message: 'All orders retrieved successfully',
+      success: true,
+      data: orders,
+    })
+  } catch (error) {
+    console.error('Error fetching all orders:', error)
+    res.status(500).json({
+      message: error.message || 'Server error',
+      success: false,
+    })
+  }
+}
 
 const getOrderProductItems = async({
     lineItems,

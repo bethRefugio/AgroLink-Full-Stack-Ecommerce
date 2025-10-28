@@ -165,6 +165,14 @@ const SummaryApi = {
     getUsersTable : {
         url : '/api/user/users-table',
         method : 'get'
+    },
+    updateUsersTable : {
+        url : '/api/user/users-table',
+        method : 'put'
+    },
+    deleteUser : {
+        url : '/api/user/users-table',
+        method : 'delete'
     }
 }
 

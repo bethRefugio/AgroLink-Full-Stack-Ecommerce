@@ -26,8 +26,6 @@ const UsersTable = () => {
 
   const columnHelper = createColumnHelper();
 
-  const USER_DELETE_ENDPOINT = "/api/user/delete";
-
   // Fetch all users
   const fetchUsers = async () => {
     try {
@@ -68,7 +66,7 @@ const UsersTable = () => {
     if (!deleteUser) return;
     try {
       const res = await Axios({
-        url: USER_DELETE_ENDPOINT,
+        ...SummaryApi.deleteUser,
         method: "delete",
         data: { _id: deleteUser._id },
       });
@@ -159,7 +157,7 @@ const UsersTable = () => {
       name: user?.name || "",
       email: user?.email || "",
       role: user?.role || "BUYER",
-      password: "",
+      password: user?.password || "",
     });
     const [saving, setSaving] = useState(false);
 

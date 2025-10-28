@@ -243,41 +243,58 @@ export async  function uploadAvatar(request,response){
 }
 
 //update user details
-export async function updateUserDetails(request,response){
-    try {
-        const userId = request.userId //auth middleware
-        const { name, email, mobile, password } = request.body 
+export async function updateUserDetails(request, response) {
+  try {
+    const userId = request.userId;
+    const { name, email, mobile, password } = request.body;
 
-        let hashPassword = ""
-
-        if(password){
-            const salt = await bcryptjs.genSalt(10)
-            hashPassword = await bcryptjs.hash(password,salt)
-        }
-
-        const updateUser = await UserModel.updateOne({ _id : userId},{
-            ...(name && { name : name }),
-            ...(email && { email : email }),
-            ...(mobile && { mobile : mobile }),
-            ...(password && { password : hashPassword })
-        })
-
-        return response.json({
-            message : "Updated successfully",
-            error : false,
-            success : true,
-            data : updateUser
-        })
-
-
-    } catch (error) {
-        return response.status(500).json({
-            message : error.message || error,
-            error : true,
-            success : false
-        })
+    // Get the user first
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return response.status(404).json({
+        message: "User not found",
+        error: true,
+        success: false,
+      });
     }
+
+    // Build update object dynamically
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (mobile) updateData.mobile = mobile;
+    if (password) {
+      const salt = await bcryptjs.genSalt(10);
+      updateData.password = await bcryptjs.hash(password, salt);
+    }
+    // Only include email if changed
+    if (email && email !== user.email) {
+      const emailExists = await UserModel.findOne({ email });
+      if (emailExists) {
+        return response.status(400).json({
+          message: "Email already used by another account",
+          error: true,
+          success: false,
+        });
+      }
+      updateData.email = email;
+    }
+
+    await UserModel.updateOne({ _id: userId }, updateData);
+
+    return response.json({
+      message: "User updated successfully",
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: error.message,
+      error: true,
+      success: false,
+    });
+  }
 }
+
 
 //forgot password not login
 export async function forgotPasswordController(request,response) {
