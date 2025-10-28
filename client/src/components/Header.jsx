@@ -1,171 +1,167 @@
-import React, { useEffect, useState } from 'react'
-import logo from '../assets/agrolink-logo2.svg'
-import Search from './Search'
-import { Link, useLocation,useNavigate } from 'react-router-dom'
+import React, { useState } from 'react';
+import logo from '../assets/agrolink-logo2.svg';
+import Search from './Search';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaRegCircleUser } from "react-icons/fa6";
 import useMobile from '../hooks/useMobile';
 import { BsCart4 } from "react-icons/bs";
 import { useSelector } from 'react-redux';
-import { GoTriangleDown, GoTriangleUp  } from "react-icons/go";
+import { GoTriangleDown, GoTriangleUp } from "react-icons/go";
 import UserMenu from './UserMenu';
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees';
 import { useGlobalContext } from '../provider/GlobalProvider';
 import DisplayCartItem from './DisplayCartItem';
 
 const Header = () => {
-    const [ isMobile ] = useMobile()
-    const location = useLocation()
-    const isSearchPage = location.pathname === "/search"
-    const navigate = useNavigate()
-    const user = useSelector((state)=> state?.user)
-    const [openUserMenu,setOpenUserMenu] = useState(false)
-    const cartItem = useSelector(state => state.cartItem.cart)
-    // const [totalPrice,setTotalPrice] = useState(0)
-    // const [totalQty,setTotalQty] = useState(0)
-    const { totalPrice, totalQty} = useGlobalContext()
-    const [openCartSection,setOpenCartSection] = useState(false)
+    const [isMobile] = useMobile();
+    const location = useLocation();
+    const isSearchPage = location.pathname === "/search";
+    const navigate = useNavigate();
+    const user = useSelector((state) => state?.user);
+    const [openUserMenu, setOpenUserMenu] = useState(false);
+    const cartItem = useSelector(state => state.cartItem.cart);
+    const { totalPrice, totalQty } = useGlobalContext();
+    const [openCartSection, setOpenCartSection] = useState(false);
  
-    const redirectToLoginPage = ()=>{
-        navigate("/login")
-    }
+    const redirectToLoginPage = () => {
+        navigate("/login");
+    };
 
-    const handleCloseUserMenu = ()=>{
-        setOpenUserMenu(false)
-    }
+    const handleCloseUserMenu = () => {
+        setOpenUserMenu(false);
+    };
 
-    const handleMobileUser = ()=>{
-        if(!user._id){
-            navigate("/login")
-            return
+    const handleMobileUser = () => {
+        if(!user._id) {
+            navigate("/login");
+            return;
         }
+        navigate("/user");
+    };
 
-        navigate("/user")
-    }
+    const isUserLoggedIn = user?._id;
 
-    //total item and total price
-    // useEffect(()=>{
-    //     const qty = cartItem.reduce((preve,curr)=>{
-    //         return preve + curr.quantity
-    //     },0)
-    //     setTotalQty(qty)
-        
-    //     const tPrice = cartItem.reduce((preve,curr)=>{
-    //         return preve + (curr.productId.price * curr.quantity)
-    //     },0)
-    //     setTotalPrice(tPrice)
+    return (
+        <header className='shadow-sm sticky top-0 z-40 bg-white'>
+            {/* Main header */}
+            {!(isSearchPage && isMobile) && (
+                <div className='container mx-auto px-4'>
+                    <div className='flex items-center justify-between h-20'>
+                        {/* Logo */}
+                        <div className='flex items-center'>
+                            <Link to={isUserLoggedIn ? "/home" : "/"} className='flex items-center'>
+                                <img 
+                                    src={logo}
+                                    width={170}
+                                    height={60}
+                                    alt='logo'
+                                    className='hidden lg:block'
+                                />
+                                <img 
+                                    src={logo}
+                                    width={120}
+                                    height={60}
+                                    alt='logo'
+                                    className='lg:hidden'
+                                />
+                            </Link>
+                        </div>
 
-    // },[cartItem])
+                        {/* Search - Only show if user is logged in */}
+                        {isUserLoggedIn && (
+                            <div className='hidden lg:block flex-1 max-w-2xl mx-8'>
+                                <Search/>
+                            </div>
+                        )}
 
-  return (
-    <header className='h-24 lg:h-20 lg:shadow-md sticky top-0 z-40 flex flex-col justify-center gap-1 bg-white'>
-        {
-            !(isSearchPage && isMobile) && (
-                <div className='container mx-auto flex items-center px-2 justify-between'>
-                                {/**logo */}
-                                <div className='h-full'>
-                                    <Link to={"/"} className='h-full flex justify-center items-center'>
-                                        <img 
-                                            src={logo}
-                                            width={170}
-                                            height={60}
-                                            alt='logo'
-                                            className='hidden lg:block'
-                                        />
-                                        <img 
-                                            src={logo}
-                                            width={120}
-                                            height={60}
-                                            alt='logo'
-                                            className='lg:hidden'
-                                        />
-                                    </Link>
-                                </div>
+                        {/* Right side actions */}
+                        <div className='flex items-center gap-6'>
+                            {/* Search icon for mobile */}
+                            <button className='lg:hidden text-gray-600 hover:text-green-600'>
+                                <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+                                </svg>
+                            </button>
 
-                                {/**Search */}
-                                <div className='hidden lg:block'>
-                                    <Search/>
-                                </div>
+                            {/* Mobile user icon */}
+                            <button className='text-gray-600 lg:hidden hover:text-green-600' onClick={handleMobileUser}>
+                                <FaRegCircleUser size={24}/>
+                            </button>
 
-
-                                {/**login and my cart */}
-                                <div className=''>
-                                    {/**user icons display in only mobile version**/}
-                                    <button className='text-neutral-600 lg:hidden' onClick={handleMobileUser}>
-                                        <FaRegCircleUser size={26}/>
-                                    </button>
-
-                                      {/**Desktop**/}
-                                    <div className='hidden lg:flex  items-center gap-10'>
-                                        {
-                                            user?._id ? (
-                                                <div className='relative'>
-                                                    <div onClick={()=>setOpenUserMenu(preve => !preve)} className='flex select-none items-center gap-1 cursor-pointer'>
-                                                        <p>Account</p>
-                                                        {
-                                                            openUserMenu ? (
-                                                                  <GoTriangleUp size={25}/> 
-                                                            ) : (
-                                                                <GoTriangleDown size={25}/>
-                                                            )
-                                                        }
-                                                       
-                                                    </div>
-                                                    {
-                                                        openUserMenu && (
-                                                            <div className='absolute right-0 top-12'>
-                                                                <div className='bg-white rounded p-4 min-w-52 lg:shadow-lg'>
-                                                                    <UserMenu close={handleCloseUserMenu}/>
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    }
-                                                    
+                            {/* Desktop actions */}
+                            <div className='hidden lg:flex items-center gap-6'>
+                                {/* Account dropdown */}
+                                {user?._id ? (
+                                    <div className='relative'>
+                                        <button 
+                                            onClick={() => setOpenUserMenu(prev => !prev)} 
+                                            className='flex items-center gap-2 text-gray-700 hover:text-green-600 transition-colors'
+                                        >
+                                            <FaRegCircleUser size={20}/>
+                                            <span className='text-sm font-medium'>Account</span>
+                                            {openUserMenu ? <GoTriangleUp size={16}/> : <GoTriangleDown size={16}/>}
+                                        </button>
+                                        {openUserMenu && (
+                                            <div className='absolute right-0 top-12 z-50'>
+                                                <div className='bg-white rounded-lg shadow-lg p-4 min-w-52 border border-gray-200'>
+                                                    <UserMenu close={handleCloseUserMenu}/>
                                                 </div>
-                                            ) : (
-                                                <button onClick={redirectToLoginPage} className='text-lg px-2'>Login</button>
-                                            )
-                                        }
-                                        {/* Show cart only if user is NOT a seller */}
-                                        {user?.role !== "SELLER" && (
-                                            <button 
-                                            onClick={() => setOpenCartSection(true)} 
-                                            className='flex items-center gap-2 bg-green-800 hover:bg-green-700 px-3 py-2 rounded text-white'
-                                            >
-                                            {/**add to cart icons */}
-                                            <div className='animate-bounce'>
-                                                <BsCart4 size={26}/>
                                             </div>
-                                            <div className='font-semibold text-sm'>
-                                                {
-                                                cartItem[0] ? (
-                                                    <div>
-                                                    <p>{totalQty} Items</p>
-                                                    <p>{DisplayPriceInRupees(totalPrice)}</p>
-                                                    </div>
-                                                ) : (
-                                                    <p>My Cart</p>
-                                                )
-                                                }
-                                            </div>    
-                                            </button>
-                                            )}
+                                        )}
                                     </div>
-                                </div>
+                                ) : (
+                                    <button 
+                                        onClick={redirectToLoginPage} 
+                                        className='text-gray-700 hover:text-green-600 font-medium transition-colors'
+                                    >
+                                        Login
+                                    </button>
+                                )}
+
+                                {/* Cart button - Show only if user is NOT a seller */}
+                                {user?.role !== "SELLER" && isUserLoggedIn && (
+                                    <button 
+                                        onClick={() => setOpenCartSection(true)} 
+                                        className='relative flex items-center gap-3 bg-green-600 hover:bg-green-700 px-4 py-2.5 rounded-lg text-white transition-colors'
+                                    >
+                                        <BsCart4 size={22}/>
+                                        {cartItem[0] ? (
+                                            <div className='flex items-center gap-2'>
+                                                <div className='h-8 w-px bg-green-500'></div>
+                                                <div className='text-left'>
+                                                    <p className='text-xs font-medium'>{totalQty} Items</p>
+                                                    <p className='text-sm font-bold'>{DisplayPriceInRupees(totalPrice)}</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <span className='text-sm font-medium'>Cart</span>
+                                        )}
+                                        {cartItem[0] && (
+                                            <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center'>
+                                                {totalQty}
+                                            </span>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            )
-        }
-        
-        <div className='container mx-auto px-2 lg:hidden'>
-            <Search/>
-        </div>
+            )}
+            
+            {/* Mobile search bar - Only show if user is logged in */}
+            {isUserLoggedIn && (
+                <div className='container mx-auto px-4 pb-3 lg:hidden'>
+                    <Search/>
+                </div>
+            )}
 
-        {
-            openCartSection && (
-                <DisplayCartItem close={()=>setOpenCartSection(false)}/>
-            )
-        }
-    </header>
-  )
-}
+            {/* Cart modal */}
+            {openCartSection && (
+                <DisplayCartItem close={() => setOpenCartSection(false)}/>
+            )}
+        </header>
+    );
+};
 
-export default Header
+export default Header;

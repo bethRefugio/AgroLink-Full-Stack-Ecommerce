@@ -68,9 +68,18 @@ function App() {
     // fetchCartItem()
   },[])
 
+  const isLanding = location.pathname === '/';
+  const isServices = location.pathname === '/services';
+  const isAbout = location.pathname === '/about';
+  const isContact = location.pathname === '/contact';
+  const isLogin = location.pathname === '/login';
+  const isRegister = location.pathname === '/register';
+
+
   return (
     <GlobalProvider> 
-      <Header/>
+      {/* render Header for all routes except landing ("/") */}
+      {!isLanding && !isServices && !isAbout && !isContact && !isLogin && !isRegister && <Header/>}
       <main className='min-h-[78vh]'>
           <Outlet/>
       </main>
