@@ -543,3 +543,82 @@ export async function addPreferences(request, response) {
         return response.status(500).json({ success: false, message: error.message });
     }
 }
+
+export async function adminUpdateUserController(request, response) {
+    try {
+        const { _id, name, email, mobile, password, role } = request.body;
+        if (!_id) {
+            return response.status(400).json({
+                message: "User ID required",
+                error: true,
+                success: false
+            });
+        }
+
+        let hashPassword = "";
+        if (password) {
+            const salt = await bcryptjs.genSalt(10);
+            hashPassword = await bcryptjs.hash(password, salt);
+        }
+
+        const updateUser = await UserModel.updateOne(
+            { _id },
+            {
+                ...(name && { name }),
+                ...(email && { email }),
+                ...(mobile && { mobile }),
+                ...(password && { password: hashPassword }),
+                ...(role && { role }),
+            }
+        );
+
+        return response.json({
+            message: "User updated successfully",
+            error: false,
+            success: true,
+            data: updateUser
+        });
+    } catch (error) {
+        return response.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        });
+    }
+}
+
+export async function deleteUserController(request, response) {
+    try {
+        const { _id } = request.body;
+        if (!_id) {
+            return response.status(400).json({
+                message: "User ID required",
+                error: true,
+                success: false
+            });
+        }
+
+        const user = await UserModel.findById(_id);
+        if (!user) {
+            return response.status(404).json({
+                message: "User not found",
+                error: true,
+                success: false
+            });
+        }
+
+        await UserModel.deleteOne({ _id });
+
+        return response.json({
+            message: "User deleted successfully",
+            error: false,
+            success: true
+        });
+    } catch (error) {
+        return response.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        });
+    }
+}
