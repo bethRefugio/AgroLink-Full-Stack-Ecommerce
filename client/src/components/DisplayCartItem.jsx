@@ -100,7 +100,7 @@ const DisplayCartItem = ({close}) => {
                                 src={imageEmpty}
                                 className='w-full h-full object-scale-down' 
                             />
-                            <Link onClick={close} to={"/"} className='block bg-green-600 px-4 py-2 text-white rounded'>Shop Now</Link>
+                            <Link onClick={close} to={"/home"} className='block bg-green-600 px-4 py-2 text-white rounded'>Shop Now</Link>
                         </div>
                     )
                 }

@@ -1,10 +1,12 @@
 import AddressModel from "../models/address.model.js";
-import UserModel from "../models/user.model.js"; 
+import UserModel from "../models/user.model.js";
+
 
 export const addAddressController = async(request,response)=>{
     try {
         const userId = request.userId // middleware
         const { purok_house, barangay, city, zipcode, country } = request.body
+
 
         const createAddress = new AddressModel({
             purok_house,
@@ -16,11 +18,13 @@ export const addAddressController = async(request,response)=>{
         })
         const saveAddress = await createAddress.save()
 
+
         const addUserAddressId = await UserModel.findByIdAndUpdate(userId,{
             $push : {
                 address_details : saveAddress._id
             }
         })
+
 
         return response.json({
             message : "Address Created Successfully",
@@ -28,6 +32,7 @@ export const addAddressController = async(request,response)=>{
             success : true,
             data : saveAddress
         })
+
 
     } catch (error) {
         return response.status(500).json({
@@ -38,11 +43,14 @@ export const addAddressController = async(request,response)=>{
     }
 }
 
+
 export const getAddressController = async(request,response)=>{
     try {
-        const userId = request.userId 
+        const userId = request.userId
+
 
         const data = await AddressModel.find({ userId : userId }).sort({ createdAt : -1})
+
 
         return response.json({
             data : data,
@@ -59,9 +67,11 @@ export const getAddressController = async(request,response)=>{
     }
 }
 
+
 export const getSellerPickupAddressController = async (request, response) => {
   try {
     const { sellerIds } = request.body;
+
 
     if (!sellerIds || !Array.isArray(sellerIds) || sellerIds.length === 0) {
       return response.status(400).json({
@@ -71,7 +81,8 @@ export const getSellerPickupAddressController = async (request, response) => {
       });
     }
 
-    
+
+   
     const allAddresses = await AddressModel.find({
       userId: { $in: sellerIds },
       status: true,
@@ -79,9 +90,11 @@ export const getSellerPickupAddressController = async (request, response) => {
       .sort({ createdAt: -1 })
       .select("-__v -status");
 
-    
+
+   
     const latestAddresses = [];
     const seen = new Set();
+
 
     for (const addr of allAddresses) {
       if (!seen.has(addr.userId.toString())) {
@@ -89,6 +102,7 @@ export const getSellerPickupAddressController = async (request, response) => {
         latestAddresses.push(addr);
       }
     }
+
 
     if (!latestAddresses.length) {
       return response.json({
@@ -99,21 +113,25 @@ export const getSellerPickupAddressController = async (request, response) => {
       });
     }
 
-    
+
+   
     const sellerIdsSet = latestAddresses.map(a => a.userId);
     const sellers = await UserModel.find({ _id: { $in: sellerIdsSet } }).select("name");
 
-    
+
+   
     const sellerMap = {};
     sellers.forEach(s => {
       sellerMap[s._id.toString()] = s.name;
     });
 
-    
+
+   
     const addressesWithNames = latestAddresses.map(addr => ({
       ...addr.toObject(),
       sellerName: sellerMap[addr.userId.toString()] || "Unknown Seller",
     }));
+
 
     return response.json({
       data: addressesWithNames,
@@ -131,11 +149,15 @@ export const getSellerPickupAddressController = async (request, response) => {
 };
 
 
+
+
 export const updateAddressController = async(request,response)=>{
     try {
-        const userId = request.userId 
+        const userId = request.userId
+
 
         const { _id, purok_house, barangay, city, zipcode, country } = request.body
+
 
         const updateAddress = await AddressModel.updateOne({ _id : _id, userId : userId },{
             purok_house,
@@ -144,6 +166,7 @@ export const updateAddressController = async(request,response)=>{
             zipcode,
             country
         })
+
 
         return response.json({
             message : "Address Updated",
@@ -160,14 +183,17 @@ export const updateAddressController = async(request,response)=>{
     }
 }
 
+
 export const deleteAddresscontroller = async(request,response)=>{
     try {
-        const userId = request.userId 
-        const { _id } = request.body 
+        const userId = request.userId
+        const { _id } = request.body
+
 
         const disableAddress = await AddressModel.updateOne({ _id : _id, userId},{
             status : false
         })
+
 
         return response.json({
             message : "Address remove",
@@ -183,4 +209,10 @@ export const deleteAddresscontroller = async(request,response)=>{
         })
     }
 }
+
+
+
+
+
+
 

@@ -2,51 +2,162 @@ import Stripe from "../config/stripe.js";
 import CartProductModel from "../models/cartproduct.model.js";
 import OrderModel from "../models/order.model.js";
 import UserModel from "../models/user.model.js";
+import ProductModel from "../models/product.model.js";
+import AddressModel from "../models/address.model.js";
 import mongoose from "mongoose";
 
- export async function CashOnDeliveryOrderController(request,response){
-    try {
-        const userId = request.userId // auth middleware 
-        const { list_items, totalAmt, addressId,subTotalAmt } = request.body 
 
-        const payload = list_items.map(el => {
-            return({
-                userId : userId,
-                orderId : `ORD-${new mongoose.Types.ObjectId()}`,
-                productId : el.productId._id, 
-                product_details : {
-                    name : el.productId.name,
-                    image : el.productId.image
-                } ,
-                paymentId : "",
-                payment_status : "CASH ON DELIVERY",
-                delivery_address : addressId ,
-                subTotalAmt  : subTotalAmt,
-                totalAmt  :  totalAmt,
-            })
-        })
+ export async function CashOnDeliveryOrderController(request, response) {
+  try {
+    const { userId, list_items, totalAmt, addressId, subTotalAmt } = request.body;
 
-        const generatedOrder = await OrderModel.insertMany(payload)
+    // 1. Get all unique product IDs from the cart list
+    const productIds = list_items.map((el) => el.productId._id);
 
-        ///remove from the cart
-        const removeCartItems = await CartProductModel.deleteMany({ userId : userId })
-        const updateInUser = await UserModel.updateOne({ _id : userId }, { shopping_cart : []})
+    // 2. Fetch the products from ProductModel to get seller/userId
+    const products = await ProductModel.find({ _id: { $in: productIds } }).select("userId sellerId");
+    const productSellerMap = products.reduce((acc, product) => {
+      acc[product._id.toString()] =
+        (product.userId || product.sellerId)
+          ? (product.userId || product.sellerId).toString()
+          : null;
+      return acc;
+    }, {});
 
-        return response.json({
-            message : "Order successfully",
-            error : false,
-            success : true,
-            data : generatedOrder
-        })
+    // 3. Prepare payload
+    const payload = list_items.map((el) => {
+      const currentProductId = el.productId._id.toString();
+      const sellerId =
+        productSellerMap[currentProductId] ||
+        el.productId.userId ||
+        el.productId.sellerId ||
+        null;
 
-    } catch (error) {
-        return response.status(500).json({
-            message : error.message || error ,
-            error : true,
-            success : false
-        })
-    }
+      return {
+        userId: userId,
+        sellerId: sellerId,
+        orderId: `ORD-${new mongoose.Types.ObjectId()}`,
+        productId: el.productId._id,
+        product_details: {
+          name: el.productId.name,
+          image: el.productId.image,
+        },
+        quantity: el.quantity ?? 1,
+        paymentId: "",
+        payment_status: "CASH ON DELIVERY",
+        delivery_address: addressId || null,
+        subTotalAmt: subTotalAmt,
+        totalAmt: totalAmt,
+      };
+    });
+
+    // 4. Insert orders
+    const generatedOrder = await OrderModel.insertMany(payload);
+
+    // 5. Remove from cart
+    await CartProductModel.deleteMany({ userId });
+    await UserModel.updateOne({ _id: userId }, { shopping_cart: [] });
+
+    return response.json({
+      message: "Order successfully",
+      error: false,
+      success: true,
+      data: generatedOrder,
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false,
+    });
+  }
 }
+
+
+// ...existing code...
+export const CashOnPickupOrderController = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { list_items, totalAmt, subTotalAmt } = req.body;
+
+    if (!list_items || list_items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Cart is empty.",
+      });
+    }
+
+    // 1. Get unique seller IDs from the cart (use userId fallback)
+    const sellerIds = [
+    ...new Set(
+        cartItemsList.map(item => {
+        if (!item.productId) return null;
+        return item.productId.userId || item.productId.sellerId || item.productId?._id;
+        }).filter(Boolean)
+    )
+    ];
+
+
+    // 2. Fetch pickup addresses for all sellers
+    const sellerPickupAddresses = await AddressModel.find({
+      userId: { $in: sellerIds },
+      isPickupAddress: true
+    });
+
+    if (!sellerPickupAddresses || sellerPickupAddresses.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Seller's pickup addresses are not available.",
+      });
+    }
+
+    // 3. Create the order payload
+    const payload = list_items.map(el => {
+      return {
+        userId: userId,
+        sellerId: el.productId.sellerId,
+       sellerId: (el.productId.userId || el.productId.sellerId) || null,
+        orderId: `ORD-${new mongoose.Types.ObjectId()}`,
+        productId: el.productId._id,
+        product_details: {
+          name: el.productId.name,
+          image: el.productId.image
+        },
+        quantity: el.quantity ?? 1,
+        paymentId: "",
+        payment_status: "CASH ON PICKUP",
+        delivery_address: null, // Since it's pickup, not delivery
+        subTotalAmt: subTotalAmt,
+        totalAmt: totalAmt,
+      };
+    });
+
+    const generatedOrder = await OrderModel.insertMany(payload);
+
+    // Remove items from the cart
+    await CartProductModel.deleteMany({ userId: userId });
+    await UserModel.updateOne({ _id: userId }, { shopping_cart: [] });
+
+    return res.json({
+      success: true,
+      message: "Order placed successfully. Here are the pickup addresses.",
+      data: {
+        orders: generatedOrder,
+        pickupAddresses: sellerPickupAddresses
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server Error"
+    });
+  }
+};
+ // ...existing code...
+
+
 
 export const pricewithDiscount = (price,dis = 1)=>{
     const discountAmout = Math.ceil((Number(price) * Number(dis)) / 100)
@@ -240,3 +351,42 @@ export async function getOrderDetailsController(request,response){
         })
     }
 }
+
+export const getProductByCategoryAndSubCategory = async (req, res) => {
+  try {
+    const { category, subCategory } = req.body || {};
+
+    const filter = {};
+
+    // category can be an id or a name
+    if (category) {
+      if (mongoose.Types.ObjectId.isValid(category)) filter.category = category;
+      else filter["categoryName"] = category; // fallback if you store name
+    }
+
+    // subCategory can be an id, array of ids, or names
+    if (subCategory) {
+      if (Array.isArray(subCategory)) {
+        const validIds = subCategory.filter((s) => mongoose.Types.ObjectId.isValid(s));
+        if (validIds.length) filter.subCategory = { $in: validIds };
+        else filter["subCategoryName"] = { $in: subCategory };
+      } else {
+        if (mongoose.Types.ObjectId.isValid(subCategory)) filter.subCategory = subCategory;
+        else filter["subCategoryName"] = subCategory;
+      }
+    }
+
+    // optional: only active products if your schema uses status
+    // filter.status = true;
+
+    const products = await ProductModel.find(filter)
+      .populate("category", "name")
+      .populate("subCategory", "name")
+      .lean();
+
+    return res.json({ success: true, data: products });
+  } catch (error) {
+    console.error("getProductByCategoryAndSubCategory error:", error);
+    return res.status(500).json({ success: false, message: error.message || "Server error" });
+  }
+};

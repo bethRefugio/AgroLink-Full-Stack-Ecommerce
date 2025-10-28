@@ -90,7 +90,7 @@ const SummaryApi = {
         method : 'post'
     },
     getProductByCategoryAndSubCategory : {
-        url : '/api/product/get-pruduct-by-category-and-subcategory',
+        url : '/api/product/get-product-by-category-and-subcategory',
         method : 'post'
     },
     getProductDetails : {
@@ -160,6 +160,10 @@ const SummaryApi = {
     },
     getAllOrders : {
         url : '/api/order/all-orders',
+        method : 'get'
+    },
+    getSellerOrders : {
+        url : '/api/order/seller-orders',
         method : 'get'
     },
     getUsersTable : {

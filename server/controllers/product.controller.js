@@ -1,5 +1,5 @@
 import ProductModel from "../models/product.model.js";
-
+import mongoose from "mongoose"
 
 export const createProductController = async(request,response)=>{
     try {
@@ -142,33 +142,39 @@ export const getProductByCategory = async(request,response)=>{
 
 export const getProductByCategoryAndSubCategory  = async(request,response)=>{
     try {
-        const { categoryId,subCategoryId,page,limit } = request.body
+        let { categoryId, subCategoryId, page = 1, limit = 10 } = request.body || {}
 
-        if(!categoryId || !subCategoryId){
-            return response.status(400).json({
-                message : "Provide categoryId and subCategoryId",
-                error : true,
-                success : false
+        // normalize inputs to arrays and only keep valid ObjectIds
+        const normalizeToIds = (val) => {
+            if (!val) return []
+            const arr = Array.isArray(val) ? val : String(val).split(",").map(s => s.trim())
+            return arr.filter(v => mongoose.Types.ObjectId.isValid(v))
+        }
+
+        const categoryIds = normalizeToIds(categoryId)
+        const subCategoryIds = normalizeToIds(subCategoryId)
+
+        // if neither produced valid ids, return empty result instead of letting mongoose cast invalid values
+        if (categoryIds.length === 0 && subCategoryIds.length === 0) {
+            return response.json({
+                message : "No valid category or subCategory ids provided",
+                data : [],
+                totalCount : 0,
+                page,
+                limit,
+                success : true,
+                error : false
             })
         }
 
-        if(!page){
-            page = 1
-        }
-
-        if(!limit){
-            limit = 10
-        }
-
-        const query = {
-            category : { $in :categoryId  },
-            subCategory : { $in : subCategoryId }
-        }
+        const query = {}
+        if (categoryIds.length) query.category = { $in : categoryIds }
+        if (subCategoryIds.length) query.subCategory = { $in : subCategoryIds }
 
         const skip = (page - 1) * limit
 
         const [data,dataCount] = await Promise.all([
-            ProductModel.find(query).sort({createdAt : -1 }).skip(skip).limit(limit),
+            ProductModel.find(query).sort({createdAt : -1 }).skip(skip).limit(limit).populate('category subCategory'),
             ProductModel.countDocuments(query)
         ])
 
@@ -183,6 +189,7 @@ export const getProductByCategoryAndSubCategory  = async(request,response)=>{
         })
 
     } catch (error) {
+        console.error("getProductByCategoryAndSubCategory error:", error)
         return response.status(500).json({
             message : error.message || error,
             error : true,

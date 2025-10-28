@@ -10,29 +10,36 @@ import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 
+
 const CheckoutPage = () => {
     const { notDiscountTotalPrice, totalPrice, totalQty, fetchCartItem, fetchOrder } = useGlobalContext()
     const addressList = useSelector(state => state.addresses.addressList)
     const cartItemsList = useSelector(state => state.cartItem.cart)
     const navigate = useNavigate()
 
+
     const [openAddress, setOpenAddress] = useState(false)
     const [selectAddress, setSelectAddress] = useState(0)
-    
-    
-    const [isPickup, setIsPickup] = useState(false) 
+   
+   
+    const [isPickup, setIsPickup] = useState(false)
     const [sellerAddresses, setSellerAddresses] = useState([])  
     const [loadingSellerAddresses, setLoadingSellerAddresses] = useState(false)
 
 
 
-    
+
+
+
+   
 const fetchSellerPickupAddresses = async () => {
     setLoadingSellerAddresses(true);
     setSellerAddresses([]);
 
-    
+
+   
     const sellerIds = [...new Set(cartItemsList.map(item => item.productId.userId))];
+
 
     if (sellerIds.length === 0) {
         toast.error("No sellers found in cart.");
@@ -40,11 +47,13 @@ const fetchSellerPickupAddresses = async () => {
         return;
     }
 
+
     try {
         const response = await Axios({
             ...SummaryApi.getSellerPickupAddress,
-            data: { sellerIds } 
+            data: { sellerIds }
         });
+
 
         if (response.data.success && Array.isArray(response.data.data)) {
             setSellerAddresses(response.data.data);
@@ -60,7 +69,8 @@ const fetchSellerPickupAddresses = async () => {
     }
 };
 
-    
+
+   
     useEffect(() => {
     if (isPickup && cartItemsList.length > 0) {
         fetchSellerPickupAddresses();
@@ -69,7 +79,10 @@ const fetchSellerPickupAddresses = async () => {
 
 
 
-    
+
+
+
+   
     const getAddressIdForOrder = () => {
         if (isPickup) {
             return sellerAddresses?._id;
@@ -77,16 +90,17 @@ const fetchSellerPickupAddresses = async () => {
         return addressList[selectAddress]?._id;
     };
 
-    
+
+   
     const handleCashOnDelivery = async () => {
         const addressId = getAddressIdForOrder();
-        
+       
         if (isPickup) {
             if (!addressId) {
                 toast.error("Seller's pickup address is not available.");
                 return;
             }
-        } else { 
+        } else {
             if (!addressList.length) {
                 toast.error("Please add an address first");
                 return;
@@ -97,18 +111,21 @@ const fetchSellerPickupAddresses = async () => {
             }
         }
 
+
         try {
             const response = await Axios({
                 ...SummaryApi.CashOnDeliveryOrder,
                 data: {
                     list_items: cartItemsList,
-                    addressId: addressId, 
+                    addressId: addressId,
                     subTotalAmt: totalPrice,
                     totalAmt: totalPrice,
                 },
             });
 
+
             const { data: responseData } = response;
+
 
             if (responseData.success) {
                 const message = isPickup ? "Cash on Pickup Order successful" : responseData.message;
@@ -127,39 +144,46 @@ const fetchSellerPickupAddresses = async () => {
     };
 
 
+
+
     const handleOnlinePayment = async () => {
         const addressId = getAddressIdForOrder();
+
 
         if (isPickup) {
             if (!addressId) {
                 toast.error("Seller's pickup address is not available.");
                 return;
             }
-        } else { 
+        } else {
             if (!addressId) {
                 toast.error("Please select an address before continuing");
                 return;
             }
         }
-        
+       
         try {
             toast.loading("Loading...")
             const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY
             const stripePromise = await loadStripe(stripePublicKey)
 
+
             const response = await Axios({
                 ...SummaryApi.payment_url,
                 data: {
                     list_items: cartItemsList,
-                    addressId: addressId, 
+                    addressId: addressId,
                     subTotalAmt: totalPrice,
                     totalAmt: totalPrice,
                 }
             })
 
+
             const { data: responseData } = response
 
+
             stripePromise.redirectToCheckout({ sessionId: responseData.id })
+
 
             if (fetchCartItem) {
                 fetchCartItem()
@@ -173,7 +197,9 @@ const fetchSellerPickupAddresses = async () => {
     }
 
 
-    
+
+
+   
 const renderAddressSection = () => {
   if (isPickup) {
     const AddressContent = loadingSellerAddresses ? (
@@ -190,7 +216,7 @@ const renderAddressSection = () => {
             <input type="radio" checked readOnly />
           </div>
           <div>
-            
+           
             <p className="font-bold text-red-600">
               Seller: {address.sellerName || `Seller #${index + 1}`} Pickup Location
             </p>
@@ -210,6 +236,7 @@ const renderAddressSection = () => {
       </div>
     );
 
+
     return (
       <>
         <h3 className="text-lg font-semibold">Pickup Locations</h3>
@@ -218,7 +245,8 @@ const renderAddressSection = () => {
     );
   }
 
-  
+
+ 
   return (
     <>
       <h3 className="text-lg font-semibold">Choose your delivery address</h3>
@@ -269,12 +297,16 @@ const renderAddressSection = () => {
 
 
 
+
+
+
     return (
         <section className='bg-blue-50'>
             <div className='container mx-auto p-4 flex flex-col lg:flex-row w-full gap-5 justify-between'>
                 <div className='w-full'>
                     {renderAddressSection()}
                 </div>
+
 
                 <div className='w-full max-w-md bg-white py-4 px-2'>
                     {/**summary**/}
@@ -298,30 +330,31 @@ const renderAddressSection = () => {
                             <p>{DisplayPriceInRupees(totalPrice)}</p>
                         </div>
                     </div>
-                    
-                    
+                   
+                   
                     <div className='w-full flex flex-col gap-4'>
-                        
-                        <button 
-                            className='py-2 px-4 border-2 border-green-600 font-semibold text-green-600 hover:bg-green-600 hover:text-white rounded' 
+                       
+                        <button
+                            className='py-2 px-4 border-2 border-green-600 font-semibold text-green-600 hover:bg-green-600 hover:text-white rounded'
                             onClick={handleOnlinePayment}
                             disabled={(isPickup && !sellerAddresses) || loadingSellerAddresses}
                         >
                             Online Payment ({isPickup ? 'Pickup' : 'Pickup'})
                         </button>
 
-                        
-                        <button 
-                            className='py-2 px-4 border-2 border-green-600 font-semibold text-green-600 hover:bg-green-600 hover:text-white' 
+
+                       
+                        <button
+                            className='py-2 px-4 border-2 border-green-600 font-semibold text-green-600 hover:bg-green-600 hover:text-white'
                             onClick={handleCashOnDelivery}
                             disabled={(isPickup && !sellerAddresses) || loadingSellerAddresses}
                         >
                             Cash on {isPickup ? 'Pickup' : 'Delivery'}
                         </button>
-                        
-                        
-                        <button 
-                            className={`py-2 px-4 rounded text-white font-semibold ${isPickup ? 'bg-green-700 hover:bg-green-800' : 'bg-green-600 hover:bg-green-700'}`} 
+                       
+                       
+                        <button
+                            className={`py-2 px-4 rounded text-white font-semibold ${isPickup ? 'bg-green-700 hover:bg-green-800' : 'bg-green-600 hover:bg-green-700'}`}
                             onClick={() => setIsPickup(prev => !prev)}
                         >
                             {isPickup ? 'Switch to DELIVERY' : 'Switch to PICK UP'}
@@ -329,6 +362,8 @@ const renderAddressSection = () => {
                     </div>
                 </div>
             </div>
+
+
 
 
             {
@@ -340,4 +375,8 @@ const renderAddressSection = () => {
     )
 }
 
+
 export default CheckoutPage
+
+
+

@@ -4,7 +4,7 @@ import SummaryApi from '../common/SummaryApi'
 import AxiosToastError from '../utils/AxiosToastError'
 import toast from 'react-hot-toast'
 
-const AllOrders = () => {
+const AllOrders = () => { 
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(false)
 

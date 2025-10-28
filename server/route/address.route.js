@@ -4,12 +4,11 @@ import { addAddressController, deleteAddresscontroller, getAddressController, up
 
 const addressRouter = Router()
 
-addressRouter.post('/create',auth,addAddressController)
-addressRouter.get("/get",auth,getAddressController)
-addressRouter.put('/update',auth,updateAddressController)
-addressRouter.delete("/disable",auth,deleteAddresscontroller)
-
-addressRouter.post("/get-seller-pickup-address", getSellerPickupAddressController)
+addressRouter.post('/create', auth, addAddressController)
+addressRouter.get("/get", auth, getAddressController)
+addressRouter.post("/get-seller-pickup-address", auth, getSellerPickupAddressController)
+addressRouter.put('/update', auth, updateAddressController)
+addressRouter.delete("/disable", auth, deleteAddresscontroller)
 
 
 
