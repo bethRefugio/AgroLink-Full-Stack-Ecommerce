@@ -67,10 +67,10 @@ const userSchema = new mongoose.Schema({
     },
     role : {
         type : String,
-        enum : ['ADMIN',"BUYER","SELLER","COOPERATIVE"],
+        enum : ['ADMIN',"BUYER","SELLE4R","COOPERATIVE"],
         default : "BUYER"
     },
-    addPreferences: [
+    preferences: [
         {
             category: { type: String, required: true },
             subCategory: { type: String, required: true }

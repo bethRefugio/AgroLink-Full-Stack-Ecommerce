@@ -85,26 +85,24 @@ const UserMenu = ({ close }) => {
           </Link>
         )}
 
-        {/* Buyers see their orders */}
-        {isBuyer(user.role) && (
-          <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>
-            My Orders
-          </Link>
-        )}
+            {
+              (isAdmin(user.role) || isSeller(user.role)) && (
+                <Link onClick={handleClose} to={"/dashboard/upload-product"} className='px-2 hover:bg-orange-200 py-1'>Upload Product</Link>
+              )
+            }
 
-        {/* Sellers see the seller orders view */}
-        {isSeller(user.role) && (
-          <Link onClick={handleClose} to={"/dashboard/seller-orders"} className='px-2 hover:bg-orange-200 py-1'>
-            Orders Received
-          </Link>
-        )}
-
-
-        {isAdmin(user.role) && (
-          <Link onClick={handleClose} to={"/dashboard/allorders"} className='px-2 hover:bg-orange-200 py-1'>
-            All Orders
-          </Link>
-        )}
+            {
+              (isAdmin(user.role) || isSeller(user.role)) && (
+                <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>Product</Link>
+              )
+            }
+            
+            {
+              user.role && ( 
+                <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>My Orders</Link>
+              )
+            }
+            <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>Save Address</Link>
 
         {(isBuyer(user.role) || isSeller(user.role)) && (
           <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>

@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { forgotPasswordController, loginController, logoutController, refreshToken, registerUserController, resetpassword, updateUserDetails, uploadAvatar, userDetails, verifyEmailController, verifyForgotPasswordOtp, deleteUserController, adminUpdateUserController } from '../controllers/user.controller.js'
+import { forgotPasswordController, loginController, logoutController, refreshToken, registerUserController, resetpassword, updateUserDetails, uploadAvatar, userDetails, verifyEmailController, verifyForgotPasswordOtp, addPreferences, getPreferences } from '../controllers/user.controller.js'
 import auth from '../middleware/auth.js'
 import upload from '../middleware/multer.js'
 import User from '../models/user.model.js'
@@ -18,8 +18,8 @@ userRouter.put('/reset-password',resetpassword)
 userRouter.post('/refresh-token',refreshToken)
 userRouter.get('/user-details',auth,userDetails)
 userRouter.post('/verify-email', verifyEmailController)
-userRouter.put('/admin-update-user',auth,adminUpdateUserController)
-userRouter.delete('/delete', auth, deleteUserController);
+userRouter.put('/add-preference', auth, addPreferences)
+userRouter.get('/preferences', auth, getPreferences);
 userRouter.get('/users-table', auth, async (req, res) => {
   try {
     if (req.user.role !== 'ADMIN') {
@@ -32,8 +32,5 @@ userRouter.get('/users-table', auth, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-
-
-
 
 export default userRouter
