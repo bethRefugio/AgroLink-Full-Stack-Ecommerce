@@ -166,6 +166,7 @@ const SummaryApi = {
         url : '/api/user/users-table',
         method : 'get'
     },
+<<<<<<< HEAD
     updateUsersTable : {
         url : '/api/user/users-table',
         method : 'put'
@@ -173,6 +174,20 @@ const SummaryApi = {
     deleteUser : {
         url : '/api/user/users-table',
         method : 'delete'
+=======
+    register : {
+    url : '/api/user/register',
+    method : 'post'
+    },
+    adminUpdateUser : {
+        url : '/api/user/admin-update-user',
+        method : 'put'
+    },
+    // You need to add this for delete:
+    deleteUser: {
+        url: '/api/user/delete',
+        method: 'delete'
+>>>>>>> c15ff8897d3386332d0fc2e2423693eeee707c1e
     }
 }
 
