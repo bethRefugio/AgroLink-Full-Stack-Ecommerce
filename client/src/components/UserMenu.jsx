@@ -10,7 +10,6 @@ import AxiosToastError from '../utils/AxiosToastError'
 import { HiOutlineExternalLink } from "react-icons/hi";
 import isAdmin from '../utils/isAdmin'
 import isSeller from '../utils/isSeller'
-import isBuyer from '../utils/isBuyer'
 
 const UserMenu = ({ close }) => {
   const user = useSelector((state) => state.user)
@@ -85,6 +84,7 @@ const UserMenu = ({ close }) => {
           </Link>
         )}
 
+<<<<<<< Updated upstream
         {/* Buyers see their orders */}
         {isBuyer(user.role) && (
           <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>
@@ -105,6 +105,26 @@ const UserMenu = ({ close }) => {
             All Orders
           </Link>
         )}
+=======
+            {
+              (isAdmin(user.role) || isSeller(user.role)) && (
+                <Link onClick={handleClose} to={"/dashboard/upload-product"} className='px-2 hover:bg-orange-200 py-1'>Upload Product</Link>
+              )
+            }
+
+            {
+              (isAdmin(user.role) || isSeller(user.role)) && (
+                <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>Product</Link>
+              )
+            }
+            
+            {
+              user.role && ( 
+                <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>My Orders</Link>
+              )
+            }
+            <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>Save Address</Link>
+>>>>>>> Stashed changes
 
         {(isBuyer(user.role) || isSeller(user.role)) && (
           <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>

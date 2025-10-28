@@ -170,6 +170,7 @@ const SummaryApi = {
         url : '/api/user/users-table',
         method : 'get'
     },
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     updateUsersTable : {
         url : '/api/user/users-table',
@@ -193,6 +194,16 @@ const SummaryApi = {
         method: 'delete'
 >>>>>>> c15ff8897d3386332d0fc2e2423693eeee707c1e
     }
+=======
+    addPreference: {
+        url: "/api/user/add-preference",
+        method: "post"
+    },
+    getPreferences: {
+        method: "get",
+        url: "/user/preferences"
+    },
+>>>>>>> Stashed changes
 }
 
 export default SummaryApi
