@@ -307,18 +307,6 @@ export default function AboutUs() {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <div className="bg-gradient-to-r from-green-900 to-green-800 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-green-100 font-body text-lg">
-            Smart AgroLink - Empowering Filipino Farmers Through Technology
-          </p>
-          <p className="text-green-300 font-body text-sm mt-2">
-            © 2025 Project 404. All rights reserved.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

@@ -21,7 +21,7 @@ const UploadProduct = () => {
     unit: "",
     stock: "",
     price: "",
-    discount: "",
+    discount: "0",
     description: "",
     more_details: {},
   });
@@ -32,6 +32,7 @@ const UploadProduct = () => {
   const [ViewImageURL, setViewImageURL] = useState("");
   const [selectCategory, setSelectCategory] = useState("");
   const [selectSubCategory, setSelectSubCategory] = useState("");
+  const [openUnitDropdown, setOpenUnitDropdown] = useState(false);
   const [openAddField, setOpenAddField] = useState(false);
   const [fieldName, setFieldName] = useState("");
   const [hoveredSubCategory, setHoveredSubCategory] = useState(null);
@@ -42,10 +43,19 @@ const UploadProduct = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+
+    if (name === 'discount') {
+      const discountValue = value.trim() === '' ? '0' : value;
+      setData(prev => ({
+        ...prev,
+        [name]: discountValue
+      }));
+    } else {
+      setData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleUploadImage = async (e) => {
@@ -214,7 +224,7 @@ const UploadProduct = () => {
                   onChange={handleUploadImage}
                 />
               </label>
-              
+
               {/* Display Uploaded Images */}
               <div className='flex flex-wrap gap-4'>
                 {data.image.map((img, index) => (
@@ -317,7 +327,7 @@ const UploadProduct = () => {
                       }}
                     >
                       {c.name}
-                      
+
                       {/* Hover Tooltip - Show description from API */}
                       {hoveredSubCategory === c.name && (
                         <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded w-64 z-50 shadow-lg">
@@ -338,8 +348,8 @@ const UploadProduct = () => {
             {/* Display Selected Subcategories */}
             <div className='flex flex-wrap gap-3 mt-2'>
               {data.subCategory.map((c, index) => (
-                <div 
-                  key={c._id + index} 
+                <div
+                  key={c._id + index}
                   className='text-sm flex items-center gap-1 bg-blue-50 px-2 py-1 rounded group relative'
                 >
                   <p>{c.name}</p>
@@ -347,7 +357,7 @@ const UploadProduct = () => {
                     onClick={() => handleRemoveSubCategory(index)}
                     className='cursor-pointer hover:text-red-500'
                   />
-                  
+
                   {/* Show description on hover for selected subcategories too */}
                   <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs px-3 py-2 rounded w-64 z-50 shadow-lg">
                     <div className="font-semibold mb-1 text-white border-b border-gray-600 pb-1">{c.name}</div>
@@ -363,18 +373,37 @@ const UploadProduct = () => {
           </div>
 
           {/* Unit Field */}
-          <div className='grid gap-1'>
-            <label htmlFor='unit' className='font-medium'>Unit</label>
-            <input
-              id='unit'
-              type='text'
-              placeholder='Enter product unit'
-              name='unit'
-              value={data.unit}
-              onChange={handleChange}
-              required
-              className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded'
-            />
+          <div className='grid gap-1 relative'>
+            <label className='font-medium'>Unit</label>
+            <div className='relative'>
+              <button
+                type="button"
+                onClick={() => setOpenUnitDropdown(prev => !prev)}
+                className='bg-blue-50 border w-full p-2 rounded text-left'
+              >
+                {data.unit || "Select Unit"}
+              </button>
+
+              {openUnitDropdown && (
+                <div className='absolute left-0 mt-1 w-full bg-white border rounded shadow-lg z-50 max-h-48 overflow-y-auto'>
+                  {["kilograms", "grams", "dozen", "tray", "bundle"].map((unit) => (
+                    <div
+                      key={unit}
+                      className='px-3 py-2 hover:bg-blue-100 cursor-pointer'
+                      onClick={() => {
+                        setData(prev => ({
+                          ...prev,
+                          unit: unit
+                        }));
+                        setOpenUnitDropdown(false);
+                      }}
+                    >
+                      {unit}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Stock Field */}
@@ -413,7 +442,7 @@ const UploadProduct = () => {
             <input
               id='discount'
               type='number'
-              placeholder='Enter product discount'
+              placeholder='0'
               name='discount'
               value={data.discount}
               onChange={handleChange}

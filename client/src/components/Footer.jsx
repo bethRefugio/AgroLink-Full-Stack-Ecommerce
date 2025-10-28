@@ -5,22 +5,28 @@ import { FaLinkedin } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className='border-t'>
-        <div className='container mx-auto p-4 text-center flex flex-col lg:flex-row lg:justify-between gap-2'>
-            <p>© All Rights Reserved 2025.</p>
-
-            <div className='flex items-center gap-4 justify-center text-2xl'>
-                <a href='' className='hover:text-primary-100'>
-                    <FaFacebook/>
-                </a>
-                <a href='' className='hover:text-primary-100'>
-                    <FaInstagram/>
-                </a>
-                <a href='' className='hover:text-primary-100'>
-                    <FaLinkedin/>
-                </a>
-            </div>
+    <footer className="bg-gradient-to-r from-green-900 to-green-800 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p className="text-green-100 font-body text-lg">
+          Smart AgroLink - Empowering Filipino Farmers Through Technology
+        </p>
+        <p className="text-green-300 font-body text-sm mt-2">
+          © 2025 Project 404. All rights reserved.
+        </p>
+        
+        {/* Social Media Icons */}
+        <div className='flex items-center gap-4 justify-center text-2xl mt-4'>
+          <a href='' className='hover:text-green-200 text-green-100'>
+            <FaFacebook/>
+          </a>
+          <a href='' className='hover:text-green-200 text-green-100'>
+            <FaInstagram/>
+          </a>
+          <a href='' className='hover:text-green-200 text-green-100'>
+            <FaLinkedin/>
+          </a>
         </div>
+      </div>
     </footer>
   )
 }

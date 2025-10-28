@@ -82,33 +82,45 @@ const CategoryPage = () => {
             )
         }
 
-        <div className='p-4 grid  grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2'>
+        <div className='p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'>
             {
                 categoryData.map((category,index)=>{
                     return(
-                        <div className='w-32 h-56 rounded shadow-md' key={category._id}>
-                            <img 
-                                alt={category.name}
-                                src={category.image}
-                                className='w-full object-scale-down'
-                            />
+                        <div className='bg-white rounded-lg shadow-md overflow-hidden flex flex-col h-64' key={category._id}>
+                            {/* Image Container with Fixed Height */}
+                            <div className='h-40 bg-gray-100 flex items-center justify-center p-2'>
+                                <img 
+                                    alt={category.name}
+                                    src={category.image}
+                                    className='w-full h-full object-contain'
+                                />
+                            </div>
+                            
                             {/* Category Name Label */}
-                            <div className='p-2 text-center border-b'>
-                                <p className='font-bold text-sm truncate' title={category.name}>
+                            <div className='p-3 border-t border-gray-200 flex-1 flex items-center justify-center'>
+                                <p className='font-bold text-sm text-center truncate w-full' title={category.name}>
                                     {category.name}
                                 </p>
                             </div>
-                            <div className='items-center h-9 flex gap-2 p-2'>
-                                <button onClick={()=>{
-                                    setOpenEdit(true)
-                                    setEditData(category)
-                                }} className='flex-1 bg-green-100 hover:bg-green-200 text-green-600 font-medium py-1 rounded text-xs'>
+                            
+                            {/* Action Buttons */}
+                            <div className='flex gap-2 p-3 border-t border-gray-200'>
+                                <button 
+                                    onClick={()=>{
+                                        setOpenEdit(true)
+                                        setEditData(category)
+                                    }} 
+                                    className='flex-1 bg-green-100 hover:bg-green-200 text-green-600 font-medium py-2 rounded text-xs transition-colors'
+                                >
                                     Edit
                                 </button>
-                                <button onClick={()=>{
-                                    setOpenConfirmBoxDelete(true)
-                                    setDeleteCategory(category)
-                                }} className='flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-1 rounded text-xs'>
+                                <button 
+                                    onClick={()=>{
+                                        setOpenConfirmBoxDelete(true)
+                                        setDeleteCategory(category)
+                                    }} 
+                                    className='flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-medium py-2 rounded text-xs transition-colors'
+                                >
                                     Delete
                                 </button>
                             </div>
