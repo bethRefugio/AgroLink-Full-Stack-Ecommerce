@@ -1,5 +1,6 @@
 export const baseURL = import.meta.env.VITE_API_URL
 
+
 const SummaryApi = {
     register : {
         url : '/api/user/register',
@@ -141,7 +142,7 @@ const SummaryApi = {
         url : '/api/address/disable',
         method : 'delete'
     },
-    
+   
     getSellerPickupAddress : {
         url : '/api/address/get-seller-pickup-address',
         method : 'post'
@@ -170,26 +171,18 @@ const SummaryApi = {
         url : '/api/user/users-table',
         method : 'get'
     },
-    updateUsersTable : {
-        url : '/api/user/users-table',
-        method : 'put'
-    },
-    deleteUser : {
-        url : '/api/user/users-table',
-        method : 'delete'
-    },
     adminUpdateUser : {
         url : '/api/user/admin-update-user',
         method : 'put'
     },
-    addPreference: {
-        url: "/api/user/add-preference",
-        method: "post"
-    },
-    getPreferences: {
-        method: "get",
-        url: "/user/preferences"
-    },
+    deleteUser: {
+        url: '/api/user/delete',
+        method: 'delete'
+    }
 }
 
+
 export default SummaryApi
+
+
+

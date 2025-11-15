@@ -9,9 +9,12 @@ import generatedOtp from '../utils/generatedOtp.js'
 import forgotPasswordTemplate from '../utils/forgotPasswordTemplate.js'
 import jwt from 'jsonwebtoken'
 
+
+
 export async function registerUserController(request,response){
     try {
         const { name, email , password, role } = request.body
+
 
         if(!name || !email || !password || !role){
             return response.status(400).json({
@@ -21,7 +24,9 @@ export async function registerUserController(request,response){
             })
         }
 
+
         const user = await UserModel.findOne({ email })
+
 
         if(user){
             return response.json({
@@ -31,8 +36,10 @@ export async function registerUserController(request,response){
             })
         }
 
+
         const salt = await bcryptjs.genSalt(10)
         const hashPassword = await bcryptjs.hash(password,salt)
+
 
         const payload = {
             name,
@@ -41,10 +48,13 @@ export async function registerUserController(request,response){
             role
         }
 
+
         const newUser = new UserModel(payload)
         const save = await newUser.save()
 
+
         const VerifyEmailUrl = `${process.env.FRONTEND_URL}/verify-email?code=${save?._id}`
+
 
         const verifyEmail = await sendEmail({
             sendTo : email,
@@ -55,12 +65,14 @@ export async function registerUserController(request,response){
             })
         })
 
+
         return response.json({
             message : "User register successfully",
             error : false,
             success : true,
             data : save
         })
+
 
     } catch (error) {
         return response.status(500).json({
@@ -71,11 +83,14 @@ export async function registerUserController(request,response){
     }
 }
 
+
 export async function verifyEmailController(request,response){
     try {
         const { code } = request.body
 
+
         const user = await UserModel.findOne({ _id : code})
+
 
         if(!user){
             return response.status(400).json({
@@ -85,9 +100,11 @@ export async function verifyEmailController(request,response){
             })
         }
 
+
         const updateUser = await UserModel.updateOne({ _id : code },{
             verify_email : true
         })
+
 
         return response.json({
             message : "Verify email done",
@@ -103,10 +120,13 @@ export async function verifyEmailController(request,response){
     }
 }
 
+
 //login controller
 export async function loginController(request,response){
     try {
         const { email , password } = request.body
+
+
 
 
         if(!email || !password){
@@ -117,7 +137,9 @@ export async function loginController(request,response){
             })
         }
 
+
         const user = await UserModel.findOne({ email })
+
 
         if(!user){
             return response.status(400).json({
@@ -127,6 +149,7 @@ export async function loginController(request,response){
             })
         }
 
+
         if(user.status !== "Active"){
             return response.status(400).json({
                 message : "Contact to Admin",
@@ -135,7 +158,9 @@ export async function loginController(request,response){
             })
         }
 
+
         const checkPassword = await bcryptjs.compare(password,user.password)
+
 
         if(!checkPassword){
             return response.status(400).json({
@@ -145,12 +170,15 @@ export async function loginController(request,response){
             })
         }
 
+
         const accesstoken = await generatedAccessToken(user._id)
         const refreshToken = await genertedRefreshToken(user._id)
+
 
         const updateUser = await UserModel.findByIdAndUpdate(user?._id,{
             last_login_date : new Date()
         })
+
 
         const cookiesOption = {
             httpOnly : true,
@@ -159,6 +187,7 @@ export async function loginController(request,response){
         }
         response.cookie('accessToken',accesstoken,cookiesOption)
         response.cookie('refreshToken',refreshToken,cookiesOption)
+
 
         return response.json({
             message : "Login successfully",
@@ -170,6 +199,7 @@ export async function loginController(request,response){
             }
         })
 
+
     } catch (error) {
         return response.status(500).json({
             message : error.message || error,
@@ -179,10 +209,12 @@ export async function loginController(request,response){
     }
 }
 
+
 //logout controller
 export async function logoutController(request,response){
     try {
         const userid = request.userId //middleware
+
 
         const cookiesOption = {
             httpOnly : true,
@@ -190,12 +222,15 @@ export async function logoutController(request,response){
             sameSite : "None"
         }
 
+
         response.clearCookie("accessToken",cookiesOption)
         response.clearCookie("refreshToken",cookiesOption)
+
 
         const removeRefreshToken = await UserModel.findByIdAndUpdate(userid,{
             refresh_token : ""
         })
+
 
         return response.json({
             message : "Logout successfully",
@@ -211,17 +246,20 @@ export async function logoutController(request,response){
     }
 }
 
+
 //upload user avatar
 export async  function uploadAvatar(request,response){
     try {
         const userId = request.userId // auth middlware
         const image = request.file  // multer middleware
 
+
         const upload = await uploadImageClodinary(image)
-        
+       
         const updateUser = await UserModel.findByIdAndUpdate(userId,{
             avatar : upload.url
         })
+
 
         return response.json({
             message : "upload profile",
@@ -233,6 +271,7 @@ export async  function uploadAvatar(request,response){
             }
         })
 
+
     } catch (error) {
         return response.status(500).json({
             message : error.message || error,
@@ -242,11 +281,13 @@ export async  function uploadAvatar(request,response){
     }
 }
 
+
 //update user details
 export async function updateUserDetails(request, response) {
   try {
     const userId = request.userId;
     const { name, email, mobile, password } = request.body;
+
 
     // Get the user first
     const user = await UserModel.findById(userId);
@@ -257,6 +298,7 @@ export async function updateUserDetails(request, response) {
         success: false,
       });
     }
+
 
     // Build update object dynamically
     const updateData = {};
@@ -279,7 +321,9 @@ export async function updateUserDetails(request, response) {
       updateData.email = email;
     }
 
+
     await UserModel.updateOne({ _id: userId }, updateData);
+
 
     return response.json({
       message: "User updated successfully",
@@ -296,12 +340,16 @@ export async function updateUserDetails(request, response) {
 }
 
 
+
+
 //forgot password not login
 export async function forgotPasswordController(request,response) {
     try {
-        const { email } = request.body 
+        const { email } = request.body
+
 
         const user = await UserModel.findOne({ email })
+
 
         if(!user){
             return response.status(400).json({
@@ -311,13 +359,16 @@ export async function forgotPasswordController(request,response) {
             })
         }
 
+
         const otp = generatedOtp()
         const expireTime = new Date() + 60 * 60 * 1000 // 1hr
+
 
         const update = await UserModel.findByIdAndUpdate(user._id,{
             forgot_password_otp : otp,
             forgot_password_expiry : new Date(expireTime).toISOString()
         })
+
 
         await sendEmail({
             sendTo : email,
@@ -328,11 +379,13 @@ export async function forgotPasswordController(request,response) {
             })
         })
 
+
         return response.json({
             message : "check your email",
             error : false,
             success : true
         })
+
 
     } catch (error) {
         return response.status(500).json({
@@ -343,10 +396,12 @@ export async function forgotPasswordController(request,response) {
     }
 }
 
+
 //verify forgot password otp
 export async function verifyForgotPasswordOtp(request,response){
     try {
         const { email , otp }  = request.body
+
 
         if(!email || !otp){
             return response.status(400).json({
@@ -356,7 +411,9 @@ export async function verifyForgotPasswordOtp(request,response){
             })
         }
 
+
         const user = await UserModel.findOne({ email })
+
 
         if(!user){
             return response.status(400).json({
@@ -366,7 +423,9 @@ export async function verifyForgotPasswordOtp(request,response){
             })
         }
 
+
         const currentTime = new Date().toISOString()
+
 
         if(user.forgot_password_expiry < currentTime  ){
             return response.status(400).json({
@@ -376,6 +435,7 @@ export async function verifyForgotPasswordOtp(request,response){
             })
         }
 
+
         if(otp !== user.forgot_password_otp){
             return response.status(400).json({
                 message : "Invalid otp",
@@ -384,19 +444,22 @@ export async function verifyForgotPasswordOtp(request,response){
             })
         }
 
+
         //if otp is not expired
         //otp === user.forgot_password_otp
+
 
         const updateUser = await UserModel.findByIdAndUpdate(user?._id,{
             forgot_password_otp : "",
             forgot_password_expiry : ""
         })
-        
+       
         return response.json({
             message : "Verify otp successfully",
             error : false,
             success : true
         })
+
 
     } catch (error) {
         return response.status(500).json({
@@ -407,10 +470,12 @@ export async function verifyForgotPasswordOtp(request,response){
     }
 }
 
+
 //reset the password
 export async function resetpassword(request,response){
     try {
-        const { email , newPassword, confirmPassword } = request.body 
+        const { email , newPassword, confirmPassword } = request.body
+
 
         if(!email || !newPassword || !confirmPassword){
             return response.status(400).json({
@@ -418,7 +483,9 @@ export async function resetpassword(request,response){
             })
         }
 
+
         const user = await UserModel.findOne({ email })
+
 
         if(!user){
             return response.status(400).json({
@@ -428,6 +495,7 @@ export async function resetpassword(request,response){
             })
         }
 
+
         if(newPassword !== confirmPassword){
             return response.status(400).json({
                 message : "newPassword and confirmPassword must be same.",
@@ -436,18 +504,22 @@ export async function resetpassword(request,response){
             })
         }
 
+
         const salt = await bcryptjs.genSalt(10)
         const hashPassword = await bcryptjs.hash(newPassword,salt)
+
 
         const update = await UserModel.findOneAndUpdate(user._id,{
             password : hashPassword
         })
+
 
         return response.json({
             message : "Password updated successfully.",
             error : false,
             success : true
         })
+
 
     } catch (error) {
         return response.status(500).json({
@@ -459,10 +531,13 @@ export async function resetpassword(request,response){
 }
 
 
+
+
 //refresh token controler
 export async function refreshToken(request,response){
     try {
         const refreshToken = request.cookies.refreshToken || request?.headers?.authorization?.split(" ")[1]  /// [ Bearer token]
+
 
         if(!refreshToken){
             return response.status(401).json({
@@ -472,7 +547,9 @@ export async function refreshToken(request,response){
             })
         }
 
+
         const verifyToken = await jwt.verify(refreshToken,process.env.SECRET_KEY_REFRESH_TOKEN)
+
 
         if(!verifyToken){
             return response.status(401).json({
@@ -482,9 +559,12 @@ export async function refreshToken(request,response){
             })
         }
 
+
         const userId = verifyToken?._id
 
+
         const newAccessToken = await generatedAccessToken(userId)
+
 
         const cookiesOption = {
             httpOnly : true,
@@ -492,7 +572,9 @@ export async function refreshToken(request,response){
             sameSite : "None"
         }
 
+
         response.cookie('accessToken',newAccessToken,cookiesOption)
+
 
         return response.json({
             message : "New Access token generated",
@@ -504,6 +586,8 @@ export async function refreshToken(request,response){
         })
 
 
+
+
     } catch (error) {
         return response.status(500).json({
             message : error.message || error,
@@ -513,14 +597,18 @@ export async function refreshToken(request,response){
     }
 }
 
+
 //get login user details
 export async function userDetails(request,response){
     try {
         const userId  = request.userId
 
+
         console.log(userId)
 
+
         const user = await UserModel.findById(userId).select('-password -refresh_token')
+
 
         return response.json({
             message : 'user details',
@@ -537,12 +625,15 @@ export async function userDetails(request,response){
     }
 }
 
+
 export async function addPreferences(request, response) {
   try {
     console.log("🟢 BODY:", request.body);
     console.log("🟢 USER ID:", request.userId);
 
+
     const { category, subCategory } = request.body;
+
 
     if (!category || !subCategory) {
       return response.status(400).json({
@@ -551,11 +642,14 @@ export async function addPreferences(request, response) {
       });
     }
 
+
     const user = await UserModel.findById(request.userId);
     if (!user) return response.status(404).json({ success: false, message: "User not found" });
 
+
     user.preferences.push({ category, subCategory });
     await user.save();
+
 
     return response.json({ success: true, message: "Preference added", data: user.preferences });
   } catch (error) {
@@ -563,6 +657,7 @@ export async function addPreferences(request, response) {
     return response.status(500).json({ success: false, message: error.message });
   }
 }
+
 
 export async function getPreferences(request, response) {
   try {
@@ -586,3 +681,5 @@ export async function getPreferences(request, response) {
     });
   }
 }
+
+

@@ -19,7 +19,6 @@ const Profile = () => {
     const [openAddAddress, setOpenAddAddress] = useState(false)
     const [loading, setLoading] = useState(false)
     const [passwordLoading, setPasswordLoading] = useState(false)
-    const [userPreferences, setUserPreferences] = useState([]);
 
     const [userData, setUserData] = useState({
         name: user.name,
@@ -128,7 +127,8 @@ const Profile = () => {
         try {
             setPrefLoading(true)
             const response = await Axios({
-                ...SummaryApi.addPreference, // Use the spread operator to include method, url, etc.
+                method: 'POST',
+                url: '/api/users/preferences',  // adjust based on your API
                 data: preferences
             })
 
@@ -144,25 +144,6 @@ const Profile = () => {
             setPrefLoading(false)
         }
     }
-
-    useEffect(() => {
-      const fetchPreferences = async () => {
-        try {
-          const response = await Axios({ ...SummaryApi.getPreferences });
-          console.log("🟢 Preferences API Response:", response.data); // 👈 ADD THIS
-
-          if (response.data.success) {
-            setUserPreferences(response.data.data);
-          } else {
-            toast.error(response.data.message || "Failed to load preferences");
-          }
-        } catch (error) {
-          AxiosToastError(error);
-        }
-      };
-
-      fetchPreferences();
-    }, []);
 
     return (
   <div className='relative p-4'>
@@ -367,36 +348,6 @@ const Profile = () => {
       </form>
     </div>
 
-    {/* Saved Preferences Section */}
-    <div className="my-6">
-      <h2 className="font-semibold text-lg mb-3">Saved Preferences</h2>
-      {userPreferences.length === 0 ? (
-        <p className="text-gray-500 text-sm">No preferences saved yet.</p>
-      ) : (
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-blue-100">
-              <tr>
-                <th className="text-left px-3 py-2">#</th>
-                <th className="text-left px-3 py-2">Category</th>
-                <th className="text-left px-3 py-2">SubCategory</th>
-              </tr>
-            </thead>
-            <tbody>
-              {userPreferences.map((pref, index) => (
-                <tr key={pref._id} className="border-t">
-                  <td className="px-3 py-2">{index + 1}</td>
-                  <td className="px-3 py-2">{pref.category}</td>
-                  <td className="px-3 py-2">{pref.subCategory}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-
-
     {/* Avatar Modal */}
     {openProfileAvatarEdit && (
       <UserProfileAvatarEdit close={() => setProfileAvatarEdit(false)} />
@@ -410,3 +361,4 @@ const Profile = () => {
 )
 }
 export default Profile;
+

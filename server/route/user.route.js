@@ -4,7 +4,9 @@ import auth from '../middleware/auth.js'
 import upload from '../middleware/multer.js'
 import User from '../models/user.model.js'
 
+
 const userRouter = Router()
+
 
 userRouter.post('/register',registerUserController)
 userRouter.post('/verify-email',verifyEmailController)
@@ -33,4 +35,6 @@ userRouter.get('/users-table', auth, async (req, res) => {
   }
 });
 
+
 export default userRouter
+
