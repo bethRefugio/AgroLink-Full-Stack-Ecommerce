@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, Phone, ShoppingCart, Mail, MapPin, Send, Github, Linkedin, User } from 'lucide-react';
 
+
 export default function ContactUs() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -11,7 +12,9 @@ export default function ContactUs() {
     message: ''
   });
 
+
   const navigate = useNavigate();
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,6 +23,7 @@ export default function ContactUs() {
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -27,43 +31,55 @@ export default function ContactUs() {
     });
   };
 
+
   const developers = [
     {
       name: "Elizabeth R. Refugio",
       role: "Project Leader",
       email: "elizabeth.refugio@g.msuiit.edu.ph",
       specialization: "Full-Stack Development & AI Integration",
-      color: "from-purple-500 to-purple-600"
+      color: "from-purple-500 to-purple-600",
+      github: "https://github.com/elizabeth-refugio",
+      linkedin: "https://linkedin.com/in/elizabeth-refugio"
     },
     {
       name: "Kimberly D. Baganao",
       role: "Lead Developer",
       email: "kimberly.baganao@g.msuiit.edu.ph",
       specialization: "Frontend Development & UI/UX Design",
-      color: "from-pink-500 to-pink-600"
+      color: "from-pink-500 to-pink-600",
+      github: "https://github.com/mik-baganao",
+      linkedin: "https://linkedin.com/in/kimberly-baganao"
     },
     {
       name: "Daphne Lavina B. Belecario",
       role: "Backend Developer",
       email: "daphne.belecario@g.msuiit.edu.ph",
       specialization: "Database Architecture & API Development",
-      color: "from-blue-500 to-blue-600"
+      color: "from-blue-500 to-blue-600",
+      github: "https://github.com/what-dafff",
+      linkedin: "https://linkedin.com/in/daphne-belecario"
     },
     {
       name: "Elaine Joy A. Fajardo",
       role: "AI/ML Specialist",
       email: "elaine.fajardo@g.msuiit.edu.ph",
       specialization: "Machine Learning & Data Analytics",
-      color: "from-teal-500 to-teal-600"
+      color: "from-teal-500 to-teal-600",
+      github: "https://github.com/ejoy1020",
+      linkedin: "https://linkedin.com/in/elaine-fajardo"
     },
     {
       name: "Carlos Troy R. Inao",
       role: "Systems Analyst",
       email: "carlos.inao@g.msuiit.edu.ph",
       specialization: "System Design & Quality Assurance",
-      color: "from-orange-500 to-orange-600"
+      color: "from-orange-500 to-orange-600",
+      github: "https://github.com/carlostroyinao",
+      linkedin: "https://linkedin.com/in/carlos-inao"
     }
   ];
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-green-50 font-sans">
@@ -71,16 +87,17 @@ export default function ContactUs() {
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&family=Dancing+Script:wght@400;500;600;700&display=swap');
-          
+         
           .font-display {
             font-family: 'Playfair Display', serif;
           }
-          
+         
           .font-body {
             font-family: 'Poppins', sans-serif;
           }
         `}
       </style>
+
 
       {/* Navigation */}
       <nav className="bg-gradient-to-r from-green-900 to-green-800 shadow-xl">
@@ -93,6 +110,7 @@ export default function ContactUs() {
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
+
             <div className="hidden md:flex space-x-10 text-white font-body font-medium text-sm tracking-wider">
               <a href="/" className="hover:text-green-300 transition-all hover:scale-105">HOME</a>
               <a href="/about" className="hover:text-green-300 transition-all hover:scale-105">ABOUT US</a>
@@ -100,6 +118,7 @@ export default function ContactUs() {
               <a href="/contact" className="text-green-300 border-b-2 border-green-300">CONTACT US</a>
               <a href="/blog" className="hover:text-green-300 transition-all hover:scale-105">BLOG</a>
             </div>
+
 
             {/* Right side icons */}
           <div className="flex items-center space-x-6">
@@ -115,6 +134,7 @@ export default function ContactUs() {
           </div>
         </div>
 
+
           {isMenuOpen && (
             <div className="md:hidden pb-4 space-y-2 font-body">
               <a href="/" className="block text-white hover:text-green-300 py-2 tracking-wide">HOME</a>
@@ -126,6 +146,7 @@ export default function ContactUs() {
           )}
         </div>
       </nav>
+
 
       {/* Hero Section */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -139,6 +160,7 @@ export default function ContactUs() {
         </div>
       </div>
 
+
       {/* Contact Info Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-3 gap-8 mb-16">
@@ -151,6 +173,7 @@ export default function ContactUs() {
             <p className="text-gray-600 font-body">Iligan City, Philippines</p>
           </div>
 
+
           <div className="bg-white p-8 rounded-2xl shadow-xl text-center transform hover:-translate-y-2 transition-all duration-300">
             <div className="w-16 h-16 bg-gradient-to-br from-green-800 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <Mail size={28} className="text-white" />
@@ -159,6 +182,7 @@ export default function ContactUs() {
             <p className="text-gray-600 font-body">info@smartagrolink.com</p>
             <p className="text-gray-600 font-body">support@smartagrolink.com</p>
           </div>
+
 
           <div className="bg-white p-8 rounded-2xl shadow-xl text-center transform hover:-translate-y-2 transition-all duration-300">
             <div className="w-16 h-16 bg-gradient-to-br from-green-800 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -169,6 +193,7 @@ export default function ContactUs() {
             <p className="text-gray-600 font-body">Mon-Fri: 8AM - 5PM</p>
           </div>
         </div>
+
 
         {/* Contact Form and Map */}
         <div className="grid lg:grid-cols-2 gap-12 mb-20">
@@ -203,6 +228,7 @@ export default function ContactUs() {
                 </div>
               </div>
 
+
               <div>
                 <label htmlFor="subject" className="sr-only">Subject</label>
                 <input
@@ -214,6 +240,7 @@ export default function ContactUs() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-green-200"
                 />
               </div>
+
 
               <div>
                 <label htmlFor="message" className="sr-only">Message</label>
@@ -229,6 +256,7 @@ export default function ContactUs() {
                 />
               </div>
 
+
               <div>
                 <button
                   type="submit"
@@ -241,13 +269,14 @@ export default function ContactUs() {
             </form>
           </div>
 
+
           {/* Info Section */}
           <div className="space-y-8">
             <div className="bg-gradient-to-br from-green-800 to-green-900 p-10 rounded-3xl shadow-2xl text-white">
               <h2 className="text-3xl font-display font-bold mb-6">Project 404</h2>
               <p className="font-body text-green-100 leading-relaxed mb-6">
-                Smart AgroLink is an innovative farm-to-market platform developed as part of the ITE183 Project. 
-                Our mission is to empower Filipino farmers through AI-powered technology that ensures fair pricing 
+                Smart AgroLink is an innovative farm-to-market platform developed as part of the ITE183 Project.
+                Our mission is to empower Filipino farmers through AI-powered technology that ensures fair pricing
                 and direct market access.
               </p>
               <div className="space-y-4">
@@ -270,6 +299,7 @@ export default function ContactUs() {
               </div>
             </div>
 
+
             <div className="bg-gradient-to-br from-amber-50 to-rose-50 p-10 rounded-3xl shadow-xl">
               <h3 className="text-2xl font-display font-bold text-green-800 mb-4">Office Hours</h3>
               <div className="space-y-3 font-body text-gray-700">
@@ -290,6 +320,7 @@ export default function ContactUs() {
           </div>
         </div>
 
+
         {/* Development Team Section */}
         <div className="py-12">
           <div className="text-center mb-16">
@@ -301,6 +332,7 @@ export default function ContactUs() {
             </p>
           </div>
 
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {developers.map((dev, index) => (
               <div
@@ -311,33 +343,43 @@ export default function ContactUs() {
                   <div className={`w-24 h-24 bg-gradient-to-br ${dev.color} rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg transform group-hover:scale-110 transition-transform`}>
                     <User size={40} className="text-white" />
                   </div>
-                  
+                 
                   <h3 className="text-xl font-display font-bold text-gray-900 mb-2">
                     {dev.name}
                   </h3>
-                  
+                 
                   <p className="text-green-800 font-body font-semibold mb-3 text-sm tracking-wide uppercase">
                     {dev.role}
                   </p>
-                  
+                 
                   <p className="text-gray-600 font-body text-sm mb-4 leading-relaxed">
                     {dev.specialization}
                   </p>
-                  
+                 
                   <div className="flex items-center justify-center gap-2 text-gray-600 font-body text-sm mb-4">
                     <Mail size={16} className="text-green-800" />
                     <a href={`mailto:${dev.email}`} className="hover:text-green-800 transition-colors break-all">
                       {dev.email}
                     </a>
                   </div>
-                  
+                 
                   <div className="flex justify-center gap-4 pt-4 border-t border-gray-200">
-                    <button className="w-10 h-10 bg-gray-100 hover:bg-green-800 rounded-full flex items-center justify-center transition-colors group">
+                    <a
+                      href={dev.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-gray-100 hover:bg-green-800 rounded-full flex items-center justify-center transition-colors group"
+                    >
                       <Github size={18} className="text-gray-600 group-hover:text-white" />
-                    </button>
-                    <button className="w-10 h-10 bg-gray-100 hover:bg-green-800 rounded-full flex items-center justify-center transition-colors group">
+                    </a>
+                    <a
+                      href={dev.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-gray-100 hover:bg-green-800 rounded-full flex items-center justify-center transition-colors group"
+                    >
                       <Linkedin size={18} className="text-gray-600 group-hover:text-white" />
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -348,3 +390,4 @@ export default function ContactUs() {
     </div>
   );
 }
+

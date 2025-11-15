@@ -184,7 +184,7 @@ export const updateAddressController = async(request,response)=>{
 }
 
 
-export const deleteAddresscontroller = async(request,response)=>{
+export const disableAddressController = async(request,response)=>{
     try {
         const userId = request.userId
         const { _id } = request.body
@@ -200,6 +200,42 @@ export const deleteAddresscontroller = async(request,response)=>{
             error : false,
             success : true,
             data : disableAddress
+        })
+    } catch (error) {
+        return response.status(500).json({
+            message : error.message || error,
+            error : true,
+            success : false
+        })
+    }
+}
+
+export const deleteAddresscontroller = async(request,response)=>{
+    try {
+        const userId = request.userId
+        const { _id } = request.body
+
+        // Permanently delete the address
+        const deleteAddress = await AddressModel.findOneAndDelete({ _id : _id, userId })
+
+        if (!deleteAddress) {
+            return response.status(404).json({
+                message: "Address not found",
+                error: true,
+                success: false
+            })
+        }
+
+        // Remove address reference from user
+        await UserModel.findByIdAndUpdate(userId, {
+            $pull: { address_details: _id }
+        })
+
+        return response.json({
+            message : "Address deleted permanently",
+            error : false,
+            success : true,
+            data : deleteAddress
         })
     } catch (error) {
         return response.status(500).json({

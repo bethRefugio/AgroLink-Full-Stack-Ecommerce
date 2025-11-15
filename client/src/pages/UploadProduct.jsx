@@ -41,12 +41,41 @@ const UploadProduct = () => {
   const allSubCategory = useSelector(state => state.product.allSubCategory);
   const user = useSelector(state => state.user);
 
+  // NEW: State for filtered subcategories
+  const [filteredSubCategories, setFilteredSubCategories] = useState([]);
+
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
   const [suggestedPrice, setSuggestedPrice] = useState(null);
   const [bestModel, setBestModel] = useState("");
   const [showSuggestionModal, setShowSuggestionModal] = useState(false);
   const [suggestionError, setSuggestionError] = useState("");
   const [showSuggestionErrorModal, setShowSuggestionErrorModal] = useState(false);
+
+  // NEW: Fetch filtered subcategories when category is selected
+  useEffect(() => {
+    const fetchFilteredSubCategories = async () => {
+      if (!selectCategory || !selectCategory._id) {
+        setFilteredSubCategories([]);
+        return;
+      }
+
+      try {
+        const res = await Axios({
+          ...SummaryApi.getSubCategory,
+          data: { _id: selectCategory._id }
+        });
+
+        if (res.data.success) {
+          setFilteredSubCategories(res.data.data || []);
+        }
+      } catch (error) {
+        AxiosToastError(error);
+        setFilteredSubCategories([]);
+      }
+    };
+
+    fetchFilteredSubCategories();
+  }, [selectCategory]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -102,6 +131,12 @@ const UploadProduct = () => {
       ...prev,
       category: updatedCategories
     }));
+
+    // Reset selected category if it's being removed
+    if (selectCategory && updatedCategories.length === 0) {
+      setSelectCategory("");
+      setFilteredSubCategories([]);
+    }
   };
 
   const handleRemoveSubCategory = (index) => {
@@ -152,23 +187,20 @@ const UploadProduct = () => {
           unit: "",
           stock: "",
           price: "",
-          discount: "",
+          discount: "0",
           description: "",
           more_details: {},
         });
+        setSelectCategory("");
+        setSelectSubCategory("");
+        setFilteredSubCategories([]);
       }
     } catch (error) {
       AxiosToastError(error);
     }
   };
 
-  // Helper function to get description for a subcategory
-  const getSubCategoryDescription = (subCategoryName) => {
-    const subCategory = allSubCategory.find(sc => sc.name === subCategoryName);
-    return subCategory?.description || "No description available";
-  };
-
-   const handleSuggestPrice = async () => {
+  const handleSuggestPrice = async () => {
     if (!data.name || data.name.trim() === "") {
       AxiosToastError({ message: "Please enter a product name first." });
       return;
@@ -194,7 +226,6 @@ const UploadProduct = () => {
         setShowSuggestionModal(true);
       } else {
         const msg = resData?.message || "Could not generate a price suggestion.";
-        // If backend indicates no historical data or not found, show friendly modal
         if (/not found/i.test(msg) || /no historical data/i.test(msg)) {
           setSuggestionError(`I cannot suggest a price for "${data.name}" because there is no historical data for this item.`);
           setShowSuggestionErrorModal(true);
@@ -322,9 +353,11 @@ const UploadProduct = () => {
                       onClick={() => {
                         setData(prev => ({
                           ...prev,
-                          category: [...prev.category, c],
+                          category: [c],
+                          subCategory: [] // Reset subcategories when category changes
                         }));
                         setSelectCategory(c);
+                        setSelectSubCategory("");
                         setOpenCatDropdown(false);
                       }}
                     >
@@ -351,50 +384,56 @@ const UploadProduct = () => {
             </div>
           </div>
 
-          {/* Sub Category Selection with Hover Descriptions */}
+          {/* Sub Category Selection with Filtered Results */}
           <div className='grid gap-1 relative'>
             <label className='font-medium'>Sub Category</label>
             <div className='relative'>
               <button
                 type="button"
                 onClick={() => setOpenSubDropdown(!openSubDropdown)}
-                className='bg-blue-50 border w-full p-2 rounded text-left'
+                disabled={!selectCategory}
+                className={`bg-blue-50 border w-full p-2 rounded text-left ${!selectCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {selectSubCategory ? selectSubCategory.name : "Select Subcategory"}
+                {selectSubCategory ? selectSubCategory.name : selectCategory ? "Select Subcategory" : "Select Category First"}
               </button>
 
-              {openSubDropdown && (
+              {openSubDropdown && selectCategory && (
                 <div className='absolute left-0 mt-1 w-full bg-white border rounded shadow-lg z-50 max-h-48 overflow-y-auto'>
-                  {allSubCategory.map((c) => (
-                    <div
-                      key={c._id}
-                      className='px-3 py-2 hover:bg-blue-100 cursor-pointer relative group'
-                      onMouseEnter={() => setHoveredSubCategory(c.name)}
-                      onMouseLeave={() => setHoveredSubCategory(null)}
-                      onClick={() => {
-                        setData(prev => ({
-                          ...prev,
-                          subCategory: [...prev.subCategory, c],
-                        }));
-                        setSelectSubCategory(c);
-                        setOpenSubDropdown(false);
-                      }}
-                    >
-                      {c.name}
+                  {filteredSubCategories.length > 0 ? (
+                    filteredSubCategories.map((c) => (
+                      <div
+                        key={c._id}
+                        className='px-3 py-2 hover:bg-blue-100 cursor-pointer relative group'
+                        onMouseEnter={() => setHoveredSubCategory(c.name)}
+                        onMouseLeave={() => setHoveredSubCategory(null)}
+                        onClick={() => {
+                          setData(prev => ({
+                            ...prev,
+                            subCategory: [...prev.subCategory, c],
+                          }));
+                          setSelectSubCategory(c);
+                          setOpenSubDropdown(false);
+                        }}
+                      >
+                        {c.name}
 
-                      {/* Hover Tooltip - Show description from API */}
-                      {hoveredSubCategory === c.name && (
-                        <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded w-64 z-50 shadow-lg">
-                          <div className="font-semibold mb-1 text-white border-b border-gray-600 pb-1">{c.name}</div>
-                          <div className="text-gray-200 leading-relaxed">
-                            {c.description || "No description available"}
+                        {/* Hover Tooltip */}
+                        {hoveredSubCategory === c.name && (
+                          <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded w-64 z-50 shadow-lg">
+                            <div className="font-semibold mb-1 text-white border-b border-gray-600 pb-1">{c.name}</div>
+                            <div className="text-gray-200 leading-relaxed">
+                              {c.description || "No description available"}
+                            </div>
+                            <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
                           </div>
-                          {/* Tooltip arrow */}
-                          <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className='px-3 py-2 text-gray-500 text-center'>
+                      No subcategories available for this category
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
@@ -412,13 +451,12 @@ const UploadProduct = () => {
                     className='cursor-pointer hover:text-red-500'
                   />
 
-                  {/* Show description on hover for selected subcategories too */}
+                  {/* Show description on hover for selected subcategories */}
                   <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs px-3 py-2 rounded w-64 z-50 shadow-lg">
                     <div className="font-semibold mb-1 text-white border-b border-gray-600 pb-1">{c.name}</div>
                     <div className="text-gray-200 leading-relaxed">
                       {c.description || "No description available"}
                     </div>
-                    {/* Tooltip arrow pointing down */}
                     <div className="absolute top-full left-4 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
                   </div>
                 </div>

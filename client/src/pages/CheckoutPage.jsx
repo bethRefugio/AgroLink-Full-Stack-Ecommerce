@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react' // 👈 ADDED useEffect
+import React, { useState, useEffect } from 'react'
 import { useGlobalContext } from '../provider/GlobalProvider'
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees'
 import AddAddress from '../components/AddAddress'
@@ -11,11 +11,15 @@ import { useNavigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 
 
+
+
 const CheckoutPage = () => {
     const { notDiscountTotalPrice, totalPrice, totalQty, fetchCartItem, fetchOrder } = useGlobalContext()
     const addressList = useSelector(state => state.addresses.addressList)
     const cartItemsList = useSelector(state => state.cartItem.cart)
     const navigate = useNavigate()
+
+
 
 
     const [openAddress, setOpenAddress] = useState(false)
@@ -31,13 +35,15 @@ const CheckoutPage = () => {
 
 
 
-   
+
+
+
+
 const fetchSellerPickupAddresses = async () => {
     setLoadingSellerAddresses(true);
     setSellerAddresses([]);
 
 
-   
     const sellerIds = [...new Set(cartItemsList.map(item => item.productId.userId))];
 
 
@@ -56,9 +62,10 @@ const fetchSellerPickupAddresses = async () => {
 
 
         if (response.data.success && Array.isArray(response.data.data)) {
+           
             setSellerAddresses(response.data.data);
         } else {
-            toast.error(response.data.message || "No pickup addresses found.");
+            toast.error(response.data.message || "No addresses found for sellers.");
             setIsPickup(false);
         }
     } catch (error) {
@@ -68,6 +75,8 @@ const fetchSellerPickupAddresses = async () => {
         setLoadingSellerAddresses(false);
     }
 };
+
+
 
 
    
@@ -82,72 +91,103 @@ const fetchSellerPickupAddresses = async () => {
 
 
 
+
+
+
+
+
+
    
     const getAddressIdForOrder = () => {
         if (isPickup) {
-            return sellerAddresses?._id;
+            return sellerAddresses.length > 0 ? "PICKUP_MODE" : null;
         }
         return addressList[selectAddress]?._id;
     };
 
 
+
+
    
     const handleCashOnDelivery = async () => {
-        const addressId = getAddressIdForOrder();
-       
-        if (isPickup) {
-            if (!addressId) {
-                toast.error("Seller's pickup address is not available.");
-                return;
-            }
-        } else {
-            if (!addressList.length) {
-                toast.error("Please add an address first");
-                return;
-            }
-            if (!addressId) {
-                toast.error("Please select an address before continuing");
-                return;
-            }
+    const addressId = getAddressIdForOrder();
+   
+    if (isPickup) {
+        if (!sellerAddresses.length) {
+            toast.error("Seller's pickup addresses are not available.");
+            return;
         }
+    } else {
+        if (!addressList.length) {
+            toast.error("Please add an address first");
+            return;
+        }
+        if (!addressId) {
+            toast.error("Please select an address before continuing");
+            return;
+        }
+    }
 
 
-        try {
-            const response = await Axios({
-                ...SummaryApi.CashOnDeliveryOrder,
-                data: {
-                    list_items: cartItemsList,
-                    addressId: addressId,
-                    subTotalAmt: totalPrice,
-                    totalAmt: totalPrice,
+    try {
+       
+        const apiEndpoint = isPickup
+            ? SummaryApi.CashOnPickupOrder  
+            : SummaryApi.CashOnDeliveryOrder;
+
+
+        const response = await Axios({
+            ...apiEndpoint,
+            data: {
+                list_items: cartItemsList,
+                addressId: isPickup ? null : addressId,
+                subTotalAmt: totalPrice,
+                totalAmt: totalPrice,
+            },
+        });
+
+
+        const { data: responseData } = response;
+
+
+        if (responseData.success) {
+            const message = isPickup
+                ? "Cash on Pickup Order successful"
+                : responseData.message;
+           
+            toast.success(message);
+           
+           
+            if (isPickup && responseData.data?.pickupAddresses) {
+                console.log("Pickup addresses:", responseData.data.pickupAddresses);
+               
+            }
+           
+            if (fetchCartItem) fetchCartItem();
+            if (fetchOrder) fetchOrder();
+           
+            navigate("/success", {
+                state: {
+                    text: "Order",
+                    pickupAddresses: isPickup ? responseData.data?.pickupAddresses : null,
+                    isPickup: isPickup
                 },
             });
-
-
-            const { data: responseData } = response;
-
-
-            if (responseData.success) {
-                const message = isPickup ? "Cash on Pickup Order successful" : responseData.message;
-                toast.success(message);
-                if (fetchCartItem) fetchCartItem();
-                if (fetchOrder) fetchOrder();
-                navigate("/success", {
-                    state: {
-                        text: "Order",
-                    },
-                });
-            }
-        } catch (error) {
-            AxiosToastError(error);
         }
-    };
+    } catch (error) {
+        AxiosToastError(error);
+    }
+};
+
+
 
 
 
 
     const handleOnlinePayment = async () => {
         const addressId = getAddressIdForOrder();
+
+
 
 
         if (isPickup) {
@@ -168,6 +208,8 @@ const fetchSellerPickupAddresses = async () => {
             const stripePromise = await loadStripe(stripePublicKey)
 
 
+
+
             const response = await Axios({
                 ...SummaryApi.payment_url,
                 data: {
@@ -179,10 +221,16 @@ const fetchSellerPickupAddresses = async () => {
             })
 
 
+
+
             const { data: responseData } = response
 
 
+
+
             stripePromise.redirectToCheckout({ sessionId: responseData.id })
+
+
 
 
             if (fetchCartItem) {
@@ -199,6 +247,10 @@ const fetchSellerPickupAddresses = async () => {
 
 
 
+
+
+
+
    
 const renderAddressSection = () => {
   if (isPickup) {
@@ -207,29 +259,42 @@ const renderAddressSection = () => {
         Loading sellers pickup addresses...
       </div>
     ) : sellerAddresses.length > 0 ? (
-      sellerAddresses.map((address, index) => (
-        <div
-          key={index}
-          className="border rounded p-3 bg-blue-100 flex gap-3 items-start"
-        >
-          <div>
-            <input type="radio" checked readOnly />
+      <div className="space-y-4">
+        <p className="text-green-600 font-semibold">
+          ✅ Pickup available from {sellerAddresses.length} seller{sellerAddresses.length > 1 ? 's' : ''}
+        </p>
+        {sellerAddresses.map((address, index) => (
+          <div
+            key={index}
+            className="border rounded p-3 bg-blue-50 flex gap-3 items-start"
+          >
+            <div className="mt-1">
+              <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                <span className="text-white text-xs">✓</span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-gray-800">
+                Seller: {address.sellerName || `Seller #${index + 1}`}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                📍 {address.purok_house || address.address_line}
+              </p>
+              <p className="text-sm text-gray-600">
+                {address.barangay}, {address.city}, {address.state || address.province}
+              </p>
+              <p className="text-sm text-gray-600">
+                {address.country} - {address.zipcode}
+              </p>
+              {address.mobile && (
+                <p className="text-sm text-gray-600 mt-1">
+                  📞 Contact: {address.mobile}
+                </p>
+              )}
+            </div>
           </div>
-          <div>
-           
-            <p className="font-bold text-red-600">
-              Seller: {address.sellerName || `Seller #${index + 1}`} Pickup Location
-            </p>
-            <p>{address.purok_house || address.address_line}</p>
-            <p>
-              {address.barangay}, {address.city}
-            </p>
-            <p>
-              {address.country} - {address.zipcode || address.zipcode}
-            </p>
-          </div>
-        </div>
-      ))
+        ))}
+      </div>
     ) : (
       <div className="text-center py-4 text-red-500">
         No pickup addresses found for sellers.
@@ -239,11 +304,15 @@ const renderAddressSection = () => {
 
     return (
       <>
-        <h3 className="text-lg font-semibold">Pickup Locations</h3>
-        <div className="bg-white p-2 grid gap-4">{AddressContent}</div>
+        <h3 className="text-lg font-semibold mb-3">Pickup Locations</h3>
+        <div className="bg-white p-4 rounded-lg border">
+          {AddressContent}
+        </div>
       </>
     );
   }
+
+
 
 
  
@@ -300,12 +369,20 @@ const renderAddressSection = () => {
 
 
 
+
+
+
+
+
+
     return (
         <section className='bg-blue-50'>
             <div className='container mx-auto p-4 flex flex-col lg:flex-row w-full gap-5 justify-between'>
                 <div className='w-full'>
                     {renderAddressSection()}
                 </div>
+
+
 
 
                 <div className='w-full max-w-md bg-white py-4 px-2'>
@@ -318,7 +395,7 @@ const renderAddressSection = () => {
                             <p className='flex items-center gap-2'><span className='line-through text-neutral-400'>{DisplayPriceInRupees(notDiscountTotalPrice)}</span><span>{DisplayPriceInRupees(totalPrice)}</span></p>
                         </div>
                         <div className='flex gap-4 justify-between ml-1'>
-                            <p>Quntity total</p>
+                            <p>Quantity total</p>
                             <p className='flex items-center gap-2'>{totalQty} item</p>
                         </div>
                         <div className='flex gap-4 justify-between ml-1'>
@@ -341,6 +418,8 @@ const renderAddressSection = () => {
                         >
                             Online Payment ({isPickup ? 'Pickup' : 'Pickup'})
                         </button>
+
+
 
 
                        
@@ -366,6 +445,10 @@ const renderAddressSection = () => {
 
 
 
+
+
+
+
             {
                 openAddress && (
                     <AddAddress close={() => setOpenAddress(false)} />
@@ -376,7 +459,15 @@ const renderAddressSection = () => {
 }
 
 
+
+
 export default CheckoutPage
+
+
+
+
+
+
 
 
 

@@ -628,33 +628,55 @@ export async function userDetails(request,response){
 
 export async function addPreferences(request, response) {
   try {
-    console.log("🟢 BODY:", request.body);
-    console.log("🟢 USER ID:", request.userId);
-
-
+    const userId = request.userId; // from auth middleware
     const { category, subCategory } = request.body;
-
 
     if (!category || !subCategory) {
       return response.status(400).json({
         success: false,
-        message: "Category and SubCategory are required"
+        message: "Category and SubCategory are required",
+        error: true
       });
     }
 
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return response.status(404).json({ 
+        success: false, 
+        message: "User not found",
+        error: true 
+      });
+    }
 
-    const user = await UserModel.findById(request.userId);
-    if (!user) return response.status(404).json({ success: false, message: "User not found" });
+    // Check if preference already exists
+    const exists = user.preferences.some(
+      p => p.category === category && p.subCategory === subCategory
+    );
 
+    if (exists) {
+      return response.status(400).json({
+        success: false,
+        message: "This preference already exists",
+        error: true
+      });
+    }
 
     user.preferences.push({ category, subCategory });
     await user.save();
 
-
-    return response.json({ success: true, message: "Preference added", data: user.preferences });
+    return response.json({ 
+      success: true, 
+      message: "Preference added successfully", 
+      data: user.preferences,
+      error: false
+    });
   } catch (error) {
-    console.error("🔴 ERROR:", error.message);
-    return response.status(500).json({ success: false, message: error.message });
+    console.error("🔴 Add Preference Error:", error);
+    return response.status(500).json({ 
+      success: false, 
+      message: error.message || "Failed to add preference",
+      error: true
+    });
   }
 }
 
@@ -678,6 +700,45 @@ export async function getPreferences(request, response) {
     return response.status(500).json({
       success: false,
       message: error.message || "Server error"
+    });
+  }
+}
+
+export async function deletePreference(request, response) {
+  try {
+    const userId = request.userId;
+    const { preferenceId } = request.body;
+
+    if (!preferenceId) {
+      return response.status(400).json({
+        success: false,
+        message: "preferenceId is required",
+        error: true
+      });
+    }
+
+    const result = await UserModel.updateOne(
+      { _id: userId },
+      { $pull: { preferences: { _id: preferenceId } } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return response.status(404).json({
+        success: false,
+        message: "Preference not found",
+        error: true
+      });
+    }
+
+    return response.json({
+      success: true,
+      message: "Preference removed"
+    });
+  } catch (error) {
+    return response.status(500).json({
+      success: false,
+      message: error.message || "Failed to remove preference",
+      error: true
     });
   }
 }

@@ -15,15 +15,18 @@ import GlobalProvider from './provider/GlobalProvider';
 import { FaCartShopping } from "react-icons/fa6";
 import CartMobileLink from './components/CartMobile';
 
+
 function App() {
   const dispatch = useDispatch()
   const location = useLocation()
-  
+ 
+
 
   const fetchUser = async()=>{
       const userData = await fetchUserDetails()
       dispatch(setUserDetails(userData.data))
   }
+
 
   const fetchCategory = async()=>{
     try {
@@ -33,15 +36,17 @@ function App() {
         })
         const { data : responseData } = response
 
+
         if(responseData.success){
-           dispatch(setAllCategory(responseData.data.sort((a, b) => a.name.localeCompare(b.name)))) 
+           dispatch(setAllCategory(responseData.data.sort((a, b) => a.name.localeCompare(b.name))))
         }
     } catch (error) {
-        
+       
     }finally{
       dispatch(setLoadingCategory(false))
     }
   }
+
 
   const fetchSubCategory = async()=>{
     try {
@@ -50,16 +55,19 @@ function App() {
         })
         const { data : responseData } = response
 
+
         if(responseData.success){
-           dispatch(setAllSubCategory(responseData.data.sort((a, b) => a.name.localeCompare(b.name)))) 
+           dispatch(setAllSubCategory(responseData.data.sort((a, b) => a.name.localeCompare(b.name))))
         }
     } catch (error) {
-        
+       
     }finally{
     }
   }
 
-  
+
+ 
+
 
   useEffect(()=>{
     fetchUser()
@@ -68,18 +76,22 @@ function App() {
     // fetchCartItem()
   },[])
 
+
   const isLanding = location.pathname === '/';
   const isServices = location.pathname === '/services';
   const isAbout = location.pathname === '/about';
   const isContact = location.pathname === '/contact';
   const isLogin = location.pathname === '/login';
   const isRegister = location.pathname === '/register';
+  const isBlog = location.pathname === '/blog';
+
+
 
 
   return (
-    <GlobalProvider> 
-      {/* render Header for all routes except landing ("/") */}
-      {!isLanding && !isServices && !isAbout && !isContact && !isLogin && !isRegister && <Header/>}
+    <GlobalProvider>
+      {/* render Header for all routes except specified pages */}
+      {!isLanding && !isServices && !isAbout && !isContact && !isLogin && !isRegister && !isBlog && <Header/>}
       <main className='min-h-[78vh]'>
           <Outlet/>
       </main>
@@ -94,4 +106,6 @@ function App() {
   )
 }
 
+
 export default App
+

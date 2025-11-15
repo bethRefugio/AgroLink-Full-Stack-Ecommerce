@@ -142,7 +142,10 @@ const SummaryApi = {
         url : '/api/address/disable',
         method : 'delete'
     },
-   
+    deleteAddress: {
+        url : '/api/address/delete',
+        method : 'delete'
+    },
     getSellerPickupAddress : {
         url : '/api/address/get-seller-pickup-address',
         method : 'post'
@@ -191,10 +194,23 @@ const SummaryApi = {
         method: "get",
         url: "/api/user/preferences"
     },
+    deletePreference: {
+        method: "delete",
+        url: "/api/user/delete-preference"
+    },
     suggestPrice:{
         url: "/api/product/suggest-price",
         method: "post"
-    }
+    },
+    CashOnPickupOrder: {
+        url: "/api/order/cash-on-pickup",
+        method: 'post'
+    },
+    updateOrderStatus: {
+        url: "/api/order/update-order-status",
+        method: 'put'
+    },
+
 }
 
 

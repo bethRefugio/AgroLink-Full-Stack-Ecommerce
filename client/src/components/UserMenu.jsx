@@ -14,11 +14,13 @@ import isAdmin from '../utils/isAdmin'
 import isSeller from '../utils/isSeller'
 import isBuyer from '../utils/isBuyer'
 
+
 const UserMenu = ({ close }) => {
   const user = useSelector((state) => state.user)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [avatarError, setAvatarError] = useState(false)
+
 
   const handleLogout = async () => {
     try {
@@ -35,9 +37,11 @@ const UserMenu = ({ close }) => {
     }
   }
 
+
   const handleClose = () => {
     if (close) close()
   }
+
 
   const MenuItem = ({ to, icon: Icon, children, onClick }) => {
     const content = (
@@ -46,6 +50,7 @@ const UserMenu = ({ close }) => {
         <span className="flex-1">{children}</span>
       </>
     )
+
 
     if (to) {
       return (
@@ -59,6 +64,7 @@ const UserMenu = ({ close }) => {
       )
     }
 
+
     return (
       <button
         onClick={onClick}
@@ -68,6 +74,7 @@ const UserMenu = ({ close }) => {
       </button>
     )
   }
+
 
   return (
     <div className="py-2 w-64">
@@ -96,14 +103,15 @@ const UserMenu = ({ close }) => {
               {user?.email || user?.mobile}
             </p>
           </div>
-          <Link 
-            to="/dashboard/profile" 
+          <Link
+            to="/dashboard/profile"
             onClick={handleClose}
             className="text-gray-400 hover:text-green-600 transition-colors"
           >
             <HiOutlineExternalLink size={18} />
           </Link>
         </div>
+
 
         {/* Role Badge */}
         {user?.role && (
@@ -123,7 +131,9 @@ const UserMenu = ({ close }) => {
         )}
       </div>
 
+
       <div className="h-px bg-gray-200 my-2" />
+
 
       {/* Menu Items */}
       <div className="px-2">
@@ -131,6 +141,7 @@ const UserMenu = ({ close }) => {
         <MenuItem to="/dashboard/profile" icon={FiSettings}>
           Account Settings
         </MenuItem>
+
 
         {/* Admin Items */}
         {isAdmin(user?.role) && (
@@ -147,6 +158,7 @@ const UserMenu = ({ close }) => {
           </>
         )}
 
+
         {/* Seller & Admin Items */}
         {(isAdmin(user?.role) || isSeller(user?.role)) && (
           <>
@@ -159,10 +171,13 @@ const UserMenu = ({ close }) => {
           </>
         )}
 
+
         {/* Orders - All logged in users */}
         <MenuItem to="/dashboard/myorders" icon={FiShoppingBag}>
           My Orders
         </MenuItem>
+       
+
 
         {/* Address - Buyers and Sellers */}
         {(isBuyer(user?.role) || isSeller(user?.role)) && (
@@ -171,12 +186,14 @@ const UserMenu = ({ close }) => {
           </MenuItem>
         )}
 
-        {/* Sellers - Orders Received */}
-        {isSeller(user?.role) && (
+
+        {/* Sellers and Admin - Orders Received */}
+        {(isSeller(user?.role) || isAdmin(user?.role)) && (
           <MenuItem to="/dashboard/seller-orders" icon={FiShoppingBag}>
             Orders Received
           </MenuItem>
         )}
+
 
         {/* Admin - All Orders */}
         {isAdmin(user?.role) && (
@@ -186,7 +203,9 @@ const UserMenu = ({ close }) => {
         )}
       </div>
 
+
       <div className="h-px bg-gray-200 my-2" />
+
 
       {/* Logout */}
       <div className="px-2">
@@ -198,4 +217,10 @@ const UserMenu = ({ close }) => {
   )
 }
 
+
+
+
 export default UserMenu
+
+
+

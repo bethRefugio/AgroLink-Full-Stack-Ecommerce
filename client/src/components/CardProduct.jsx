@@ -3,68 +3,101 @@ import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees'
 import { Link } from 'react-router-dom'
 import { valideURLConvert } from '../utils/valideURLConvert'
 import { pricewithDiscount } from '../utils/PriceWithDiscount'
-import SummaryApi from '../common/SummaryApi'
-import AxiosToastError from '../utils/AxiosToastError'
-import Axios from '../utils/Axios'
-import toast from 'react-hot-toast'
-import { useState } from 'react'
-import { useGlobalContext } from '../provider/GlobalProvider'
-import AddToCartButton from './AddToCartButton'
 import { useSelector } from 'react-redux'
+import AddToCartButton from './AddToCartButton'
 
-const CardProduct = ({data}) => {
-    const url = `/product/${valideURLConvert(data.name)}-${data._id}`
-    const [loading,setLoading] = useState(false)
-    const user = useSelector((state) => state?.user)
-  
+const CARD_WIDTH = 220
+const CARD_HEIGHT = 340
+const IMAGE_HEIGHT = 160
+
+const CardProduct = ({ data }) => {
+  const url = `/product/${valideURLConvert(data.name)}-${data._id}`
+  const user = useSelector((state) => state?.user)
+  const originalPrice = data.price
+  const discountedPrice = pricewithDiscount(data.price, data.discount)
+
   return (
-    <Link to={url} className='border py-2 lg:p-4 grid gap-1 lg:gap-3 min- w-36 lg:min-w-52 rounded cursor-pointer bg-white' >
-      <div className='min-h-20 w-full max-h-24 lg:max-h-32 rounded overflow-hidden'>
-            <img 
-                src={data.image[0]}
-                className='w-full h-full object-scale-down lg:scale-125'
-            />
-      </div>
-      <div className='flex items-center gap-1'>
-        <div className='rounded text-xs w-fit p-[1px] px-2 text-green-600 bg-green-50'>
-              20 min 
-        </div>
-        <div>
-            {
-              Boolean(data.discount) && (
-                <p className='text-green-600 bg-green-100 px-2 w-fit text-xs rounded-full'>{data.discount}% discount</p>
-              )
-            }
-        </div>
-      </div>
-      <div className='px-2 lg:px-0 font-medium text-ellipsis text-sm lg:text-base line-clamp-2'>
-        {data.name}
-      </div>
-      <div className='w-fit gap-1 px-2 lg:px-0 text-sm lg:text-base'>
-        {data.unit} 
-        
+    <Link
+      to={url}
+      className="block border border-gray-200 rounded-xl overflow-hidden bg-white hover:shadow-lg transition-shadow duration-300 group flex flex-col"
+      style={{
+        width: `${CARD_WIDTH}px`,
+        minWidth: `${CARD_WIDTH}px`,
+        maxWidth: `${CARD_WIDTH}px`,
+        height: `${CARD_HEIGHT}px`,
+        minHeight: `${CARD_HEIGHT}px`,
+        maxHeight: `${CARD_HEIGHT}px`
+      }}
+    >
+      {/* Image Container */}
+      <div
+        className="relative bg-gray-50 w-full overflow-hidden flex-shrink-0"
+        style={{
+          height: `${IMAGE_HEIGHT}px`,
+          minHeight: `${IMAGE_HEIGHT}px`,
+          maxHeight: `${IMAGE_HEIGHT}px`
+        }}
+      >
+        <img
+          src={data.image[0]}
+          alt={data.name}
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+        />
+        {/* Discount Badge */}
+        {Boolean(data.discount) && (
+          <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-0.5 rounded-md text-xs font-bold shadow-md">
+            {data.discount}% OFF
+          </div>
+        )}
       </div>
 
-      <div className='px-2 lg:px-0 flex items-center justify-between gap-1 lg:gap-3 text-sm lg:text-base'>
-        <div className='flex items-center gap-1'>
-          <div className='font-semibold'>
-              {DisplayPriceInRupees(pricewithDiscount(data.price,data.discount))} 
+      {/* Content Container */}
+      <div className="p-2.5 space-y-1 flex-1 flex flex-col justify-between">
+        {/* Date */}
+        <div className="flex items-center text-xs">
+          <div className="text-green-600 font-medium">
+            {data.createdAt
+              ? new Date(data.createdAt).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : ""}
           </div>
-          
-          
         </div>
-        <div className=''>
-          {
-            data.stock == 0 ? (
-              <p className='text-red-500 text-sm text-center'>Out of stock</p>
+
+        {/* Product Name */}
+        <h3 className="font-semibold text-gray-800 text-sm line-clamp-2 min-h-[1.8rem]">
+          {data.name}
+        </h3>
+
+        {/* Unit */}
+        <p className="text-gray-600 text-xs">
+          {data.unit}
+        </p>
+
+        {/* Price & Add to Cart */}
+        <div className="flex items-center justify-between pt-0.5">
+          <div className="space-y-0.5">
+            <div className="text-base lg:text-lg font-bold text-gray-900">
+              {DisplayPriceInRupees(discountedPrice)}
+            </div>
+            {Boolean(data.discount) && (
+              <div className="text-xs text-gray-400 line-through">
+                {DisplayPriceInRupees(originalPrice)}
+              </div>
+            )}
+          </div>
+
+          <div>
+            {data.stock === 0 ? (
+              <p className="text-red-500 text-xs font-medium">Out of stock</p>
             ) : (
               user?.role !== "SELLER" && <AddToCartButton data={data} />
-            )
-          }
-            
+            )}
+          </div>
         </div>
       </div>
-
     </Link>
   )
 }

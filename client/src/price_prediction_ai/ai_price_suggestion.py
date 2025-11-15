@@ -17,7 +17,10 @@ from prophet import Prophet
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import xgboost as xgb
 from sklearn.preprocessing import LabelEncoder
-from statsmodels.tsa.arima.model import ARIMA
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from sklearn.preprocessing import MinMaxScaler
+
 
 
 def load_and_clean(csv_path):
@@ -143,32 +146,59 @@ def xgboost_predict(train_df, test_df):
     return np.array(test_pred), float(next_pred), model, all_dates, np.array(full_pred)
 
 
-def arima_predict(train_df, test_df):
-    # ARIMA expects a 1D series
-    y_train = train_df['price'].astype(float)
-    if len(y_train) < 3:
-        # fallback: repeat last value predictions
-        test_pred = np.full(len(test_df), float(y_train.iloc[-1]))
-        next_pred = float(y_train.iloc[-1])
-        full_pred = np.concatenate([y_train.values, test_pred])
-        all_dates = pd.concat([train_df['ds'], test_df['ds']]).values
-        return np.array(test_pred), float(next_pred), None, all_dates, np.array(full_pred)
-    try:
-        model = ARIMA(y_train, order=(1, 1, 1))
-        fitted = model.fit()
-        test_pred = fitted.forecast(steps=len(test_df))
-        next_pred = float(fitted.forecast(steps=len(test_df) + 1).iloc[-1])
-        full_pred = np.concatenate([fitted.fittedvalues, fitted.forecast(steps=len(test_df))])
-        all_dates = pd.concat([train_df['ds'], test_df['ds']]).values
-        return np.array(test_pred), float(next_pred), fitted, all_dates, np.array(full_pred)
-    except Exception:
-        # on failure fallback to naive persistence
-        last_val = float(y_train.iloc[-1])
+def lstm_predict(train_df, test_df):
+    # Prepare the price data
+    prices = train_df['price'].astype(float).values.reshape(-1, 1)
+    if len(prices) < 3:
+        # fallback: too little data
+        last_val = float(prices[-1])
         test_pred = np.full(len(test_df), last_val)
         next_pred = last_val
-        full_pred = np.concatenate([y_train.values, test_pred])
+        full_pred = np.concatenate([prices.flatten(), test_pred])
         all_dates = pd.concat([train_df['ds'], test_df['ds']]).values
         return np.array(test_pred), float(next_pred), None, all_dates, np.array(full_pred)
+
+    # Normalize
+    scaler = MinMaxScaler()
+    scaled_prices = scaler.fit_transform(prices)
+
+    # Create sequences (window = 3 months)
+    window = 3
+    X, y = [], []
+    for i in range(window, len(scaled_prices)):
+        X.append(scaled_prices[i - window:i])
+        y.append(scaled_prices[i])
+
+    X, y = np.array(X), np.array(y)
+
+    # LSTM Model
+    model = Sequential()
+    model.add(LSTM(50, activation="tanh", return_sequences=False, input_shape=(X.shape[1], 1)))
+    model.add(Dense(1))
+    model.compile(optimizer="adam", loss="mse")
+    model.fit(X, y, epochs=50, batch_size=8, verbose=0)
+
+    # Forecast test period
+    last_seq = scaled_prices[-window:]
+    test_pred_scaled = []
+    seq = last_seq.copy()
+
+    for _ in range(len(test_df)):
+        p = model.predict(seq.reshape(1, window, 1), verbose=0)
+        test_pred_scaled.append(p[0])
+        seq = np.vstack([seq[1:], p])
+
+    test_pred = scaler.inverse_transform(test_pred_scaled).flatten()
+
+    # Predict next month
+    p_next = model.predict(seq.reshape(1, window, 1), verbose=0)
+    next_pred = float(scaler.inverse_transform(p_next)[0][0])
+
+    # Full series prediction (train + test)
+    full_pred = np.concatenate([train_df['price'].values, test_pred])
+    all_dates = pd.concat([train_df['ds'], test_df['ds']]).values
+
+    return np.array(test_pred), float(next_pred), model, all_dates, np.array(full_pred)
 
 
 def suggest_price(price, markup=0.05):
@@ -211,11 +241,12 @@ def suggest_for_item_json(csv_path, item_name, test_size=2):
     prophet_test_pred, prophet_next_pred, _, prophet_dates, prophet_full_pred = prophet_predict(train_df, test_df)
     # XGBoost
     xgb_test_pred, xgb_next_pred, _, xgb_dates, xgb_full_pred = xgboost_predict(train_df, test_df)
-    # ARIMA
-    arima_test_pred, arima_next_pred, _, arima_dates, arima_full_pred = arima_predict(train_df, test_df)
+    # LSTM
+    # LSTM
+    lstm_test_pred, lstm_next_pred, _, lstm_dates, lstm_full_pred = lstm_predict(train_df, test_df)
     # Metrics
     metrics = {}
-    for name, preds in zip(['Prophet', 'XGBoost', 'ARIMA'], [prophet_test_pred, xgb_test_pred, arima_test_pred]):
+    for name, preds in zip(['Prophet', 'XGBoost', 'LSTM'], [prophet_test_pred, xgb_test_pred, lstm_test_pred]):
         try:
             mae = float(mean_absolute_error(test_df['price'].astype(float), preds))
             rmse = float(np.sqrt(mean_squared_error(test_df['price'].astype(float), preds)))
@@ -223,7 +254,7 @@ def suggest_for_item_json(csv_path, item_name, test_size=2):
             mae = None
             rmse = None
         metrics[name] = {"MAE": mae, "RMSE": rmse}
-    next_preds = {"Prophet": float(prophet_next_pred), "XGBoost": float(xgb_next_pred), "ARIMA": float(arima_next_pred)}
+    next_preds = {"Prophet": float(prophet_next_pred), "XGBoost": float(xgb_next_pred), "LSTM": float(lstm_next_pred)}
     recommended = {k: suggest_price(v) for k, v in next_preds.items()}
     # pick best by RMSE (ignore None)
     valid_metrics = {k: v['RMSE'] for k, v in metrics.items() if v['RMSE'] is not None}
@@ -291,10 +322,23 @@ def main():
             arima_test_pred, arima_next_pred, arima_model, arima_dates, arima_full_pred = arima_predict(train_df, test_df)
             all_dates = prophet_dates
             history_prices = np.concatenate([train_df['price'].values, test_df['price'].values])
-            pred_dates_dict = {'Prophet': prophet_dates, 'XGBoost': xgb_dates, 'ARIMA': arima_dates}
-            pred_values_dict = {'Prophet': prophet_full_pred, 'XGBoost': xgb_full_pred, 'ARIMA': arima_full_pred}
+            pred_dates_dict = {
+                'Prophet': prophet_dates,
+                'XGBoost': xgb_dates,
+                'LSTM': lstm_dates
+            }
+
+            pred_values_dict = {
+                'Prophet': prophet_full_pred,
+                'XGBoost': xgb_full_pred,
+                'LSTM': lstm_full_pred
+            }
             next_month = train_df['ds'].max() + pd.DateOffset(months=1)
-            next_preds = {'Prophet': prophet_next_pred, 'XGBoost': xgb_next_pred, 'ARIMA': arima_next_pred}
+            next_preds = {
+                'Prophet': prophet_next_pred,
+                'XGBoost': xgb_next_pred,
+                'LSTM': lstm_next_pred
+            }
             # show plot (blocking)
             plot_forecast_like_image(train_df, test_df, all_dates, history_prices,
                                      pred_dates_dict, pred_values_dict,

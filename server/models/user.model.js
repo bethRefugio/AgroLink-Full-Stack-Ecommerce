@@ -70,15 +70,17 @@ const userSchema = new mongoose.Schema({
         enum : ['ADMIN',"BUYER","SELLER","COOPERATIVE"],
         default : "BUYER"
     },
-    addPreferences: [
-        {
-            category: { type: String, required: true },
-            subCategory: { type: String, required: true }
+    preferences: [{
+        category: String,
+        subCategory: String,
+        createdAt: {
+            type: Date,
+            default: Date.now
         }
-    ]
-},{
-    timestamps : true
-})
+        }]
+    },{
+        timestamps : true
+    })
 
 const UserModel = mongoose.model("User",userSchema)
 

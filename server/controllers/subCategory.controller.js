@@ -40,7 +40,17 @@ export const AddSubCategoryController = async(request,response)=>{
 
 export const getSubCategoryController = async(request,response)=>{
     try {
-        const data = await SubCategoryModel.find().sort({createdAt : -1}).populate('category')
+        const { _id, categoryId } = request.body // Accept both for flexibility
+        
+        let query = {};
+        
+        // If categoryId or _id is provided, filter by category
+        if (categoryId || _id) {
+            query.category = { $in: [categoryId || _id] };
+        }
+        
+        const data = await SubCategoryModel.find(query).sort({createdAt : -1}).populate('category')
+        
         return response.json({
             message : "Sub Category data",
             data : data,

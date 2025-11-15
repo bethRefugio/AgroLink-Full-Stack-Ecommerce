@@ -1,10 +1,27 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Phone, ShoppingCart, TrendingUp, Users, Shield, BarChart3, Zap, Search, Bell, FileText, Truck, CheckCircle } from 'lucide-react';
+import {
+  Menu,
+  X,
+  TrendingUp,
+  Users,
+  Shield,
+  Search,
+  Bell,
+  FileText,
+  Truck,
+  CheckCircle,
+  BarChart3,
+  Target,  
+  Rocket,
+  Leaf  
+} from 'lucide-react';
+
 
 export default function Services() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+
 
   const services = [
     {
@@ -15,8 +32,7 @@ export default function Services() {
         "Real-time market price analysis",
         "Historical data integration",
         "Supply and demand forecasting",
-        "Fair price suggestions",
-        "Automated price alerts"
+        "Fair price suggestions"
       ],
       color: "from-blue-500 to-blue-600"
     },
@@ -38,26 +54,10 @@ export default function Services() {
       title: "Secure Transactions",
       description: "Protected and transparent trading with full transaction records",
       features: [
-        "Encrypted payment processing",
         "Digital transaction logs",
-        "Automatic receipt generation",
-        "Dispute resolution support",
-        "Fraud prevention measures"
+        "Verified Cash on Delivery (COD)"
       ],
       color: "from-purple-500 to-purple-600"
-    },
-    {
-      icon: BarChart3,
-      title: "Analytics & Insights",
-      description: "Comprehensive data visualization and reporting tools",
-      features: [
-        "Sales performance dashboards",
-        "Market trend analysis",
-        "Crop yield predictions",
-        "Revenue tracking",
-        "Custom report generation"
-      ],
-      color: "from-orange-500 to-orange-600"
     },
     {
       icon: Search,
@@ -67,8 +67,7 @@ export default function Services() {
         "Advanced search filters",
         "Category browsing",
         "Quality ratings and reviews",
-        "Product availability tracking",
-        "Seasonal produce highlights"
+        "Product availability tracking"
       ],
       color: "from-teal-500 to-teal-600"
     },
@@ -77,11 +76,8 @@ export default function Services() {
       title: "Smart Notifications",
       description: "Stay updated with market opportunities and price changes",
       features: [
-        "Price change alerts",
         "New buyer notifications",
-        "Order status updates",
-        "Market opportunity alerts",
-        "Customizable notification preferences"
+        "Order status updates"
       ],
       color: "from-red-500 to-red-600"
     },
@@ -91,10 +87,8 @@ export default function Services() {
       description: "Track and manage your agricultural inventory efficiently",
       features: [
         "Real-time stock monitoring",
-        "Harvest planning tools",
         "Expiry date tracking",
-        "Automated reorder suggestions",
-        "Multi-crop management"
+        "Automated reorder suggestions"
       ],
       color: "from-indigo-500 to-indigo-600"
     },
@@ -105,13 +99,47 @@ export default function Services() {
       features: [
         "Delivery scheduling",
         "Route optimization",
-        "Tracking and monitoring",
-        "Logistics partner network",
-        "Cost estimation tools"
+        "Tracking and monitoring"
       ],
       color: "from-pink-500 to-pink-600"
     }
   ];
+
+
+  // New array for the Benefits section
+  const benefits = [
+    {
+      icon: Target,
+      title: "Fair Pricing",
+      description: "AI-driven pricing ensures farmers get fair compensation while buyers enjoy competitive rates without middleman markups."
+    },
+    {
+      icon: Rocket,
+      title: "Faster Transactions",
+      description: "Direct connections eliminate unnecessary delays, getting fresh produce from farm to table in record time."
+    },
+    {
+      icon: BarChart3,
+      title: "Data-Driven Decisions",
+      description: "Access powerful analytics and insights to make informed decisions about planting, harvesting, and selling."
+    },
+    {
+      icon: Shield,
+      title: "Secure Platform",
+      description: "Enterprise-grade security protects your data and transactions, ensuring safe business operations."
+    },
+    {
+      icon: Leaf,
+      title: "Sustainability Focus",
+      description: "Support sustainable agriculture by reducing waste, optimizing supply chains, and promoting local sourcing."
+    },
+    {
+      icon: Users,
+      title: "Farmer Empowerment",
+      description: "Give farmers the tools and market access they need to thrive independently and build sustainable businesses."
+    }
+  ];
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-green-50 font-sans">
@@ -119,16 +147,17 @@ export default function Services() {
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&family=Dancing+Script:wght@400;500;600;700&display=swap');
-          
+         
           .font-display {
             font-family: 'Playfair Display', serif;
           }
-          
+         
           .font-body {
             font-family: 'Poppins', sans-serif;
           }
         `}
       </style>
+
 
       {/* Navigation */}
       <nav className="bg-gradient-to-r from-green-900 to-green-800 shadow-xl">
@@ -141,6 +170,7 @@ export default function Services() {
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
+
             <div className="hidden md:flex space-x-10 text-white font-body font-medium text-sm tracking-wider">
               <a href="/" className="hover:text-green-300 transition-all hover:scale-105">HOME</a>
               <a href="/about" className="hover:text-green-300 transition-all hover:scale-105">ABOUT US</a>
@@ -149,19 +179,21 @@ export default function Services() {
               <a href="/blog" className="hover:text-green-300 transition-all hover:scale-105">BLOG</a>
             </div>
 
+
             {/* Right side icons */}
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-3 font-body">
-              <button
-                type="button"
-                onClick={() => navigate('/login')}
-                className="bg-white text-green-800 font-semibold px-5 py-2 rounded-lg shadow transition-all border border-green-800 hover:bg-green-50"
-              >
-                Login
-              </button>
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-3 font-body">
+                <button
+                  type="button"
+                  onClick={() => navigate('/login')}
+                  className="bg-white text-green-800 font-semibold px-5 py-2 rounded-lg shadow transition-all border border-green-800 hover:bg-green-50"
+                >
+                  Login
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+
 
           {isMenuOpen && (
             <div className="md:hidden pb-4 space-y-2 font-body">
@@ -175,6 +207,7 @@ export default function Services() {
         </div>
       </nav>
 
+
       {/* Hero Section */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center space-y-6">
@@ -187,6 +220,7 @@ export default function Services() {
         </div>
       </div>
 
+
       {/* Services Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-2 gap-8">
@@ -198,9 +232,14 @@ export default function Services() {
                 className="group bg-white p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border-l-8 border-green-800 transform hover:-translate-y-2"
               >
                 <div className="flex items-start gap-6">
-                  <div className={`w-20 h-20 bg-gradient-to-br ${service.color} rounded-2xl shadow-lg flex items-center justify-center transform group-hover:rotate-12 transition-transform flex-shrink-0`}>
-                    <Icon size={36} className="text-white" />
+                 
+                  {/* === MODIFIED ICON HOLDER === */}
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Icon size={36} className="text-green-700" />
                   </div>
+                  {/* === END MODIFICATION === */}
+
+
                   <div className="flex-1">
                     <h3 className="text-2xl font-display font-bold text-green-800 mb-3">
                       {service.title}
@@ -224,6 +263,7 @@ export default function Services() {
         </div>
       </div>
 
+
       {/* How It Works Section */}
       <div className="bg-gradient-to-r from-green-900 to-green-800 py-20 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -236,6 +276,7 @@ export default function Services() {
             </p>
           </div>
 
+
           <div className="grid md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
@@ -245,6 +286,7 @@ export default function Services() {
               <p className="text-green-100 font-body">Create your account as a farmer or buyer in minutes</p>
             </div>
 
+
             <div className="text-center">
               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
                 <span className="text-4xl font-display font-black text-green-800">2</span>
@@ -253,6 +295,7 @@ export default function Services() {
               <p className="text-green-100 font-body">Farmers list produce, buyers search for fresh products</p>
             </div>
 
+
             <div className="text-center">
               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
                 <span className="text-4xl font-display font-black text-green-800">3</span>
@@ -260,6 +303,7 @@ export default function Services() {
               <h3 className="text-xl font-display font-bold text-white mb-3">Get Matched</h3>
               <p className="text-green-100 font-body">AI connects you with the best buyers or suppliers</p>
             </div>
+
 
             <div className="text-center">
               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
@@ -272,6 +316,7 @@ export default function Services() {
         </div>
       </div>
 
+
       {/* Benefits Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
@@ -280,56 +325,38 @@ export default function Services() {
           </h2>
         </div>
 
+
+        {/* === MODIFIED TO MAP BENEFITS ARRAY === */}
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-gradient-to-br from-amber-50 to-rose-50 p-10 rounded-3xl shadow-xl">
-            <div className="text-5xl mb-6">🎯</div>
-            <h3 className="text-2xl font-display font-bold text-green-800 mb-4">Fair Pricing</h3>
-            <p className="text-gray-700 font-body leading-relaxed">
-              AI-driven pricing ensures farmers get fair compensation while buyers enjoy competitive rates without middleman markups.
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-br from-amber-50 to-rose-50 p-10 rounded-3xl shadow-xl">
-            <div className="text-5xl mb-6">🚀</div>
-            <h3 className="text-2xl font-display font-bold text-green-800 mb-4">Faster Transactions</h3>
-            <p className="text-gray-700 font-body leading-relaxed">
-              Direct connections eliminate unnecessary delays, getting fresh produce from farm to table in record time.
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-br from-amber-50 to-rose-50 p-10 rounded-3xl shadow-xl">
-            <div className="text-5xl mb-6">📊</div>
-            <h3 className="text-2xl font-display font-bold text-green-800 mb-4">Data-Driven Decisions</h3>
-            <p className="text-gray-700 font-body leading-relaxed">
-              Access powerful analytics and insights to make informed decisions about planting, harvesting, and selling.
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-br from-amber-50 to-rose-50 p-10 rounded-3xl shadow-xl">
-            <div className="text-5xl mb-6">🔒</div>
-            <h3 className="text-2xl font-display font-bold text-green-800 mb-4">Secure Platform</h3>
-            <p className="text-gray-700 font-body leading-relaxed">
-              Enterprise-grade security protects your data and transactions, ensuring safe business operations.
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-br from-amber-50 to-rose-50 p-10 rounded-3xl shadow-xl">
-            <div className="text-5xl mb-6">🌱</div>
-            <h3 className="text-2xl font-display font-bold text-green-800 mb-4">Sustainability Focus</h3>
-            <p className="text-gray-700 font-body leading-relaxed">
-              Support sustainable agriculture by reducing waste, optimizing supply chains, and promoting local sourcing.
-            </p>
-          </div>
-
-          <div className="bg-gradient-to-br from-amber-50 to-rose-50 p-10 rounded-3xl shadow-xl">
-            <div className="text-5xl mb-6">💪</div>
-            <h3 className="text-2xl font-display font-bold text-green-800 mb-4">Farmer Empowerment</h3>
-            <p className="text-gray-700 font-body leading-relaxed">
-              Give farmers the tools and market access they need to thrive independently and build sustainable businesses.
-            </p>
-          </div>
+          {benefits.map((benefit, index) => {
+            const Icon = benefit.icon;
+            return (
+              <div
+                key={index}
+                className="group bg-white p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border-l-8 border-green-800 transform hover:-translate-y-2"
+              >
+               
+                {/* === REPLACED EMOJI WITH ICON HOLDER === */}
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                  <Icon size={36} className="text-green-700" />
+                </div>
+                {/* === END REPLACEMENT === */}
+               
+                <h3 className="text-2xl font-display font-bold text-green-800 mb-4">
+                  {benefit.title}
+                </h3>
+                <p className="text-gray-700 font-body leading-relaxed">
+                  {benefit.description}
+                </p>
+              </div>
+            );
+          })}
         </div>
+        {/* === END MODIFICATION === */}
+
+
       </div>
+
 
       {/* CTA Section */}
       <div className="bg-gradient-to-br from-green-50 to-amber-50 py-20">
@@ -340,7 +367,7 @@ export default function Services() {
           <p className="text-xl text-gray-600 font-body mb-10 max-w-2xl mx-auto">
             Join thousands of farmers and buyers already using Smart AgroLink to transform Philippine agriculture
           </p>
-          <button 
+          <button
             onClick={() => navigate('/register')}
             className="bg-gradient-to-r from-green-800 to-green-900 hover:from-green-900 hover:to-green-800 text-white font-body font-bold px-12 py-6 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 text-lg tracking-wide">
             Start Your Journey Today
@@ -350,3 +377,4 @@ export default function Services() {
     </div>
   );
 }
+

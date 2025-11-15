@@ -5,6 +5,7 @@ import Home from "../pages/Home";
 import AboutUs from "../pages/AboutUs";
 import Services from "../pages/Services";
 import ContactUs from "../pages/ContactUs";
+import Blog from "../pages/Blog";
 import SearchPage from "../pages/SearchPage";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -32,6 +33,7 @@ import VerifyEmail from "../pages/VerifyEmail";
 import AllOrders from "../pages/AllOrders";
 import UsersTable from "../pages/UsersTable";
 
+
 const router = createBrowserRouter([
     {
         path : "/",
@@ -56,6 +58,10 @@ const router = createBrowserRouter([
             {
                 path : "contact",
                 element : <ContactUs/>
+            },
+            {
+                path : "blog",
+                element : <Blog/>
             },
             {
                 path : "search",
@@ -168,4 +174,6 @@ const router = createBrowserRouter([
     }
 ])
 
+
 export default router
+
