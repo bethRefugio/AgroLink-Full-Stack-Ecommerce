@@ -220,40 +220,97 @@ export async function paymentController(request,response){
     }
 }
 
-export async function getAllOrdersController(req, res) {
+// ✅ New simpler version
+export const getSellerPickupAddressController = async (req, res) => {
   try {
-    if (req.user.role !== 'ADMIN') {
-        return res.status(403).json({ success: false, message: 'Access denied' })
+    const { sellerIds } = req.body;
+
+    if (!Array.isArray(sellerIds) || sellerIds.length === 0) {
+      return res.status(400).json({
+        message: "No seller IDs provided",
+        success: false,
+      });
     }
 
-    // Get all orders with buyer and seller info
-    const orders = await OrderModel.find()
-      .populate({
-        path: 'userId', // buyer
-        select: 'name email'
-      })
-      .populate({
-        path: 'productId', // product
-        populate: {
-          path: 'userId', // seller
-          select: 'name email'
-        },
-      })
+    // Find sellers' addresses
+    const allAddresses = await AddressModel.find({
+      userId: { $in: sellerIds },
+      status: true,
+    })
       .sort({ createdAt: -1 })
+      .select("-__v -status");
+
+    // Get seller names
+    const sellers = await UserModel.find({ _id: { $in: sellerIds } }).select("name");
+    const sellerMap = {};
+    sellers.forEach((s) => {
+      sellerMap[s._id.toString()] = s.name;
+    });
+
+    // Combine names and addresses
+    const addressesWithNames = allAddresses.map((addr) => ({
+      ...addr.toObject(),
+      sellerName: sellerMap[addr.userId.toString()] || "Unknown Seller",
+    }));
 
     res.json({
-      message: 'All orders retrieved successfully',
+      data: addressesWithNames,
       success: true,
-      data: orders,
-    })
-  } catch (error) {
-    console.error('Error fetching all orders:', error)
+      message: "Seller pickup addresses fetched successfully",
+    });
+  } catch (err) {
+    console.error("Error fetching pickup addresses:", err);
     res.status(500).json({
-      message: error.message || 'Server error',
+      message: err.message || "Server error fetching seller pickup addresses",
       success: false,
-    })
+    });
+  }
+};
+
+
+// ...existing code...
+export async function getSellerOrdersController(req, res) {
+  try {
+    const sellerId = req.userId;
+
+    const ordersRaw = await OrderModel.find({ sellerId })
+      .sort({ createdAt: -1 })
+      .populate({ path: "userId", select: "name email mobile" }) // buyer
+      .populate({ path: "productId", select: "name image" }) // product
+      .populate({ path: "delivery_address" }) // address
+      .lean();
+
+    const orders = ordersRaw.map((o) => ({
+      _id: o._id,
+      orderId: o.orderId,
+      buyer: o.userId ? { _id: o.userId._id, name: o.userId.name, email: o.userId.email, mobile: o.userId.mobile } : null,
+      // prefer populated productId, fallback to product_details stored on order
+      product: o.productId
+        ? { _id: o.productId._id, name: o.productId.name, image: o.productId.image }
+        : (o.product_details ? { name: o.product_details.name, image: o.product_details.image } : null),
+      // quantity may be stored or absent; fallback to 1
+      quantity: o.quantity ?? o.product_details?.quantity ?? 1,
+      totalAmt: o.totalAmt ?? o.subTotalAmt ?? 0,
+      address: o.delivery_address || null,
+      payment_status: o.payment_status || null,
+      createdAt: o.createdAt,
+    }));
+
+    return res.json({
+      success: true,
+      message: "Seller orders fetched successfully",
+      data: orders,
+    });
+  } catch (error) {
+    console.error("Error fetching seller orders:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
+    });
   }
 }
+// ...existing code...
+
 
 const getOrderProductItems = async({
     lineItems,
@@ -391,32 +448,109 @@ export const getProductByCategoryAndSubCategory = async (req, res) => {
   }
 };
 
+
 export async function getSellerOrdersController(req, res) {
   try {
     const sellerId = req.userId; // assumes auth middleware sets req.userId
 
-    // Find all orders where sellerId matches the logged-in user
     const orders = await OrderModel.find({ sellerId })
       .populate({
-        path: 'userId', // buyer
-        select: 'name email'
+        path: "userId", // buyer
+        select: "name email",
       })
       .populate({
-        path: 'productId', // product
-        select: 'name image'
+        path: "productId", // product
+        select: "name image",
       })
       .sort({ createdAt: -1 });
 
     return res.json({
-      message: "Seller orders retrieved successfully",
       success: true,
+      message: "Seller orders retrieved successfully",
       data: orders,
     });
   } catch (error) {
-    console.error('Error fetching seller orders:', error);
+    console.error("Error fetching seller orders:", error);
     return res.status(500).json({
-      message: error.message || "Server error",
       success: false,
+      message: error.message || "Server error",
+    });
+  }
+}
+
+export async function getAllOrdersController(req, res) {
+  try {
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.max(1, parseInt(req.query.limit || "50", 10));
+    const skip = (page - 1) * limit;
+
+    const query = {}; // you may add filters here if needed
+
+    const [ordersRaw, totalCount] = await Promise.all([
+      OrderModel.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate({ path: "userId", select: "name email mobile" }) // buyer
+        .populate({ path: "productId", select: "name image price" }) // product
+        .populate({ path: "delivery_address" }) // address
+        .populate({ path: "sellerId", select: "name email" }) // seller
+        .lean(),
+
+      OrderModel.countDocuments(query),
+    ]);
+
+    const orders = ordersRaw.map((o) => ({
+      _id: o._id,
+      orderId: o.orderId,
+      buyer: o.userId
+        ? {
+            _id: o.userId._id,
+            name: o.userId.name,
+            email: o.userId.email,
+            mobile: o.userId.mobile,
+          }
+        : null,
+      seller: o.sellerId
+        ? {
+            _id: o.sellerId._id,
+            name: o.sellerId.name,
+            email: o.sellerId.email,
+          }
+        : null,
+      product: o.productId
+        ? {
+            _id: o.productId._id,
+            name: o.productId.name,
+            image: o.productId.image,
+            price: o.productId.price,
+          }
+        : o.product_details
+        ? {
+            name: o.product_details.name,
+            image: o.product_details.image,
+          }
+        : null,
+      quantity: o.quantity ?? o.product_details?.quantity ?? 1,
+      totalAmt: o.totalAmt ?? o.subTotalAmt ?? 0,
+      address: o.delivery_address || null,
+      payment_status: o.payment_status || null,
+      createdAt: o.createdAt,
+    }));
+
+    return res.json({
+      success: true,
+      message: "All orders fetched successfully",
+      data: orders,
+      totalCount,
+      page,
+      limit,
+    });
+  } catch (error) {
+    console.error("getAllOrdersController error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
     });
   }
 }
