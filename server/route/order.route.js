@@ -9,7 +9,9 @@ import {
   webhookStripe,
   getAllOrdersController,
   setupPickupAddresses,
-  updateOrderStatusController
+  updateOrderStatusController,
+  getOrdersGroupedByBuyer,
+  getOrdersGroupedBySeller,
 } from '../controllers/order.controller.js'
 
 
@@ -25,6 +27,8 @@ orderRouter.get('/allorders', auth, getAllOrdersController)
 orderRouter.get('/seller-orders', auth, getSellerOrdersController)
 orderRouter.post("/setup-pickup-addresses", auth, setupPickupAddresses);
 orderRouter.put('/update-order-status', auth, updateOrderStatusController);
+orderRouter.get("/order/by-buyer", auth, getOrdersGroupedByBuyer);
+orderRouter.get("/order/by-seller", auth, getOrdersGroupedBySeller);
 
 
 export default orderRouter

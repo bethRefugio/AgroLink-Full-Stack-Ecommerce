@@ -210,6 +210,15 @@ const SummaryApi = {
         url: "/api/order/update-order-status",
         method: 'put'
     },
+    getOrdersByBuyer: {
+         url: '/api/order/order/by-buyer',
+         method: 'get'
+    },
+    getOrdersBySeller: {
+         url: '/api/order/order/by-seller',
+         method: 'get'
+    },
+
 
 }
 
