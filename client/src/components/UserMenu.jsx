@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 import Divider from './Divider'
@@ -7,7 +7,9 @@ import SummaryApi from '../common/SummaryApi'
 import { logout } from '../store/userSlice'
 import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
-import { HiOutlineExternalLink } from "react-icons/hi";
+import { HiOutlineExternalLink } from "react-icons/hi"
+import { FiSettings, FiPackage, FiShoppingBag, FiMapPin, FiUsers, FiLogOut } from "react-icons/fi"
+import { MdCategory, MdOutlineCategory } from "react-icons/md"
 import isAdmin from '../utils/isAdmin'
 import isSeller from '../utils/isSeller'
 import isBuyer from '../utils/isBuyer'
@@ -16,13 +18,13 @@ const UserMenu = ({ close }) => {
   const user = useSelector((state) => state.user)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [avatarError, setAvatarError] = useState(false)
 
   const handleLogout = async () => {
     try {
       const response = await Axios({
         ...SummaryApi.logout
       })
-      console.log("logout", response)
       if (response.data.success) {
         if (close) close()
         dispatch(logout())
@@ -31,7 +33,6 @@ const UserMenu = ({ close }) => {
         navigate("/")
       }
     } catch (error) {
-      console.log(error)
       AxiosToastError(error)
     }
   }
@@ -40,85 +41,152 @@ const UserMenu = ({ close }) => {
     if (close) close()
   }
 
-  return (
-    <div>
-      <div className='font-semibold'>My Account</div>
-      <div className='text-sm flex items-center gap-2'>
-        <span className='max-w-52 text-ellipsis line-clamp-1'>
-          {user.name || user.mobile}{' '}
-          <span className='text-medium text-red-600'>
-            {user.role === "ADMIN" && "(Admin)"}
-            {user.role === "BUYER" && "(Buyer)"}
-            {user.role === "SELLER" && "(Seller)"}
-            {user.role === "COOPERATIVE" && "(Cooperative)"}
-          </span>
-        </span>
-        <Link onClick={handleClose} to={"/dashboard/profile"} className='hover:text-primary-200'>
-          <HiOutlineExternalLink size={15} />
+  const MenuItem = ({ to, icon: Icon, children, onClick }) => {
+    const content = (
+      <>
+        <Icon size={20} className="text-gray-600" />
+        <span className="flex-1">{children}</span>
+      </>
+    )
+
+    if (to) {
+      return (
+        <Link
+          to={to}
+          onClick={handleClose}
+          className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+        >
+          {content}
         </Link>
+      )
+    }
+
+    return (
+      <button
+        onClick={onClick}
+        className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return (
+    <div className="py-2 w-64">
+      {/* User Info Section */}
+      <div className="px-4 py-3 mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+            {user?.avatar && !avatarError ? (
+              <img
+                src={user.avatar}
+                alt={user.name || user.email || 'User avatar'}
+                className="w-full h-full object-cover"
+                onError={() => setAvatarError(true)}
+              />
+            ) : (
+              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                {(user?.name || user?.mobile || 'U').charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 truncate">
+              {user?.name || user?.mobile}
+            </h3>
+            <p className="text-sm text-gray-500 truncate">
+              {user?.email || user?.mobile}
+            </p>
+          </div>
+          <Link 
+            to="/dashboard/profile" 
+            onClick={handleClose}
+            className="text-gray-400 hover:text-green-600 transition-colors"
+          >
+            <HiOutlineExternalLink size={18} />
+          </Link>
+        </div>
+        
+        {/* Role Badge */}
+        {user?.role && (
+          <div className="mt-3">
+            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+              user.role === "ADMIN" ? "bg-red-100 text-red-700" :
+              user.role === "SELLER" ? "bg-blue-100 text-blue-700" :
+              user.role === "BUYER" ? "bg-green-100 text-green-700" :
+              "bg-purple-100 text-purple-700"
+            }`}>
+              {user.role === "ADMIN" && "Admin"}
+              {user.role === "BUYER" && "Buyer"}
+              {user.role === "SELLER" && "Seller"}
+              {user.role === "COOPERATIVE" && "Cooperative"}
+            </span>
+          </div>
+        )}
       </div>
 
-      <Divider />
+      <div className="h-px bg-gray-200 my-2" />
 
-      <div className='text-sm grid gap-1'>
-        {isAdmin(user.role) && (
-          <Link onClick={handleClose} to={"/dashboard/category"} className='px-2 hover:bg-orange-200 py-1'>
-            Category
-          </Link>
+      {/* Menu Items */}
+      <div className="px-2">
+        {/* Profile Settings */}
+        <MenuItem to="/dashboard/profile" icon={FiSettings}>
+          Account Settings
+        </MenuItem>
+
+        {/* Admin Items */}
+        {isAdmin(user?.role) && (
+          <>
+            <MenuItem to="/dashboard/category" icon={MdCategory}>
+              Category
+            </MenuItem>
+            <MenuItem to="/dashboard/subcategory" icon={MdOutlineCategory}>
+              Sub Category
+            </MenuItem>
+          </>
         )}
 
-        {isAdmin(user.role) && (
-          <Link onClick={handleClose} to={"/dashboard/subcategory"} className='px-2 hover:bg-orange-200 py-1'>
-            Sub Category
-          </Link>
+        {/* Seller & Admin Items */}
+        {(isAdmin(user?.role) || isSeller(user?.role)) && (
+          <>
+            <MenuItem to="/dashboard/upload-product" icon={FiPackage}>
+              Upload Product
+            </MenuItem>
+            <MenuItem to="/dashboard/product" icon={FiShoppingBag}>
+              Products
+            </MenuItem>
+          </>
         )}
 
-        {(isAdmin(user.role) || isSeller(user.role)) && (
-          <Link onClick={handleClose} to={"/dashboard/upload-product"} className='px-2 hover:bg-orange-200 py-1'>
-            Upload Product
-          </Link>
+        {/* My Orders - All logged in users */}
+        {user?.role && (
+          <MenuItem to="/dashboard/myorders" icon={FiShoppingBag}>
+            My Orders
+          </MenuItem>
         )}
 
-        {(isAdmin(user.role) || isSeller(user.role)) && (
-          <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>
-            Products
-          </Link>
+        {/* Address - Buyers and Sellers */}
+        {(isBuyer(user?.role) || isSeller(user?.role)) && (
+          <MenuItem to="/dashboard/address" icon={FiMapPin}>
+            Saved Addresses
+          </MenuItem>
         )}
 
-            {
-              (isAdmin(user.role) || isSeller(user.role)) && (
-                <Link onClick={handleClose} to={"/dashboard/upload-product"} className='px-2 hover:bg-orange-200 py-1'>Upload Product</Link>
-              )
-            }
-
-            {
-              (isAdmin(user.role) || isSeller(user.role)) && (
-                <Link onClick={handleClose} to={"/dashboard/product"} className='px-2 hover:bg-orange-200 py-1'>Product</Link>
-              )
-            }
-            
-            {
-              user.role && ( 
-                <Link onClick={handleClose} to={"/dashboard/myorders"} className='px-2 hover:bg-orange-200 py-1'>My Orders</Link>
-              )
-            }
-            <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>Save Address</Link>
-
-        {(isBuyer(user.role) || isSeller(user.role)) && (
-          <Link onClick={handleClose} to={"/dashboard/address"} className='px-2 hover:bg-orange-200 py-1'>
-            Save Address
-          </Link>
-        )}
-
-        {isAdmin(user.role) && (
-          <Link onClick={handleClose} to={"/dashboard/userstable"} className='px-2 hover:bg-orange-200 py-1'>
+        {/* Users Table - Admin only */}
+        {isAdmin(user?.role) && (
+          <MenuItem to="/dashboard/userstable" icon={FiUsers}>
             Users Table
-          </Link>
+          </MenuItem>
         )}
+      </div>
 
-        <button onClick={handleLogout} className='text-left px-2 hover:bg-orange-200 py-1'>
-          Log Out
-        </button>
+      <div className="h-px bg-gray-200 my-2" />
+
+      {/* Logout */}
+      <div className="px-2">
+        <MenuItem onClick={handleLogout} icon={FiLogOut}>
+          <span className="text-red-600 font-medium">Log Out</span>
+        </MenuItem>
       </div>
     </div>
   )

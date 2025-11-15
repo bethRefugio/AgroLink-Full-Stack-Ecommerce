@@ -390,3 +390,33 @@ export const getProductByCategoryAndSubCategory = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message || "Server error" });
   }
 };
+
+export async function getSellerOrdersController(req, res) {
+  try {
+    const sellerId = req.userId; // assumes auth middleware sets req.userId
+
+    // Find all orders where sellerId matches the logged-in user
+    const orders = await OrderModel.find({ sellerId })
+      .populate({
+        path: 'userId', // buyer
+        select: 'name email'
+      })
+      .populate({
+        path: 'productId', // product
+        select: 'name image'
+      })
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      message: "Seller orders retrieved successfully",
+      success: true,
+      data: orders,
+    });
+  } catch (error) {
+    console.error('Error fetching seller orders:', error);
+    return res.status(500).json({
+      message: error.message || "Server error",
+      success: false,
+    });
+  }
+}

@@ -189,8 +189,12 @@ const SummaryApi = {
     },
     getPreferences: {
         method: "get",
-        url: "api/user/preferences"
+        url: "/api/user/preferences"
     },
+    suggestPrice:{
+        url: "/api/product/suggest-price",
+        method: "post"
+    }
 }
 
 export default SummaryApi

@@ -586,3 +586,74 @@ export async function getPreferences(request, response) {
     });
   }
 }
+
+
+export async function adminUpdateUserController(request, response) {
+  try {
+    const requesterId = request.userId;
+    // ensure requester exists and is admin
+    const requester = await UserModel.findById(requesterId).select('role');
+    if (!requester || requester.role !== 'ADMIN') {
+      return response.status(403).json({ message: 'Access denied', success: false, error: true });
+    }
+
+    const { _id, name, email, mobile, password, role } = request.body;
+    if (!_id) {
+      return response.status(400).json({ message: 'User ID (_id) required', success: false, error: true });
+    }
+
+    const user = await UserModel.findById(_id);
+    if (!user) {
+      return response.status(404).json({ message: 'User not found', success: false, error: true });
+    }
+
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (mobile) updateData.mobile = mobile;
+    if (role) updateData.role = role;
+    if (email && email !== user.email) {
+      const exists = await UserModel.findOne({ email });
+      if (exists) {
+        return response.status(400).json({ message: 'Email already used by another account', success: false, error: true });
+      }
+      updateData.email = email;
+    }
+    if (password) {
+      const salt = await bcryptjs.genSalt(10);
+      updateData.password = await bcryptjs.hash(password, salt);
+    }
+
+    await UserModel.updateOne({ _id }, updateData);
+
+    return response.json({ message: 'User updated successfully', success: true, error: false });
+  } catch (error) {
+    return response.status(500).json({ message: error.message || error, success: false, error: true });
+  }
+}
+
+export async function deleteUserController(request, response) {
+  try {
+    const requesterId = request.userId;
+    // ensure requester exists and is admin
+    const requester = await UserModel.findById(requesterId).select('role');
+    if (!requester || requester.role !== 'ADMIN') {
+      return response.status(403).json({ message: 'Access denied', success: false, error: true });
+    }
+
+    const { _id } = request.body;
+    if (!_id) {
+      return response.status(400).json({ message: 'User ID (_id) required', success: false, error: true });
+    }
+
+    const user = await UserModel.findById(_id);
+    if (!user) {
+      return response.status(404).json({ message: 'User not found', success: false, error: true });
+    }
+
+    await UserModel.deleteOne({ _id });
+
+    return response.json({ message: 'User deleted successfully', success: true, error: false });
+  } catch (error) {
+    return response.status(500).json({ message: error.message || error, success: false, error: true });
+  }
+}

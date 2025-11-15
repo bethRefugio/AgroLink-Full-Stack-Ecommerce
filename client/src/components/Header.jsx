@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import logo from '../assets/agrolink-logo2.svg';
 import Search from './Search';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -22,6 +22,7 @@ const Header = () => {
     const cartItem = useSelector(state => state.cartItem.cart);
     const { totalPrice, totalQty } = useGlobalContext();
     const [openCartSection, setOpenCartSection] = useState(false);
+    const menuRef = useRef(null);
  
     const redirectToLoginPage = () => {
         navigate("/login");
@@ -40,6 +41,23 @@ const Header = () => {
     };
 
     const isUserLoggedIn = user?._id;
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setOpenUserMenu(false);
+            }
+        };
+
+        if (openUserMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [openUserMenu]);
 
     return (
         <header className='shadow-sm sticky top-0 z-40 bg-white'>
@@ -92,27 +110,35 @@ const Header = () => {
                             <div className='hidden lg:flex items-center gap-6'>
                                 {/* Account dropdown */}
                                 {user?._id ? (
-                                    <div className='relative'>
+                                    <div className='relative' ref={menuRef}>
                                         <button 
                                             onClick={() => setOpenUserMenu(prev => !prev)} 
-                                            className='flex items-center gap-2 text-gray-700 hover:text-green-600 transition-colors'
+                                            className='flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200'
                                         >
-                                            <FaRegCircleUser size={20}/>
+                                            <div className='w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-sm'>
+                                                {user.name ? user.name.charAt(0).toUpperCase() : user.mobile?.charAt(0) || 'U'}
+                                            </div>
                                             <span className='text-sm font-medium'>Account</span>
                                             {openUserMenu ? <GoTriangleUp size={16}/> : <GoTriangleDown size={16}/>}
                                         </button>
-                                        {openUserMenu && (
-                                            <div className='absolute right-0 top-12 z-50'>
-                                                <div className='bg-white rounded-lg shadow-lg p-4 min-w-52 border border-gray-200'>
-                                                    <UserMenu close={handleCloseUserMenu}/>
-                                                </div>
+                                        
+                                        {/* Dropdown Menu with Animation */}
+                                        <div 
+                                            className={`absolute right-0 top-full mt-2 z-50 transition-all duration-200 origin-top-right ${
+                                                openUserMenu 
+                                                    ? 'opacity-100 scale-100 translate-y-0' 
+                                                    : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                                            }`}
+                                        >
+                                            <div className='bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden'>
+                                                <UserMenu close={handleCloseUserMenu}/>
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 ) : (
                                     <button 
                                         onClick={redirectToLoginPage} 
-                                        className='text-gray-700 hover:text-green-600 font-medium transition-colors'
+                                        className='px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors'
                                     >
                                         Login
                                     </button>
@@ -122,7 +148,7 @@ const Header = () => {
                                 {user?.role !== "SELLER" && isUserLoggedIn && (
                                     <button 
                                         onClick={() => setOpenCartSection(true)} 
-                                        className='relative flex items-center gap-3 bg-green-600 hover:bg-green-700 px-4 py-2.5 rounded-lg text-white transition-colors'
+                                        className='relative flex items-center gap-3 bg-green-600 hover:bg-green-700 px-4 py-2.5 rounded-lg text-white transition-all duration-200 shadow-sm hover:shadow-md'
                                     >
                                         <BsCart4 size={22}/>
                                         {cartItem[0] ? (
@@ -137,7 +163,7 @@ const Header = () => {
                                             <span className='text-sm font-medium'>Cart</span>
                                         )}
                                         {cartItem[0] && (
-                                            <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center'>
+                                            <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse'>
                                                 {totalQty}
                                             </span>
                                         )}

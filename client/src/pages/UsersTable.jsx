@@ -8,6 +8,7 @@ import ConfirmBox from "../components/CofirmBox";
 import SummaryApi from "../common/SummaryApi";
 import { HiPencil } from "react-icons/hi";
 import { MdDelete, MdVisibility } from "react-icons/md";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 
 const UsersTable = () => {
   const [users, setUsers] = useState([]);
@@ -160,6 +161,7 @@ const UsersTable = () => {
       password: user?.password || "",
     });
     const [saving, setSaving] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) =>
       setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -191,7 +193,7 @@ const UsersTable = () => {
       }
     };
 
-    return (
+   return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <form
           onSubmit={handleSubmit}
@@ -218,17 +220,32 @@ const UsersTable = () => {
             type="email"
             required
           />
-          {!user && (
+
+          {/* Show password with eye toggle */}
+          <div className="relative">
             <input
               name="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="Password"
-              className="w-full p-2 mb-2 border rounded"
-              type="password"
-              required
+              placeholder={user ? "Enter a new password (leave blank to keep current)" : "Password"}
+              className="w-full p-2 mb-1 border rounded pr-10"
+              type={showPassword ? "text" : "password"}
+              required={!user} // required only when creating a new user
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(prev => !prev)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaRegEye size={18} /> : <FaRegEyeSlash size={18} />}
+            </button>
+          </div>
+
+          {user && (
+            <p className="text-xs text-gray-500 mb-2">Leave blank to keep the current password.</p>
           )}
+
           <select
             name="role"
             value={form.role}
