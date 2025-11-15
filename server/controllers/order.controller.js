@@ -448,13 +448,43 @@ export const getProductByCategoryAndSubCategory = async (req, res) => {
   }
 };
 
+
+export async function getSellerOrdersController(req, res) {
+  try {
+    const sellerId = req.userId; // assumes auth middleware sets req.userId
+
+    const orders = await OrderModel.find({ sellerId })
+      .populate({
+        path: "userId", // buyer
+        select: "name email",
+      })
+      .populate({
+        path: "productId", // product
+        select: "name image",
+      })
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      message: "Seller orders retrieved successfully",
+      data: orders,
+    });
+  } catch (error) {
+    console.error("Error fetching seller orders:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Server error",
+    });
+  }
+}
+
 export async function getAllOrdersController(req, res) {
   try {
     const page = Math.max(1, parseInt(req.query.page || "1", 10));
     const limit = Math.max(1, parseInt(req.query.limit || "50", 10));
     const skip = (page - 1) * limit;
 
-    const query = {}; // add filters from req.query if needed (status, payment_status, sellerId, etc.)
+    const query = {}; // you may add filters here if needed
 
     const [ordersRaw, totalCount] = await Promise.all([
       OrderModel.find(query)
@@ -466,17 +496,41 @@ export async function getAllOrdersController(req, res) {
         .populate({ path: "delivery_address" }) // address
         .populate({ path: "sellerId", select: "name email" }) // seller
         .lean(),
+
       OrderModel.countDocuments(query),
     ]);
 
     const orders = ordersRaw.map((o) => ({
       _id: o._id,
       orderId: o.orderId,
-      buyer: o.userId ? { _id: o.userId._id, name: o.userId.name, email: o.userId.email, mobile: o.userId.mobile } : null,
-      seller: o.sellerId ? { _id: o.sellerId._id, name: o.sellerId.name, email: o.sellerId.email } : null,
+      buyer: o.userId
+        ? {
+            _id: o.userId._id,
+            name: o.userId.name,
+            email: o.userId.email,
+            mobile: o.userId.mobile,
+          }
+        : null,
+      seller: o.sellerId
+        ? {
+            _id: o.sellerId._id,
+            name: o.sellerId.name,
+            email: o.sellerId.email,
+          }
+        : null,
       product: o.productId
-        ? { _id: o.productId._id, name: o.productId.name, image: o.productId.image, price: o.productId.price }
-        : (o.product_details ? { name: o.product_details.name, image: o.product_details.image } : null),
+        ? {
+            _id: o.productId._id,
+            name: o.productId.name,
+            image: o.productId.image,
+            price: o.productId.price,
+          }
+        : o.product_details
+        ? {
+            name: o.product_details.name,
+            image: o.product_details.image,
+          }
+        : null,
       quantity: o.quantity ?? o.product_details?.quantity ?? 1,
       totalAmt: o.totalAmt ?? o.subTotalAmt ?? 0,
       address: o.delivery_address || null,

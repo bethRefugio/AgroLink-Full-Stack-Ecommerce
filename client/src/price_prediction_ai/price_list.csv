@@ -1,0 +1,1024 @@
+year,month,commodity,item,unit,price
+2023,january,local rice,special rice,kg,46
+2023,february,local rice,special rice,kg,46
+2023,march,local rice,special rice,kg,47.6
+2023,april,local rice,special rice,kg,46
+2023,may,local rice,special rice,kg,
+2023,june,local rice,special rice,kg,46
+2023,july,local rice,special rice,kg,48
+2023,august,local rice,special rice,kg,60
+2023,september,local rice,special rice,kg,60
+2023,october,local rice,special rice,kg,58
+2023,november,local rice,special rice,kg,58
+2023,december,local rice,special rice,kg,59
+2023,january,local rice,premium rice,kg,41
+2023,february,local rice,premium rice,kg,41
+2023,march,local rice,premium rice,kg,42
+2023,april,local rice,premium rice,kg,42
+2023,may,local rice,premium rice,kg,44
+2023,june,local rice,premium rice,kg,44
+2023,july,local rice,premium rice,kg,46
+2023,august,local rice,premium rice,kg,59
+2023,september,local rice,premium rice,kg,58
+2023,october,local rice,premium rice,kg,
+2023,november,local rice,premium rice,kg,57
+2023,december,local rice,premium rice,kg,58
+2023,january,local rice,well milled,kg,40
+2023,february,local rice,well milled,kg,40
+2023,march,local rice,well milled,kg,40
+2023,april,local rice,well milled,kg,41
+2023,may,local rice,well milled,kg,43
+2023,june,local rice,well milled,kg,43
+2023,july,local rice,well milled,kg,45
+2023,august,local rice,well milled,kg,57
+2023,september,local rice,well milled,kg,45
+2023,october,local rice,well milled,kg,
+2023,november,local rice,well milled,kg,48
+2023,december,local rice,well milled,kg,
+2023,january,local rice,regular milled,kg,40
+2023,february,local rice,regular milled,kg,40
+2023,march,local rice,regular milled,kg,40
+2023,april,local rice,regular milled,kg,40
+2023,may,local rice,regular milled,kg,42
+2023,june,local rice,regular milled,kg,43
+2023,july,local rice,regular milled,kg,43
+2023,august,local rice,regular milled,kg,57
+2023,september,local rice,regular milled,kg,
+2023,october,local rice,regular milled,kg,45
+2023,november,local rice,regular milled,kg,
+2023,december,local rice,regular milled,kg,
+2023,january,lowland vegetables,ampalaya,kg,80
+2023,february,lowland vegetables,ampalaya,kg,80
+2023,march,lowland vegetables,ampalaya,kg,80
+2023,april,lowland vegetables,ampalaya,kg,80
+2023,may,lowland vegetables,ampalaya,kg,90
+2023,june,lowland vegetables,ampalaya,kg,70
+2023,july,lowland vegetables,ampalaya,kg,80
+2023,august,lowland vegetables,ampalaya,kg,60
+2023,september,lowland vegetables,ampalaya,kg,60
+2023,october,lowland vegetables,ampalaya,kg,55
+2023,november,lowland vegetables,ampalaya,kg,70
+2023,december,lowland vegetables,ampalaya,kg,80
+2023,january,lowland vegetables,sitao,small bundle,15
+2023,february,lowland vegetables,sitao,small bundle,7.5
+2023,march,lowland vegetables,sitao,small bundle,7.5
+2023,april,lowland vegetables,sitao,small bundle,6.25
+2023,may,lowland vegetables,sitao,small bundle,7.5
+2023,june,lowland vegetables,sitao,small bundle,7.5
+2023,july,lowland vegetables,sitao,small bundle,6.25
+2023,august,lowland vegetables,sitao,small bundle,3.75
+2023,september,lowland vegetables,sitao,small bundle,5
+2023,october,lowland vegetables,sitao,small bundle,3.75
+2023,november,lowland vegetables,sitao,small bundle,7.5
+2023,december,lowland vegetables,sitao,small bundle,8.75
+2023,january,lowland vegetables,pechay (native),small bundle,17.5
+2023,february,lowland vegetables,pechay (native),small bundle,12.5
+2023,march,lowland vegetables,pechay (native),small bundle,15
+2023,april,lowland vegetables,pechay (native),small bundle,20
+2023,may,lowland vegetables,pechay (native),small bundle,12.5
+2023,june,lowland vegetables,pechay (native),small bundle,7.5
+2023,july,lowland vegetables,pechay (native),small bundle,2.5
+2023,august,lowland vegetables,pechay (native),small bundle,7.5
+2023,september,lowland vegetables,pechay (native),small bundle,15
+2023,october,lowland vegetables,pechay (native),small bundle,12.5
+2023,november,lowland vegetables,pechay (native),small bundle,20
+2023,december,lowland vegetables,pechay (native),small bundle,20
+2023,january,lowland vegetables,squash,kg,30
+2023,february,lowland vegetables,squash,kg,30
+2023,march,lowland vegetables,squash,kg,30
+2023,april,lowland vegetables,squash,kg,1.33
+2023,may,lowland vegetables,squash,kg,40
+2023,june,lowland vegetables,squash,kg,50
+2023,july,lowland vegetables,squash,kg,15
+2023,august,lowland vegetables,squash,kg,20
+2023,september,lowland vegetables,squash,kg,25
+2023,october,lowland vegetables,squash,kg,35
+2023,november,lowland vegetables,squash,kg,35
+2023,december,lowland vegetables,squash,kg,40
+2023,january,lowland vegetables,eggplant,kg,90
+2023,february,lowland vegetables,eggplant,kg,50
+2023,march,lowland vegetables,eggplant,kg,40
+2023,april,lowland vegetables,eggplant,kg,80
+2023,may,lowland vegetables,eggplant,kg,60
+2023,june,lowland vegetables,eggplant,kg,50
+2023,july,lowland vegetables,eggplant,kg,35
+2023,august,lowland vegetables,eggplant,kg,25
+2023,september,lowland vegetables,eggplant,kg,30
+2023,october,lowland vegetables,eggplant,kg,30
+2023,november,lowland vegetables,eggplant,kg,60
+2023,december,lowland vegetables,eggplant,kg,70
+2023,january,lowland vegetables,tomato,kg,60
+2023,february,lowland vegetables,tomato,kg,80
+2023,march,lowland vegetables,tomato,kg,60
+2023,april,lowland vegetables,tomato,kg,50
+2023,may,lowland vegetables,tomato,kg,60
+2023,june,lowland vegetables,tomato,kg,50
+2023,july,lowland vegetables,tomato,kg,80
+2023,august,lowland vegetables,tomato,kg,90
+2023,september,lowland vegetables,tomato,kg,70
+2023,october,lowland vegetables,tomato,kg,70
+2023,november,lowland vegetables,tomato,kg,80
+2023,december,lowland vegetables,tomato,kg,80
+2023,january,high land vegetables,cabbage,kg,70
+2023,february,high land vegetables,cabbage,kg,50
+2023,march,high land vegetables,cabbage,kg,60
+2023,april,high land vegetables,cabbage,kg,60
+2023,may,high land vegetables,cabbage,kg,60
+2023,june,high land vegetables,cabbage,kg,50
+2023,july,high land vegetables,cabbage,kg,60
+2023,august,high land vegetables,cabbage,kg,40
+2023,september,high land vegetables,cabbage,kg,40
+2023,october,high land vegetables,cabbage,kg,40
+2023,november,high land vegetables,cabbage,kg,35
+2023,december,high land vegetables,cabbage,kg,50
+2023,january,high land vegetables,carrots,kg,70
+2023,february,high land vegetables,carrots,kg,50
+2023,march,high land vegetables,carrots,kg,40
+2023,april,high land vegetables,carrots,kg,60
+2023,may,high land vegetables,carrots,kg,60
+2023,june,high land vegetables,carrots,kg,120
+2023,july,high land vegetables,carrots,kg,100
+2023,august,high land vegetables,carrots,kg,45
+2023,september,high land vegetables,carrots,kg,50
+2023,october,high land vegetables,carrots,kg,40
+2023,november,high land vegetables,carrots,kg,70
+2023,december,high land vegetables,carrots,kg,70
+2023,january,high land vegetables,habitchuelas (baguio beans),kg,100
+2023,february,high land vegetables,habitchuelas (baguio beans),kg,40
+2023,march,high land vegetables,habitchuelas (baguio beans),kg,50
+2023,april,high land vegetables,habitchuelas (baguio beans),kg,80
+2023,may,high land vegetables,habitchuelas (baguio beans),kg,60
+2023,june,high land vegetables,habitchuelas (baguio beans),kg,60
+2023,july,high land vegetables,habitchuelas (baguio beans),kg,70
+2023,august,high land vegetables,habitchuelas (baguio beans),kg,80
+2023,september,high land vegetables,habitchuelas (baguio beans),kg,35
+2023,october,high land vegetables,habitchuelas (baguio beans),kg,35
+2023,november,high land vegetables,habitchuelas (baguio beans),kg,70
+2023,december,high land vegetables,habitchuelas (baguio beans),kg,70
+2023,january,high land vegetables,white potato,kg,100
+2023,february,high land vegetables,white potato,kg,100
+2023,march,high land vegetables,white potato,kg,100
+2023,april,high land vegetables,white potato,kg,120
+2023,may,high land vegetables,white potato,kg,60
+2023,june,high land vegetables,white potato,kg,100
+2023,july,high land vegetables,white potato,kg,90
+2023,august,high land vegetables,white potato,kg,80
+2023,september,high land vegetables,white potato,kg,80
+2023,october,high land vegetables,white potato,kg,140
+2023,november,high land vegetables,white potato,kg,120
+2023,december,high land vegetables,white potato,kg,120
+2023,january,high land vegetables,pechay (baguio),kg,70
+2023,february,high land vegetables,pechay (baguio),kg,30
+2023,march,high land vegetables,pechay (baguio),kg,40
+2023,april,high land vegetables,pechay (baguio),kg,60
+2023,may,high land vegetables,pechay (baguio),kg,50
+2023,june,high land vegetables,pechay (baguio),kg,50
+2023,july,high land vegetables,pechay (baguio),kg,70
+2023,august,high land vegetables,pechay (baguio),kg,40
+2023,september,high land vegetables,pechay (baguio),kg,40
+2023,october,high land vegetables,pechay (baguio),kg,40
+2023,november,high land vegetables,pechay (baguio),kg,30
+2023,december,high land vegetables,pechay (baguio),kg,40
+2023,january,high land vegetables,chayote,kg,30
+2023,february,high land vegetables,chayote,kg,25
+2023,march,high land vegetables,chayote,kg,30
+2023,april,high land vegetables,chayote,kg,30
+2023,may,high land vegetables,chayote,kg,40
+2023,june,high land vegetables,chayote,kg,25
+2023,july,high land vegetables,chayote,kg,25
+2023,august,high land vegetables,chayote,kg,18
+2023,september,high land vegetables,chayote,kg,15
+2023,october,high land vegetables,chayote,kg,20
+2023,november,high land vegetables,chayote,kg,15
+2023,december,high land vegetables,chayote,kg,15
+2023,january,spices,red onion,kg,340
+2023,february,spices,red onion,kg,230
+2023,march,spices,red onion,kg,120
+2023,april,spices,red onion,kg,120
+2023,may,spices,red onion,kg,160
+2023,june,spices,red onion,kg,180
+2023,july,spices,red onion,kg,160
+2023,august,spices,red onion,kg,140
+2023,september,spices,red onion,kg,130
+2023,october,spices,red onion,kg,130
+2023,november,spices,red onion,kg,140
+2023,december,spices,red onion,kg,130
+2023,january,spices,white onion,kg,340
+2023,february,spices,white onion,kg,
+2023,march,spices,white onion,kg,
+2023,april,spices,white onion,kg,160
+2023,may,spices,white onion,kg,
+2023,june,spices,white onion,kg,
+2023,july,spices,white onion,kg,
+2023,august,spices,white onion,kg,
+2023,september,spices,white onion,kg,
+2023,october,spices,white onion,kg,
+2023,november,spices,white onion,kg,
+2023,december,spices,white onion,kg,
+2023,january,spices,garlic,kg,
+2023,february,spices,garlic,kg,
+2023,march,spices,garlic,kg,
+2023,april,spices,garlic,kg,
+2023,may,spices,garlic,kg,
+2023,june,spices,garlic,kg,
+2023,july,spices,garlic,kg,
+2023,august,spices,garlic,kg,
+2023,september,spices,garlic,kg,
+2023,october,spices,garlic,kg,
+2023,november,spices,garlic,kg,120
+2023,december,spices,garlic,kg,
+2023,january,spices,ginger,kg,75
+2023,february,spices,ginger,kg,50
+2023,march,spices,ginger,kg,80
+2023,april,spices,ginger,kg,80
+2023,may,spices,ginger,kg,70
+2023,june,spices,ginger,kg,70
+2023,july,spices,ginger,kg,90
+2023,august,spices,ginger,kg,80
+2023,september,spices,ginger,kg,70
+2023,october,spices,ginger,kg,80
+2023,november,spices,ginger,kg,70
+2023,december,spices,ginger,kg,80
+2023,january,spices,chili (labuyo),kg,300
+2023,february,spices,chili (labuyo),kg,100
+2023,march,spices,chili (labuyo),kg,100
+2023,april,spices,chili (labuyo),kg,200
+2023,may,spices,chili (labuyo),kg,120
+2023,june,spices,chili (labuyo),kg,150
+2023,july,spices,chili (labuyo),kg,80
+2023,august,spices,chili (labuyo),kg,140
+2023,september,spices,chili (labuyo),kg,200
+2023,october,spices,chili (labuyo),kg,180
+2023,november,spices,chili (labuyo),kg,100
+2023,december,spices,chili (labuyo),kg,120
+2023,january,fruits,calamansi ,kg,50
+2023,february,fruits,calamansi ,kg,40
+2023,march,fruits,calamansi ,kg,40
+2023,april,fruits,calamansi ,kg,40
+2023,may,fruits,calamansi ,kg,50
+2023,june,fruits,calamansi ,kg,60
+2023,july,fruits,calamansi ,kg,50
+2023,august,fruits,calamansi ,kg,40
+2023,september,fruits,calamansi ,kg,30
+2023,october,fruits,calamansi ,kg,80
+2023,november,fruits,calamansi ,kg,65
+2023,december,fruits,calamansi ,kg,60
+2023,january,fruits,banana (lakatan),kg,50
+2023,february,fruits,banana (lakatan),kg,60
+2023,march,fruits,banana (lakatan),kg,50
+2023,april,fruits,banana (lakatan),kg,80
+2023,may,fruits,banana (lakatan),kg,70
+2023,june,fruits,banana (lakatan),kg,60
+2023,july,fruits,banana (lakatan),kg,50
+2023,august,fruits,banana (lakatan),kg,40
+2023,september,fruits,banana (lakatan),kg,30
+2023,october,fruits,banana (lakatan),kg,80
+2023,november,fruits,banana (lakatan),kg,65
+2023,december,fruits,banana (lakatan),kg,60
+2023,january,fruits,banana (latundan),kg,30
+2023,february,fruits,banana (latundan),kg,20
+2023,march,fruits,banana (latundan),kg,40
+2023,april,fruits,banana (latundan),kg,20
+2023,may,fruits,banana (latundan),kg,20
+2023,june,fruits,banana (latundan),kg,25
+2023,july,fruits,banana (latundan),kg,20
+2023,august,fruits,banana (latundan),kg,25
+2023,september,fruits,banana (latundan),kg,25
+2023,october,fruits,banana (latundan),kg,25
+2023,november,fruits,banana (latundan),kg,20
+2023,december,fruits,banana (latundan),kg,25
+2023,january,fruits,papaya,kg,30
+2023,february,fruits,papaya,kg,40
+2023,march,fruits,papaya,kg,40
+2023,april,fruits,papaya,kg,40
+2023,may,fruits,papaya,kg,40
+2023,june,fruits,papaya,kg,30
+2023,july,fruits,papaya,kg,25
+2023,august,fruits,papaya,kg,30
+2023,september,fruits,papaya,kg,30
+2023,october,fruits,papaya,kg,50
+2023,november,fruits,papaya,kg,40
+2023,december,fruits,papaya,kg,50
+2023,january,fruits,mango,kg,100
+2023,february,fruits,mango,kg,100
+2023,march,fruits,mango,kg,100
+2023,april,fruits,mango,kg,100
+2023,may,fruits,mango,kg,100
+2023,june,fruits,mango,kg,100
+2023,july,fruits,mango,kg,85
+2023,august,fruits,mango,kg,120
+2023,september,fruits,mango,kg,130
+2023,october,fruits,mango,kg,100
+2023,november,fruits,mango,kg,100
+2023,december,fruits,mango,kg,120
+2023,january,corn,white corn grits #10,kg,37
+2023,february,corn,white corn grits #10,kg,37
+2023,march,corn,white corn grits #10,kg,37
+2023,april,corn,white corn grits #10,kg,37
+2023,may,corn,white corn grits #10,kg,37
+2023,june,corn,white corn grits #10,kg,37
+2023,july,corn,white corn grits #10,kg,37
+2023,august,corn,white corn grits #10,kg,37.5
+2023,september,corn,white corn grits #10,kg,40
+2023,october,corn,white corn grits #10,kg,40
+2023,november,corn,white corn grits #10,kg,40
+2023,december,corn,white corn grits #10,kg,40
+2023,january,corn,white corn grits #12,kg,37
+2023,february,corn,white corn grits #12,kg,38
+2023,march,corn,white corn grits #12,kg,37
+2023,april,corn,white corn grits #12,kg,37
+2023,may,corn,white corn grits #12,kg,37
+2023,june,corn,white corn grits #12,kg,37
+2023,july,corn,white corn grits #12,kg,37
+2023,august,corn,white corn grits #12,kg,39
+2023,september,corn,white corn grits #12,kg,42
+2023,october,corn,white corn grits #12,kg,40
+2023,november,corn,white corn grits #12,kg,40
+2023,december,corn,white corn grits #12,kg,40
+2023,january,rootcrops,sweet potato,kg,
+2023,february,rootcrops,sweet potato,kg,35
+2023,march,rootcrops,sweet potato,kg,35
+2023,april,rootcrops,sweet potato,kg,35
+2023,may,rootcrops,sweet potato,kg,37.5
+2023,june,rootcrops,sweet potato,kg,30
+2023,july,rootcrops,sweet potato,kg,50
+2023,august,rootcrops,sweet potato,kg,40
+2023,september,rootcrops,sweet potato,kg,40
+2023,october,rootcrops,sweet potato,kg,
+2023,november,rootcrops,sweet potato,kg,0.875
+2023,december,rootcrops,sweet potato,kg,1.25
+2023,january,rootcrops,cassava,kg,
+2023,february,rootcrops,cassava,kg,
+2023,march,rootcrops,cassava,kg,
+2023,april,rootcrops,cassava,kg,
+2023,may,rootcrops,cassava,kg,
+2023,june,rootcrops,cassava,kg,
+2023,july,rootcrops,cassava,kg,
+2023,august,rootcrops,cassava,kg,30
+2023,september,rootcrops,cassava,kg,30
+2023,october,rootcrops,cassava,kg,
+2023,november,rootcrops,cassava,kg,50
+2023,december,rootcrops,cassava,kg,55
+2023,january,rootcrops,taro (gabi),kg,
+2023,february,rootcrops,taro (gabi),kg,
+2023,march,rootcrops,taro (gabi),kg,
+2023,april,rootcrops,taro (gabi),kg,
+2023,may,rootcrops,taro (gabi),kg,
+2023,june,rootcrops,taro (gabi),kg,
+2023,july,rootcrops,taro (gabi),kg,
+2023,august,rootcrops,taro (gabi),kg,
+2023,september,rootcrops,taro (gabi),kg,
+2023,october,rootcrops,taro (gabi),kg,
+2023,november,rootcrops,taro (gabi),kg,60
+2023,december,rootcrops,taro (gabi),kg,
+2024,january,local rice,special rice,kg,60
+2024,february,local rice,special rice,kg,60
+2024,march,local rice,special rice,kg,60
+2024,april,local rice,special rice,kg,60
+2024,may,local rice,special rice,kg,60
+2024,june,local rice,special rice,kg,60
+2024,july,local rice,special rice,kg,60
+2024,august,local rice,special rice,kg,60
+2024,september,local rice,special rice,kg,60
+2024,october,local rice,special rice,kg,60
+2024,november,local rice,special rice,kg,62
+2024,december,local rice,special rice,kg,60
+2024,january,local rice,premium rice,kg,56
+2024,february,local rice,premium rice,kg,
+2024,march,local rice,premium rice,kg,
+2024,april,local rice,premium rice,kg,56
+2024,may,local rice,premium rice,kg,
+2024,june,local rice,premium rice,kg,56
+2024,july,local rice,premium rice,kg,
+2024,august,local rice,premium rice,kg,55
+2024,september,local rice,premium rice,kg,
+2024,october,local rice,premium rice,kg,54
+2024,november,local rice,premium rice,kg,54
+2024,december,local rice,premium rice,kg,52
+2024,january,local rice,well milled,kg,
+2024,february,local rice,well milled,kg,
+2024,march,local rice,well milled,kg,
+2024,april,local rice,well milled,kg,54
+2024,may,local rice,well milled,kg,54
+2024,june,local rice,well milled,kg,54
+2024,july,local rice,well milled,kg,
+2024,august,local rice,well milled,kg,54
+2024,september,local rice,well milled,kg,54
+2024,october,local rice,well milled,kg,
+2024,november,local rice,well milled,kg,
+2024,december,local rice,well milled,kg,51
+2024,january,local rice,regular milled,kg,
+2024,february,local rice,regular milled,kg,
+2024,march,local rice,regular milled,kg,
+2024,april,local rice,regular milled,kg,
+2024,may,local rice,regular milled,kg,
+2024,june,local rice,regular milled,kg,
+2024,july,local rice,regular milled,kg,
+2024,august,local rice,regular milled,kg,
+2024,september,local rice,regular milled,kg,
+2024,october,local rice,regular milled,kg,
+2024,november,local rice,regular milled,kg,
+2024,december,local rice,regular milled,kg,
+2024,january,lowland vegetables,ampalaya,kg,70
+2024,february,lowland vegetables,ampalaya,kg,70
+2024,march,lowland vegetables,ampalaya,kg,70
+2024,april,lowland vegetables,ampalaya,kg,60
+2024,may,lowland vegetables,ampalaya,kg,60
+2024,june,lowland vegetables,ampalaya,kg,60
+2024,july,lowland vegetables,ampalaya,kg,60
+2024,august,lowland vegetables,ampalaya,kg,60
+2024,september,lowland vegetables,ampalaya,kg,60
+2024,october,lowland vegetables,ampalaya,kg,60
+2024,november,lowland vegetables,ampalaya,kg,60
+2024,december,lowland vegetables,ampalaya,kg,60
+2024,january,lowland vegetables,sitao,small bundle,6.25
+2024,february,lowland vegetables,sitao,small bundle,8.75
+2024,march,lowland vegetables,sitao,small bundle,8.75
+2024,april,lowland vegetables,sitao,small bundle,
+2024,may,lowland vegetables,sitao,small bundle,
+2024,june,lowland vegetables,sitao,small bundle,
+2024,july,lowland vegetables,sitao,small bundle,
+2024,august,lowland vegetables,sitao,small bundle,
+2024,september,lowland vegetables,sitao,small bundle,
+2024,october,lowland vegetables,sitao,small bundle,
+2024,november,lowland vegetables,sitao,small bundle,
+2024,december,lowland vegetables,sitao,small bundle,
+2024,january,lowland vegetables,pechay (native),small bundle,15
+2024,february,lowland vegetables,pechay (native),small bundle,15
+2024,march,lowland vegetables,pechay (native),small bundle,15
+2024,april,lowland vegetables,pechay (native),small bundle,
+2024,may,lowland vegetables,pechay (native),small bundle,
+2024,june,lowland vegetables,pechay (native),small bundle,
+2024,july,lowland vegetables,pechay (native),small bundle,
+2024,august,lowland vegetables,pechay (native),small bundle,
+2024,september,lowland vegetables,pechay (native),small bundle,
+2024,october,lowland vegetables,pechay (native),small bundle,
+2024,november,lowland vegetables,pechay (native),small bundle,
+2024,december,lowland vegetables,pechay (native),small bundle,
+2024,january,lowland vegetables,squash,kg,25
+2024,february,lowland vegetables,squash,kg,25
+2024,march,lowland vegetables,squash,kg,20
+2024,april,lowland vegetables,squash,kg,20
+2024,may,lowland vegetables,squash,kg,20
+2024,june,lowland vegetables,squash,kg,20
+2024,july,lowland vegetables,squash,kg,20
+2024,august,lowland vegetables,squash,kg,20
+2024,september,lowland vegetables,squash,kg,20
+2024,october,lowland vegetables,squash,kg,20
+2024,november,lowland vegetables,squash,kg,20
+2024,december,lowland vegetables,squash,kg,25
+2024,january,lowland vegetables,eggplant,kg,60
+2024,february,lowland vegetables,eggplant,kg,60
+2024,march,lowland vegetables,eggplant,kg,50
+2024,april,lowland vegetables,eggplant,kg,50
+2024,may,lowland vegetables,eggplant,kg,50
+2024,june,lowland vegetables,eggplant,kg,50
+2024,july,lowland vegetables,eggplant,kg,50
+2024,august,lowland vegetables,eggplant,kg,50
+2024,september,lowland vegetables,eggplant,kg,50
+2024,october,lowland vegetables,eggplant,kg,50
+2024,november,lowland vegetables,eggplant,kg,50
+2024,december,lowland vegetables,eggplant,kg,50
+2024,january,lowland vegetables,tomato,kg,80
+2024,february,lowland vegetables,tomato,kg,70
+2024,march,lowland vegetables,tomato,kg,40
+2024,april,lowland vegetables,tomato,kg,50
+2024,may,lowland vegetables,tomato,kg,50
+2024,june,lowland vegetables,tomato,kg,50
+2024,july,lowland vegetables,tomato,kg,50
+2024,august,lowland vegetables,tomato,kg,50
+2024,september,lowland vegetables,tomato,kg,50
+2024,october,lowland vegetables,tomato,kg,50
+2024,november,lowland vegetables,tomato,kg,50
+2024,december,lowland vegetables,tomato,kg,130
+2024,january,high land vegetables,cabbage,kg,40
+2024,february,high land vegetables,cabbage,kg,50
+2024,march,high land vegetables,cabbage,kg,60
+2024,april,high land vegetables,cabbage,kg,60
+2024,may,high land vegetables,cabbage,kg,60
+2024,june,high land vegetables,cabbage,kg,60
+2024,july,high land vegetables,cabbage,kg,60
+2024,august,high land vegetables,cabbage,kg,60
+2024,september,high land vegetables,cabbage,kg,60
+2024,october,high land vegetables,cabbage,kg,60
+2024,november,high land vegetables,cabbage,kg,60
+2024,december,high land vegetables,cabbage,kg,50
+2024,january,high land vegetables,carrots,kg,60
+2024,february,high land vegetables,carrots,kg,50
+2024,march,high land vegetables,carrots,kg,50
+2024,april,high land vegetables,carrots,kg,70
+2024,may,high land vegetables,carrots,kg,70
+2024,june,high land vegetables,carrots,kg,80
+2024,july,high land vegetables,carrots,kg,1.25
+2024,august,high land vegetables,carrots,kg,1.25
+2024,september,high land vegetables,carrots,kg,1.25
+2024,october,high land vegetables,carrots,kg,1.25
+2024,november,high land vegetables,carrots,kg,1.25
+2024,december,high land vegetables,carrots,kg,80
+2024,january,high land vegetables,habitchuelas (baguio beans),kg,60
+2024,february,high land vegetables,habitchuelas (baguio beans),kg,70
+2024,march,high land vegetables,habitchuelas (baguio beans),kg,50
+2024,april,high land vegetables,habitchuelas (baguio beans),kg,50
+2024,may,high land vegetables,habitchuelas (baguio beans),kg,50
+2024,june,high land vegetables,habitchuelas (baguio beans),kg,50
+2024,july,high land vegetables,habitchuelas (baguio beans),kg,50
+2024,august,high land vegetables,habitchuelas (baguio beans),kg,50
+2024,september,high land vegetables,habitchuelas (baguio beans),kg,50
+2024,october,high land vegetables,habitchuelas (baguio beans),kg,50
+2024,november,high land vegetables,habitchuelas (baguio beans),kg,50
+2024,december,high land vegetables,habitchuelas (baguio beans),kg,100
+2024,january,high land vegetables,white potato,kg,120
+2024,february,high land vegetables,white potato,kg,120
+2024,march,high land vegetables,white potato,kg,120
+2024,april,high land vegetables,white potato,kg,100
+2024,may,high land vegetables,white potato,kg,100
+2024,june,high land vegetables,white potato,kg,100
+2024,july,high land vegetables,white potato,kg,100
+2024,august,high land vegetables,white potato,kg,100
+2024,september,high land vegetables,white potato,kg,100
+2024,october,high land vegetables,white potato,kg,100
+2024,november,high land vegetables,white potato,kg,100
+2024,december,high land vegetables,white potato,kg,120
+2024,january,high land vegetables,pechay (baguio),kg,40
+2024,february,high land vegetables,pechay (baguio),kg,40
+2024,march,high land vegetables,pechay (baguio),kg,35
+2024,april,high land vegetables,pechay (baguio),kg,50
+2024,may,high land vegetables,pechay (baguio),kg,70
+2024,june,high land vegetables,pechay (baguio),kg,60
+2024,july,high land vegetables,pechay (baguio),kg,40
+2024,august,high land vegetables,pechay (baguio),kg,55
+2024,september,high land vegetables,pechay (baguio),kg,70
+2024,october,high land vegetables,pechay (baguio),kg,45
+2024,november,high land vegetables,pechay (baguio),kg,60
+2024,december,high land vegetables,pechay (baguio),kg,60
+2024,january,high land vegetables,chayote,kg,20
+2024,february,high land vegetables,chayote,kg,15
+2024,march,high land vegetables,chayote,kg,15
+2024,april,high land vegetables,chayote,kg,15
+2024,may,high land vegetables,chayote,kg,15
+2024,june,high land vegetables,chayote,kg,15
+2024,july,high land vegetables,chayote,kg,15
+2024,august,high land vegetables,chayote,kg,15
+2024,september,high land vegetables,chayote,kg,15
+2024,october,high land vegetables,chayote,kg,15
+2024,november,high land vegetables,chayote,kg,15
+2024,december,high land vegetables,chayote,kg,17.5
+2024,january,spices,red onion,kg,
+2024,february,spices,red onion,kg,
+2024,march,spices,red onion,kg,80
+2024,april,spices,red onion,kg,80
+2024,may,spices,red onion,kg,80
+2024,june,spices,red onion,kg,90
+2024,july,spices,red onion,kg,90
+2024,august,spices,red onion,kg,80
+2024,september,spices,red onion,kg,80
+2024,october,spices,red onion,kg,90
+2024,november,spices,red onion,kg,90
+2024,december,spices,red onion,kg,95
+2024,january,spices,white onion,kg,
+2024,february,spices,white onion,kg,
+2024,march,spices,white onion,kg,100
+2024,april,spices,white onion,kg,100
+2024,may,spices,white onion,kg,100
+2024,june,spices,white onion,kg,100
+2024,july,spices,white onion,kg,100
+2024,august,spices,white onion,kg,100
+2024,september,spices,white onion,kg,100
+2024,october,spices,white onion,kg,100
+2024,november,spices,white onion,kg,100
+2024,december,spices,white onion,kg,100
+2024,january,spices,garlic,kg,
+2024,february,spices,garlic,kg,
+2024,march,spices,garlic,kg,
+2024,april,spices,garlic,kg,
+2024,may,spices,garlic,kg,
+2024,june,spices,garlic,kg,
+2024,july,spices,garlic,kg,
+2024,august,spices,garlic,kg,
+2024,september,spices,garlic,kg,
+2024,october,spices,garlic,kg,
+2024,november,spices,garlic,kg,
+2024,december,spices,garlic,kg,
+2024,january,spices,ginger,kg,80
+2024,february,spices,ginger,kg,80
+2024,march,spices,ginger,kg,130
+2024,april,spices,ginger,kg,80
+2024,may,spices,ginger,kg,80
+2024,june,spices,ginger,kg,80
+2024,july,spices,ginger,kg,80
+2024,august,spices,ginger,kg,80
+2024,september,spices,ginger,kg,80
+2024,october,spices,ginger,kg,80
+2024,november,spices,ginger,kg,80
+2024,december,spices,ginger,kg,80
+2024,january,spices,chili (labuyo),kg,140
+2024,february,spices,chili (labuyo),kg,180
+2024,march,spices,chili (labuyo),kg,120
+2024,april,spices,chili (labuyo),kg,120
+2024,may,spices,chili (labuyo),kg,120
+2024,june,spices,chili (labuyo),kg,120
+2024,july,spices,chili (labuyo),kg,120
+2024,august,spices,chili (labuyo),kg,120
+2024,september,spices,chili (labuyo),kg,120
+2024,october,spices,chili (labuyo),kg,120
+2024,november,spices,chili (labuyo),kg,120
+2024,december,spices,chili (labuyo),kg,120
+2024,january,fruits,calamansi ,kg,60
+2024,february,fruits,calamansi ,kg,60
+2024,march,fruits,calamansi ,kg,40
+2024,april,fruits,calamansi ,kg,60
+2024,may,fruits,calamansi ,kg,60
+2024,june,fruits,calamansi ,kg,60
+2024,july,fruits,calamansi ,kg,60
+2024,august,fruits,calamansi ,kg,60
+2024,september,fruits,calamansi ,kg,60
+2024,october,fruits,calamansi ,kg,60
+2024,november,fruits,calamansi ,kg,60
+2024,december,fruits,calamansi ,kg,60
+2024,january,fruits,banana (lakatan),kg,40
+2024,february,fruits,banana (lakatan),kg,60
+2024,march,fruits,banana (lakatan),kg,80
+2024,april,fruits,banana (lakatan),kg,80
+2024,may,fruits,banana (lakatan),kg,80
+2024,june,fruits,banana (lakatan),kg,80
+2024,july,fruits,banana (lakatan),kg,80
+2024,august,fruits,banana (lakatan),kg,80
+2024,september,fruits,banana (lakatan),kg,80
+2024,october,fruits,banana (lakatan),kg,80
+2024,november,fruits,banana (lakatan),kg,80
+2024,december,fruits,banana (lakatan),kg,80
+2024,january,fruits,banana (latundan),kg,20
+2024,february,fruits,banana (latundan),kg,20
+2024,march,fruits,banana (latundan),kg,40
+2024,april,fruits,banana (latundan),kg,35
+2024,may,fruits,banana (latundan),kg,35
+2024,june,fruits,banana (latundan),kg,35
+2024,july,fruits,banana (latundan),kg,35
+2024,august,fruits,banana (latundan),kg,35
+2024,september,fruits,banana (latundan),kg,35
+2024,october,fruits,banana (latundan),kg,35
+2024,november,fruits,banana (latundan),kg,35
+2024,december,fruits,banana (latundan),kg,35
+2024,january,fruits,papaya,kg,25
+2024,february,fruits,papaya,kg,30
+2024,march,fruits,papaya,kg,35
+2024,april,fruits,papaya,kg,
+2024,may,fruits,papaya,kg,
+2024,june,fruits,papaya,kg,
+2024,july,fruits,papaya,kg,
+2024,august,fruits,papaya,kg,
+2024,september,fruits,papaya,kg,
+2024,october,fruits,papaya,kg,
+2024,november,fruits,papaya,kg,
+2024,december,fruits,papaya,kg,
+2024,january,fruits,mango,kg,100
+2024,february,fruits,mango,kg,100
+2024,march,fruits,mango,kg,130
+2024,april,fruits,mango,kg,130
+2024,may,fruits,mango,kg,130
+2024,june,fruits,mango,kg,130
+2024,july,fruits,mango,kg,130
+2024,august,fruits,mango,kg,130
+2024,september,fruits,mango,kg,130
+2024,october,fruits,mango,kg,130
+2024,november,fruits,mango,kg,130
+2024,december,fruits,mango,kg,130
+2024,january,corn,white corn grits #10,kg,40
+2024,february,corn,white corn grits #10,kg,40
+2024,march,corn,white corn grits #10,kg,
+2024,april,corn,white corn grits #10,kg,40
+2024,may,corn,white corn grits #10,kg,40
+2024,june,corn,white corn grits #10,kg,40
+2024,july,corn,white corn grits #10,kg,40
+2024,august,corn,white corn grits #10,kg,40
+2024,september,corn,white corn grits #10,kg,40
+2024,october,corn,white corn grits #10,kg,40
+2024,november,corn,white corn grits #10,kg,40
+2024,december,corn,white corn grits #10,kg,27
+2024,january,corn,white corn grits #12,kg,43
+2024,february,corn,white corn grits #12,kg,40
+2024,march,corn,white corn grits #12,kg,
+2024,april,corn,white corn grits #12,kg,40
+2024,may,corn,white corn grits #12,kg,40
+2024,june,corn,white corn grits #12,kg,40
+2024,july,corn,white corn grits #12,kg,40
+2024,august,corn,white corn grits #12,kg,40
+2024,september,corn,white corn grits #12,kg,40
+2024,october,corn,white corn grits #12,kg,40
+2024,november,corn,white corn grits #12,kg,40
+2024,december,corn,white corn grits #12,kg,27
+2024,january,rootcrops,sweet potato,kg,30
+2024,february,rootcrops,sweet potato,kg,40
+2024,march,rootcrops,sweet potato,kg,35
+2024,april,rootcrops,sweet potato,kg,35
+2024,may,rootcrops,sweet potato,kg,35
+2024,june,rootcrops,sweet potato,kg,35
+2024,july,rootcrops,sweet potato,kg,35
+2024,august,rootcrops,sweet potato,kg,35
+2024,september,rootcrops,sweet potato,kg,35
+2024,october,rootcrops,sweet potato,kg,35
+2024,november,rootcrops,sweet potato,kg,35
+2024,december,rootcrops,sweet potato,kg,35
+2024,january,rootcrops,cassava,kg,40
+2024,february,rootcrops,cassava,kg,50
+2024,march,rootcrops,cassava,kg,50
+2024,april,rootcrops,cassava,kg,50
+2024,may,rootcrops,cassava,kg,50
+2024,june,rootcrops,cassava,kg,50
+2024,july,rootcrops,cassava,kg,50
+2024,august,rootcrops,cassava,kg,50
+2024,september,rootcrops,cassava,kg,50
+2024,october,rootcrops,cassava,kg,40
+2024,november,rootcrops,cassava,kg,40
+2024,december,rootcrops,cassava,kg,40
+2024,january,rootcrops,taro (gabi),kg,
+2024,february,rootcrops,taro (gabi),kg,
+2024,march,rootcrops,taro (gabi),kg,
+2024,april,rootcrops,taro (gabi),kg,60
+2024,may,rootcrops,taro (gabi),kg,60
+2024,june,rootcrops,taro (gabi),kg,60
+2024,july,rootcrops,taro (gabi),kg,60
+2024,august,rootcrops,taro (gabi),kg,60
+2024,september,rootcrops,taro (gabi),kg,60
+2024,october,rootcrops,taro (gabi),kg,60
+2024,november,rootcrops,taro (gabi),kg,60
+2024,december,rootcrops,taro (gabi),kg,60
+2025,january,local rice,special rice,kg,60
+2025,february,local rice,special rice,kg,60
+2025,march,local rice,special rice,kg,56
+2025,april,local rice,special rice,kg,54
+2025,may,local rice,special rice,kg,54
+2025,june,local rice,special rice,kg,54
+2025,july,local rice,special rice,kg,45
+2025,august,local rice,special rice,kg,48
+2025,september,local rice,special rice,kg,48
+2025,january,local rice,premium rice,kg,52
+2025,february,local rice,premium rice,kg,53
+2025,march,local rice,premium rice,kg,54
+2025,april,local rice,premium rice,kg,51
+2025,may,local rice,premium rice,kg,52
+2025,june,local rice,premium rice,kg,52
+2025,july,local rice,premium rice,kg,42
+2025,august,local rice,premium rice,kg,42
+2025,september,local rice,premium rice,kg,42
+2025,january,local rice,well milled,kg,51
+2025,february,local rice,well milled,kg,51
+2025,march,local rice,well milled,kg,51
+2025,april,local rice,well milled,kg,
+2025,may,local rice,well milled,kg,
+2025,june,local rice,well milled,kg,
+2025,july,local rice,well milled,kg,41
+2025,august,local rice,well milled,kg,41
+2025,september,local rice,well milled,kg,41
+2025,january,local rice,regular milled,kg,
+2025,february,local rice,regular milled,kg,
+2025,march,local rice,regular milled,kg,52
+2025,april,local rice,regular milled,kg,
+2025,may,local rice,regular milled,kg,
+2025,june,local rice,regular milled,kg,
+2025,july,local rice,regular milled,kg,
+2025,august,local rice,regular milled,kg,
+2025,september,local rice,regular milled,kg,
+2025,january,lowland vegetables,ampalaya,kg,70
+2025,february,lowland vegetables,ampalaya,kg,80
+2025,march,lowland vegetables,ampalaya,kg,65
+2025,april,lowland vegetables,ampalaya,kg,50
+2025,may,lowland vegetables,ampalaya,kg,70
+2025,june,lowland vegetables,ampalaya,kg,60
+2025,july,lowland vegetables,ampalaya,kg,70
+2025,august,lowland vegetables,ampalaya,kg,110
+2025,september,lowland vegetables,ampalaya,kg,90
+2025,january,lowland vegetables,sitao,small bundle,7.5
+2025,february,lowland vegetables,sitao,small bundle,5
+2025,march,lowland vegetables,sitao,small bundle,7.5
+2025,april,lowland vegetables,sitao,small bundle,4.375
+2025,may,lowland vegetables,sitao,small bundle,10
+2025,june,lowland vegetables,sitao,small bundle,9.37
+2025,july,lowland vegetables,sitao,small bundle,8.75
+2025,august,lowland vegetables,sitao,small bundle,15
+2025,september,lowland vegetables,sitao,small bundle,15
+2025,january,lowland vegetables,pechay (native),small bundle,6.25
+2025,february,lowland vegetables,pechay (native),small bundle,6.25
+2025,march,lowland vegetables,pechay (native),small bundle,15
+2025,april,lowland vegetables,pechay (native),small bundle,6.875
+2025,may,lowland vegetables,pechay (native),small bundle,6.25
+2025,june,lowland vegetables,pechay (native),small bundle,7.5
+2025,july,lowland vegetables,pechay (native),small bundle,12.5
+2025,august,lowland vegetables,pechay (native),small bundle,17.5
+2025,september,lowland vegetables,pechay (native),small bundle,17.5
+2025,january,lowland vegetables,squash,kg,25
+2025,february,lowland vegetables,squash,kg,50
+2025,march,lowland vegetables,squash,kg,20
+2025,april,lowland vegetables,squash,kg,15
+2025,may,lowland vegetables,squash,kg,25
+2025,june,lowland vegetables,squash,kg,25
+2025,july,lowland vegetables,squash,kg,40
+2025,august,lowland vegetables,squash,kg,40
+2025,september,lowland vegetables,squash,kg,40
+2025,january,lowland vegetables,eggplant,kg,50
+2025,february,lowland vegetables,eggplant,kg,60
+2025,march,lowland vegetables,eggplant,kg,40
+2025,april,lowland vegetables,eggplant,kg,30
+2025,may,lowland vegetables,eggplant,kg,35
+2025,june,lowland vegetables,eggplant,kg,40
+2025,july,lowland vegetables,eggplant,kg,70
+2025,august,lowland vegetables,eggplant,kg,95
+2025,september,lowland vegetables,eggplant,kg,95
+2025,january,lowland vegetables,tomato,kg,130
+2025,february,lowland vegetables,tomato,kg,50
+2025,march,lowland vegetables,tomato,kg,32.5
+2025,april,lowland vegetables,tomato,kg,35
+2025,may,lowland vegetables,tomato,kg,70
+2025,june,lowland vegetables,tomato,kg,60
+2025,july,lowland vegetables,tomato,kg,50
+2025,august,lowland vegetables,tomato,kg,50
+2025,september,lowland vegetables,tomato,kg,70
+2025,january,high land vegetables,cabbage,kg,50
+2025,february,high land vegetables,cabbage,kg,50
+2025,march,high land vegetables,cabbage,kg,40
+2025,april,high land vegetables,cabbage,kg,30
+2025,may,high land vegetables,cabbage,kg,35
+2025,june,high land vegetables,cabbage,kg,60
+2025,july,high land vegetables,cabbage,kg,80
+2025,august,high land vegetables,cabbage,kg,80
+2025,september,high land vegetables,cabbage,kg,100
+2025,january,high land vegetables,carrots,kg,80
+2025,february,high land vegetables,carrots,kg,90
+2025,march,high land vegetables,carrots,kg,50
+2025,april,high land vegetables,carrots,kg,35
+2025,may,high land vegetables,carrots,kg,40
+2025,june,high land vegetables,carrots,kg,50
+2025,july,high land vegetables,carrots,kg,70
+2025,august,high land vegetables,carrots,kg,80
+2025,september,high land vegetables,carrots,kg,80
+2025,january,high land vegetables,habitchuelas (baguio beans),kg,100
+2025,february,high land vegetables,habitchuelas (baguio beans),kg,70
+2025,march,high land vegetables,habitchuelas (baguio beans),kg,60
+2025,april,high land vegetables,habitchuelas (baguio beans),kg,50
+2025,may,high land vegetables,habitchuelas (baguio beans),kg,45
+2025,june,high land vegetables,habitchuelas (baguio beans),kg,50
+2025,july,high land vegetables,habitchuelas (baguio beans),kg,50
+2025,august,high land vegetables,habitchuelas (baguio beans),kg,70
+2025,september,high land vegetables,habitchuelas (baguio beans),kg,70
+2025,january,high land vegetables,white potato,kg,120
+2025,february,high land vegetables,white potato,kg,
+2025,march,high land vegetables,white potato,kg,85
+2025,april,high land vegetables,white potato,kg,40
+2025,may,high land vegetables,white potato,kg,40
+2025,june,high land vegetables,white potato,kg,60
+2025,july,high land vegetables,white potato,kg,60
+2025,august,high land vegetables,white potato,kg,85
+2025,september,high land vegetables,white potato,kg,85
+2025,january,high land vegetables,pechay (baguio),kg,60
+2025,february,high land vegetables,pechay (baguio),kg,50
+2025,march,high land vegetables,pechay (baguio),kg,35
+2025,april,high land vegetables,pechay (baguio),kg,30
+2025,may,high land vegetables,pechay (baguio),kg,30
+2025,june,high land vegetables,pechay (baguio),kg,40
+2025,july,high land vegetables,pechay (baguio),kg,60
+2025,august,high land vegetables,pechay (baguio),kg,80
+2025,september,high land vegetables,pechay (baguio),kg,80
+2025,january,high land vegetables,chayote,kg,17.5
+2025,february,high land vegetables,chayote,kg,40
+2025,march,high land vegetables,chayote,kg,15
+2025,april,high land vegetables,chayote,kg,10
+2025,may,high land vegetables,chayote,kg,10
+2025,june,high land vegetables,chayote,kg,12
+2025,july,high land vegetables,chayote,kg,30
+2025,august,high land vegetables,chayote,kg,40
+2025,september,high land vegetables,chayote,kg,40
+2025,january,spices,red onion,kg,
+2025,february,spices,red onion,kg,
+2025,march,spices,red onion,kg,100
+2025,april,spices,red onion,kg,82.5
+2025,may,spices,red onion,kg,120
+2025,june,spices,red onion,kg,130
+2025,july,spices,red onion,kg,130
+2025,august,spices,red onion,kg,140
+2025,september,spices,red onion,kg,140
+2025,january,spices,white onion,kg,
+2025,february,spices,white onion,kg,
+2025,march,spices,white onion,kg,
+2025,april,spices,white onion,kg,100
+2025,may,spices,white onion,kg,120
+2025,june,spices,white onion,kg,130
+2025,july,spices,white onion,kg,130
+2025,august,spices,white onion,kg,150
+2025,september,spices,white onion,kg,150
+2025,january,spices,garlic,kg,
+2025,february,spices,garlic,kg,
+2025,march,spices,garlic,kg,120
+2025,april,spices,garlic,kg,130
+2025,may,spices,garlic,kg,
+2025,june,spices,garlic,kg,
+2025,july,spices,garlic,kg,
+2025,august,spices,garlic,kg,
+2025,september,spices,garlic,kg,
+2025,january,spices,ginger,kg,100
+2025,february,spices,ginger,kg,100
+2025,march,spices,ginger,kg,130
+2025,april,spices,ginger,kg,140
+2025,may,spices,ginger,kg,180
+2025,june,spices,ginger,kg,180
+2025,july,spices,ginger,kg,150
+2025,august,spices,ginger,kg,150
+2025,september,spices,ginger,kg,150
+2025,january,spices,chili (labuyo),kg,325
+2025,february,spices,chili (labuyo),kg,100
+2025,march,spices,chili (labuyo),kg,
+2025,april,spices,chili (labuyo),kg,
+2025,may,spices,chili (labuyo),kg,
+2025,june,spices,chili (labuyo),kg,
+2025,july,spices,chili (labuyo),kg,
+2025,august,spices,chili (labuyo),kg,400
+2025,september,spices,chili (labuyo),kg,400
+2025,january,fruits,calamansi ,kg,50
+2025,february,fruits,calamansi ,kg,30
+2025,march,fruits,calamansi ,kg,35
+2025,april,fruits,calamansi ,kg,30
+2025,may,fruits,calamansi ,kg,30
+2025,june,fruits,calamansi ,kg,70
+2025,july,fruits,calamansi ,kg,50
+2025,august,fruits,calamansi ,kg,55
+2025,september,fruits,calamansi ,kg,55
+2025,january,fruits,banana (lakatan),kg,50
+2025,february,fruits,banana (lakatan),kg,45
+2025,march,fruits,banana (lakatan),kg,50
+2025,april,fruits,banana (lakatan),kg,50
+2025,may,fruits,banana (lakatan),kg,70
+2025,june,fruits,banana (lakatan),kg,20
+2025,july,fruits,banana (lakatan),kg,20
+2025,august,fruits,banana (lakatan),kg,60
+2025,september,fruits,banana (lakatan),kg,60
+2025,january,fruits,banana (latundan),kg,30
+2025,february,fruits,banana (latundan),kg,20
+2025,march,fruits,banana (latundan),kg,25
+2025,april,fruits,banana (latundan),kg,20
+2025,may,fruits,banana (latundan),kg,20
+2025,june,fruits,banana (latundan),kg,40
+2025,july,fruits,banana (latundan),kg,40
+2025,august,fruits,banana (latundan),kg,20
+2025,september,fruits,banana (latundan),kg,20
+2025,january,fruits,papaya,kg,
+2025,february,fruits,papaya,kg,20
+2025,march,fruits,papaya,kg,40
+2025,april,fruits,papaya,kg,40
+2025,may,fruits,papaya,kg,40
+2025,june,fruits,papaya,kg,110
+2025,july,fruits,papaya,kg,120
+2025,august,fruits,papaya,kg,40
+2025,september,fruits,papaya,kg,40
+2025,january,fruits,mango,kg,160
+2025,february,fruits,mango,kg,120
+2025,march,fruits,mango,kg,130
+2025,april,fruits,mango,kg,130
+2025,may,fruits,mango,kg,120
+2025,june,fruits,mango,kg,
+2025,july,fruits,mango,kg,
+2025,august,fruits,mango,kg,125
+2025,september,fruits,mango,kg,125
+2025,january,corn,white corn grits #10,kg,27
+2025,february,corn,white corn grits #10,kg,27
+2025,march,corn,white corn grits #10,kg,27
+2025,april,corn,white corn grits #10,kg,27
+2025,may,corn,white corn grits #10,kg,27
+2025,june,corn,white corn grits #10,kg,32
+2025,july,corn,white corn grits #10,kg,32
+2025,august,corn,white corn grits #10,kg,32
+2025,september,corn,white corn grits #10,kg,32
+2025,january,corn,white corn grits #12,kg,27
+2025,february,corn,white corn grits #12,kg,27
+2025,march,corn,white corn grits #12,kg,27
+2025,april,corn,white corn grits #12,kg,27
+2025,may,corn,white corn grits #12,kg,27
+2025,june,corn,white corn grits #12,kg,32
+2025,july,corn,white corn grits #12,kg,32
+2025,august,corn,white corn grits #12,kg,32
+2025,september,corn,white corn grits #12,kg,32
+2025,january,rootcrops,sweet potato,kg,
+2025,february,rootcrops,sweet potato,kg,40
+2025,march,rootcrops,sweet potato,kg,35
+2025,april,rootcrops,sweet potato,kg,40
+2025,may,rootcrops,sweet potato,kg,40
+2025,june,rootcrops,sweet potato,kg,40
+2025,july,rootcrops,sweet potato,kg,40
+2025,august,rootcrops,sweet potato,kg,37.5
+2025,september,rootcrops,sweet potato,kg,37.5
+2025,january,rootcrops,cassava,kg,40
+2025,february,rootcrops,cassava,kg,40
+2025,march,rootcrops,cassava,kg,40
+2025,april,rootcrops,cassava,kg,40
+2025,may,rootcrops,cassava,kg,40
+2025,june,rootcrops,cassava,kg,40
+2025,july,rootcrops,cassava,kg,40
+2025,august,rootcrops,cassava,kg,35
+2025,september,rootcrops,cassava,kg,35
+2025,january,rootcrops,taro (gabi),kg,
+2025,february,rootcrops,taro (gabi),kg,35
+2025,march,rootcrops,taro (gabi),kg,35
+2025,april,rootcrops,taro (gabi),kg,35
+2025,may,rootcrops,taro (gabi),kg,35
+2025,june,rootcrops,taro (gabi),kg,35
+2025,july,rootcrops,taro (gabi),kg,35
+2025,august,rootcrops,taro (gabi),kg,40
+2025,september,rootcrops,taro (gabi),kg,40

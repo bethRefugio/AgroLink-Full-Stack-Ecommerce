@@ -41,6 +41,13 @@ const UploadProduct = () => {
   const allSubCategory = useSelector(state => state.product.allSubCategory);
   const user = useSelector(state => state.user);
 
+  const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
+  const [suggestedPrice, setSuggestedPrice] = useState(null);
+  const [bestModel, setBestModel] = useState("");
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+  const [suggestionError, setSuggestionError] = useState("");
+  const [showSuggestionErrorModal, setShowSuggestionErrorModal] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -159,6 +166,53 @@ const UploadProduct = () => {
   const getSubCategoryDescription = (subCategoryName) => {
     const subCategory = allSubCategory.find(sc => sc.name === subCategoryName);
     return subCategory?.description || "No description available";
+  };
+
+   const handleSuggestPrice = async () => {
+    if (!data.name || data.name.trim() === "") {
+      AxiosToastError({ message: "Please enter a product name first." });
+      return;
+    }
+
+    setIsSuggestingPrice(true);
+    setSuggestedPrice(null);
+    setBestModel("");
+    setSuggestionError("");
+    setShowSuggestionErrorModal(false);
+
+    try {
+      const res = await Axios({
+        ...SummaryApi.suggestPrice,
+        data: { item_name: data.name.trim() }
+      });
+
+      const { data: resData } = res;
+
+      if (resData?.suggestedPrice != null) {
+        setSuggestedPrice(Number(resData.suggestedPrice));
+        setBestModel(resData.bestModel || "");
+        setShowSuggestionModal(true);
+      } else {
+        const msg = resData?.message || "Could not generate a price suggestion.";
+        // If backend indicates no historical data or not found, show friendly modal
+        if (/not found/i.test(msg) || /no historical data/i.test(msg)) {
+          setSuggestionError(`I cannot suggest a price for "${data.name}" because there is no historical data for this item.`);
+          setShowSuggestionErrorModal(true);
+        } else {
+          AxiosToastError({ message: msg });
+        }
+      }
+    } catch (err) {
+      const serverMsg = err?.response?.data?.message || err?.message || String(err);
+      if (err?.response?.status === 404 || /not found/i.test(serverMsg) || /no historical data/i.test(serverMsg)) {
+        setSuggestionError(`I cannot suggest a price for "${data.name}" because there is no historical data for this item.`);
+        setShowSuggestionErrorModal(true);
+      } else {
+        AxiosToastError(err);
+      }
+    } finally {
+      setIsSuggestingPrice(false);
+    }
   };
 
   return (
@@ -386,7 +440,7 @@ const UploadProduct = () => {
 
               {openUnitDropdown && (
                 <div className='absolute left-0 mt-1 w-full bg-white border rounded shadow-lg z-50 max-h-48 overflow-y-auto'>
-                  {["kilograms", "grams", "dozen", "tray", "bundle"].map((unit) => (
+                  {["kilograms", "grams", "dozen", "tray", "bundle", "piece"].map((unit) => (
                     <div
                       key={unit}
                       className='px-3 py-2 hover:bg-blue-100 cursor-pointer'
@@ -421,19 +475,29 @@ const UploadProduct = () => {
             />
           </div>
 
-          {/* Price Field */}
+          {/* Price Field with Suggest button */}
           <div className='grid gap-1'>
             <label htmlFor='price' className='font-medium'>Price</label>
-            <input
-              id='price'
-              type='number'
-              placeholder='Enter product price'
-              name='price'
-              value={data.price}
-              onChange={handleChange}
-              required
-              className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded'
-            />
+            <div className='flex gap-2 items-center'>
+              <input
+                id='price'
+                type='number'
+                placeholder='Enter product price'
+                name='price'
+                value={data.price}
+                onChange={handleChange}
+                required
+                className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded flex-grow'
+              />
+              <button
+                type="button"
+                onClick={handleSuggestPrice}
+                disabled={isSuggestingPrice}
+                className={`bg-green-500 text-white p-2 rounded text-sm font-medium transition-colors w-36 flex justify-center items-center ${isSuggestingPrice ? 'opacity-60 cursor-not-allowed' : 'hover:bg-green-600'}`}
+              >
+                {isSuggestingPrice ? <Loading /> : "Suggest Price"}
+              </button>
+            </div>
           </div>
 
           {/* Discount Field */}
@@ -506,6 +570,66 @@ const UploadProduct = () => {
           close={() => setOpenAddField(false)}
         />
       )}
+
+      {/* Price Suggestion Modal */}
+      {showSuggestionModal && suggestedPrice != null && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]'>
+          <div className='bg-white p-6 rounded-lg shadow-2xl w-96'>
+            <h3 className='text-lg font-bold mb-3'>Price Suggestion</h3>
+            <p className='mb-4'>
+              The recommended price for <strong>{data.name}</strong> is <strong>₱{suggestedPrice.toFixed(2)}</strong> (based on previous sales data + 5% markup).
+            </p>
+            <p className='text-sm text-gray-600 mb-4'>
+              Do you want to apply this suggested price?
+            </p>
+            <div className='flex justify-end gap-3'>
+              <button
+                type="button"
+                onClick={() => setShowSuggestionModal(false)}
+                className='px-4 py-2 bg-gray-200 rounded hover:bg-gray-300'
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setData(prev => ({
+                    ...prev,
+                    price: suggestedPrice.toFixed(2)
+                  }));
+                  setShowSuggestionModal(false);
+                  successAlert("Suggested price applied!");
+                }}
+                className='px-4 py-2 bg-primary-100 text-white rounded hover:bg-primary-200 font-semibold'
+              >
+                Yes, Apply Price
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Suggestion Error Modal */}
+      {showSuggestionErrorModal && suggestionError && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]'>
+          <div className='bg-white p-6 rounded-lg shadow-2xl w-96'>
+            <h3 className='text-lg font-bold mb-3'>Price Suggestion</h3>
+            <p className='mb-4 text-gray-700'>
+              {suggestionError}
+            </p>
+            <div className='flex justify-end'>
+              <button
+                type="button"
+                onClick={() => setShowSuggestionErrorModal(false)}
+                className='px-4 py-2 bg-primary-100 text-white rounded hover:bg-primary-200 font-semibold'
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </section>
   );
 };

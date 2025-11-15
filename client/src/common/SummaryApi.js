@@ -171,13 +171,29 @@ const SummaryApi = {
         url : '/api/user/users-table',
         method : 'get'
     },
+    updateUsersTable : {
+        url : '/api/user/users-table',
+        method : 'put'
+    },
+    deleteUser : {
+        url : '/api/user/users-table',
+        method : 'delete'
+    },
     adminUpdateUser : {
         url : '/api/user/admin-update-user',
         method : 'put'
     },
-    deleteUser: {
-        url: '/api/user/delete',
-        method: 'delete'
+    addPreference: {
+        url: "/api/user/add-preference",
+        method: "put"
+    },
+    getPreferences: {
+        method: "get",
+        url: "/api/user/preferences"
+    },
+    suggestPrice:{
+        url: "/api/product/suggest-price",
+        method: "post"
     }
 }
 
