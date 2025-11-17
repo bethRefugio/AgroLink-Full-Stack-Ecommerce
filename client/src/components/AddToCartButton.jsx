@@ -14,7 +14,7 @@ const AddToCartButton = ({ data }) => {
     const cartItem = useSelector(state => state.cartItem.cart)
     const [isAvailableCart, setIsAvailableCart] = useState(false)
     const [qty, setQty] = useState(0)
-    const [cartItemDetails,setCartItemsDetails] = useState()
+    const [cartItemDetails, setCartItemsDetails] = useState()
 
     const handleADDTocart = async (e) => {
         e.preventDefault()
@@ -48,39 +48,55 @@ const AddToCartButton = ({ data }) => {
 
     //checking this item in cart or not
     useEffect(() => {
-        const checkingitem = cartItem.some(item => item.productId._id === data._id)
+        // Add null/undefined checks
+        if (!data?._id || !Array.isArray(cartItem)) {
+            setIsAvailableCart(false)
+            setQty(0)
+            setCartItemsDetails(null)
+            return
+        }
+
+        const checkingitem = cartItem.some(item => {
+            // Safely check if productId exists and has _id
+            return item?.productId?._id === data._id
+        })
         setIsAvailableCart(checkingitem)
 
-        const product = cartItem.find(item => item.productId._id === data._id)
-        setQty(product?.quantity)
+        const product = cartItem.find(item => {
+            // Safely check if productId exists and has _id
+            return item?.productId?._id === data._id
+        })
+        
+        setQty(product?.quantity || 0)
         setCartItemsDetails(product)
     }, [data, cartItem])
 
 
-    const increaseQty = async(e) => {
+    const increaseQty = async (e) => {
         e.preventDefault()
         e.stopPropagation()
-    
-       const response = await  updateCartItem(cartItemDetails?._id,qty+1)
-        
-       if(response.success){
-        toast.success("Item added")
-       }
+
+        const response = await updateCartItem(cartItemDetails?._id, qty + 1)
+
+        if (response.success) {
+            toast.success("Item added")
+        }
     }
 
-    const decreaseQty = async(e) => {
+    const decreaseQty = async (e) => {
         e.preventDefault()
         e.stopPropagation()
-        if(qty === 1){
+        if (qty === 1) {
             deleteCartItem(cartItemDetails?._id)
-        }else{
-            const response = await updateCartItem(cartItemDetails?._id,qty-1)
+        } else {
+            const response = await updateCartItem(cartItemDetails?._id, qty - 1)
 
-            if(response.success){
-                toast.success("Item remove")
+            if (response.success) {
+                toast.success("Item removed")
             }
         }
     }
+
     return (
         <div className='w-full max-w-[150px]'>
             {
@@ -94,10 +110,10 @@ const AddToCartButton = ({ data }) => {
                     </div>
                 ) : (
                     <button
-                    onClick={handleADDTocart}
-                    className='bg-green-600 hover:bg-green-700 text-white text-sm px-2 lg:px-4 py-1 rounded'
+                        onClick={handleADDTocart}
+                        className='bg-green-600 hover:bg-green-700 text-white text-sm px-2 lg:px-4 py-1 rounded'
                     >
-                    {loading ? <Loading /> : "Add to Cart"}
+                        {loading ? <Loading /> : "Add to Cart"}
                     </button>
                 )
             }
