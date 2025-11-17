@@ -32,7 +32,7 @@ import Cancel from "../pages/Cancel";
 import VerifyEmail from "../pages/VerifyEmail";
 import AllOrders from "../pages/AllOrders";
 import UsersTable from "../pages/UsersTable";
-
+import SellerProductPage from "../pages/SellerProductPage";
 
 const router = createBrowserRouter([
     {
@@ -153,6 +153,10 @@ const router = createBrowserRouter([
             {
                 path : "product/:product",
                 element : <ProductDisplayPage/>
+            },
+            {
+                path: "seller/:sellerId",
+                element: <SellerProductPage />
             },
             {
                 path : 'cart',

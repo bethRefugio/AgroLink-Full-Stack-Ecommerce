@@ -46,8 +46,8 @@ const UserMenu = ({ close }) => {
   const MenuItem = ({ to, icon: Icon, children, onClick }) => {
     const content = (
       <>
-        <Icon size={20} className="text-gray-600" />
-        <span className="flex-1">{children}</span>
+        <Icon size={20} className="text-gray-600 flex-shrink-0" />
+        <span className="flex-1 text-left">{children}</span>
       </>
     )
 
@@ -68,7 +68,7 @@ const UserMenu = ({ close }) => {
     return (
       <button
         onClick={onClick}
-        className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors text-left"
       >
         {content}
       </button>
@@ -77,7 +77,7 @@ const UserMenu = ({ close }) => {
 
 
   return (
-    <div className="py-2 w-64">
+    <div className="py-2 w-64 md:w-80">
       {/* User Info Section */}
       <div className="px-4 py-3 mb-2">
         <div className="flex items-center gap-3">
@@ -106,7 +106,7 @@ const UserMenu = ({ close }) => {
           <Link
             to="/dashboard/profile"
             onClick={handleClose}
-            className="text-gray-400 hover:text-green-600 transition-colors"
+            className="text-gray-400 hover:text-green-600 transition-colors flex-shrink-0"
           >
             <HiOutlineExternalLink size={18} />
           </Link>
@@ -207,11 +207,15 @@ const UserMenu = ({ close }) => {
       <div className="h-px bg-gray-200 my-2" />
 
 
-      {/* Logout */}
+     {/* Logout */}
       <div className="px-2">
-        <MenuItem onClick={handleLogout} icon={FiLogOut}>
-          <span className="text-red-600 font-medium">Log Out</span>
-        </MenuItem>
+        <button
+          onClick={handleLogout}
+          className="w-40 flex items-center gap-3 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white font-semibold shadow-md transition-colors"
+        >
+          <FiLogOut size={20} className="text-white flex-shrink-0" />
+          <span className="flex-1 text-left">Log Out</span>
+        </button>
       </div>
     </div>
   )
@@ -221,6 +225,3 @@ const UserMenu = ({ close }) => {
 
 
 export default UserMenu
-
-
-

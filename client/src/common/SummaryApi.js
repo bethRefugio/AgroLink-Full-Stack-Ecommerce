@@ -218,8 +218,14 @@ const SummaryApi = {
          url: '/api/order/order/by-seller',
          method: 'get'
     },
-
-
+    getProductBySubCategory : {
+        url : '/api/product/get-product-by-subcategory',
+        method : 'post'
+    },
+    getProductBySeller : {
+        url : '/api/product/get-product-by-seller',
+        method : 'post'
+    },
 }
 
 

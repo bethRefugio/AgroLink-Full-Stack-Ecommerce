@@ -1,241 +1,404 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import SummaryApi from '../common/SummaryApi'
 import Axios from '../utils/Axios'
 import AxiosToastError from '../utils/AxiosToastError'
-import { FaAngleRight,FaAngleLeft } from "react-icons/fa6";
+import { FaAngleRight, FaAngleLeft } from 'react-icons/fa6'
+import { IoArrowBack } from 'react-icons/io5'
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees'
 import Divider from '../components/Divider'
-import image1 from '../assets/minute_delivery.png'
-import image2 from '../assets/Best_Prices_Offers.png'
-import image3 from '../assets/Wide_Assortment.png'
 import { pricewithDiscount } from '../utils/PriceWithDiscount'
 import AddToCartButton from '../components/AddToCartButton'
-import { useSelector } from 'react-redux';
+import { useSelector } from 'react-redux'
+import CardProduct from '../components/CardProduct'
+import { MdStorefront } from 'react-icons/md'
 
+const fallbackImg =
+  'https://via.placeholder.com/400x400.png?text=No+Image'
 
 const ProductDisplayPage = () => {
   const params = useParams()
-  let productId = params?.product?.split("-")?.slice(-1)[0]
-  const [data,setData] = useState({
-    name : "",
-    image : []
+  const navigate = useNavigate()
+  const productId = params?.product?.split('-')?.slice(-1)[0]
+
+  const [data, setData] = useState({
+    name: '',
+    image: [],
+    category: [],
+    subCategory: [],
+    userId: null
   })
-  const [image,setImage] = useState(0)
-  const [loading,setLoading] = useState(false)
+  const [imageIndex, setImageIndex] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [relatedProducts, setRelatedProducts] = useState([])
+  const [sellerProducts, setSellerProducts] = useState([])
   const imageContainer = useRef()
-  const user = useSelector((state) => state?.user);
+  const user = useSelector(state => state?.user)
 
-
-  const fetchProductDetails = async()=>{
+  const fetchProductDetails = async () => {
     try {
-        const response = await Axios({
-          ...SummaryApi.getProductDetails,
-          data : {
-            productId : productId 
-          }
+      setLoading(true)
+      const response = await Axios({
+        ...SummaryApi.getProductDetails,
+        data: { productId }
+      })
+      const { data: responseData } = response
+      if (responseData.success && responseData.data) {
+        const prod = responseData.data
+        setData({
+          ...prod,
+          image: Array.isArray(prod.image) ? prod.image : [],
+          category: Array.isArray(prod.category) ? prod.category : [],
+          subCategory: Array.isArray(prod.subCategory) ? prod.subCategory : [],
+          userId: prod.userId || null
         })
-
-        const { data : responseData } = response
-
-        if(responseData.success){
-          setData(responseData.data)
-        }
+        const subId = prod.subCategory?.[0]?._id
+        const sellerId = prod.userId?._id
+        fetchRelatedProducts(subId)
+        fetchSellerProducts(sellerId)
+      }
     } catch (error) {
       AxiosToastError(error)
-    }finally{
+    } finally {
       setLoading(false)
     }
   }
 
-  useEffect(()=>{
-    fetchProductDetails()
-  },[params])
-  
-  const handleScrollRight = ()=>{
-    imageContainer.current.scrollLeft += 100
+  const fetchRelatedProducts = async subCategoryId => {
+    if (!subCategoryId) return
+    try {
+      const response = await Axios({
+        ...SummaryApi.getProductBySubCategory,
+        data: { id: subCategoryId }
+      })
+      if (response.data.success) {
+        const filtered = response.data.data
+          .filter(p => p._id !== productId)
+          .slice(0, 12)
+        setRelatedProducts(filtered)
+      }
+    } catch (error) {
+      console.error(error)
+    }
   }
-  const handleScrollLeft = ()=>{
-    imageContainer.current.scrollLeft -= 100
-  }
-  console.log("product data",data)
-  return (
-    <section className='container mx-auto p-4 grid lg:grid-cols-2 '>
-        <div className=''>
-            <div className='bg-white lg:min-h-[65vh] lg:max-h-[65vh] rounded min-h-56 max-h-56 h-full w-full'>
-                <img
-                    src={data.image[image]}
-                    className='w-full h-full object-scale-down'
-                /> 
-            </div>
-            <div className='flex items-center justify-center gap-3 my-2'>
-              {
-                data.image.map((img,index)=>{
-                  return(
-                    <div key={img+index+"point"} className={`bg-slate-200 w-3 h-3 lg:w-5 lg:h-5 rounded-full ${index === image && "bg-slate-300"}`}></div>
-                  )
-                })
-              }
-            </div>
-            <div className='grid relative'>
-                <div ref={imageContainer} className='flex gap-4 z-10 relative w-full overflow-x-auto scrollbar-none'>
-                      {
-                        data.image.map((img,index)=>{
-                          return(
-                            <div className='w-20 h-20 min-h-20 min-w-20 scr cursor-pointer shadow-md' key={img+index}>
-                              <img
-                                  src={img}
-                                  alt='min-product'
-                                  onClick={()=>setImage(index)}
-                                  className='w-full h-full object-scale-down' 
-                              />
-                            </div>
-                          )
-                        })
-                      }
-                </div>
-                <div className='w-full -ml-3 h-full hidden lg:flex justify-between absolute  items-center'>
-                    <button onClick={handleScrollLeft} className='z-10 bg-white relative p-1 rounded-full shadow-lg'>
-                        <FaAngleLeft/>
-                    </button>
-                    <button onClick={handleScrollRight} className='z-10 bg-white relative p-1 rounded-full shadow-lg'>
-                        <FaAngleRight/>
-                    </button>
-                </div>
-            </div>
-            <div>
-            </div>
 
-            <div className='my-4  hidden lg:grid gap-3 '>
-                <div>
-                    <p className='font-semibold'>Description</p>
-                    <p className='text-base'>{data.description}</p>
-                </div>
-                <div>
-                    <p className='font-semibold'>Unit</p>
-                    <p className='text-base'>{data.unit}</p>
-                </div>
-                {
-                  data?.more_details && Object.keys(data?.more_details).map((element,index)=>{
-                    return(
-                      <div>
-                          <p className='font-semibold'>{element}</p>
-                          <p className='text-base'>{data?.more_details[element]}</p>
-                      </div>
-                    )
-                  })
-                }
-            </div>
+  const fetchSellerProducts = async sellerId => {
+    if (!sellerId) return
+    try {
+      const response = await Axios({
+        ...SummaryApi.getProductBySeller,
+        data: { sellerId, limit: 10 }
+      })
+      if (response.data.success) {
+        const filtered = response.data.data
+          .filter(p => p._id !== productId)
+          .slice(0, 10)
+        setSellerProducts(filtered)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+    if (productId) {
+      fetchProductDetails()
+      window.scrollTo(0, 0)
+      setImageIndex(0)
+    }
+  }, [productId])
+
+  const handleScrollRight = () => {
+    if (imageContainer.current) imageContainer.current.scrollLeft += 120
+  }
+  const handleScrollLeft = () => {
+    if (imageContainer.current) imageContainer.current.scrollLeft -= 120
+  }
+
+  const priceToShow = pricewithDiscount(data.price, data.discount)
+
+  return (
+    <section className='bg-gray-50 min-h-screen py-6'>
+      <div className='container mx-auto px-4'>
+        {/* Breadcrumb with Back Button */}
+        <div className='flex items-center gap-3 mb-4 text-sm'>
+          <button
+            onClick={() => navigate(-1)}
+            className='flex items-center gap-1 text-gray-600 hover:text-green-600 transition-colors'
+            title='Go back'
+          >
+            <IoArrowBack size={20} />
+          </button>
+          
+          <nav className='flex items-center gap-2 text-gray-600 flex-wrap'>
+            <Link to='/home' className='text-green-600 hover:text-green-700 font-medium'>
+              Home
+            </Link>
+            
+            {data.category?.[0] && (
+              <>
+                <span>/</span>
+                <span className='text-gray-700 font-medium'>
+                  {data.category[0].name}
+                </span>
+              </>
+            )}
+            
+            {data.subCategory?.[0] && (
+              <>
+                <span>/</span>
+                <span className='text-gray-700 font-medium'>
+                  {data.subCategory[0].name}
+                </span>
+              </>
+            )}
+            
+            {data.name && (
+              <>
+                <span>/</span>
+                <span className='text-gray-900 font-semibold truncate max-w-xs' title={data.name}>
+                  {data.name}
+                </span>
+              </>
+            )}
+          </nav>
         </div>
 
-
-        <div className='p-4 lg:pl-7 text-base lg:text-lg'>
-            <p className='bg-green-300 w-fit px-2 rounded-full'>{data.createdAt}</p>
-            <h2 className='text-lg font-semibold lg:text-3xl'>{data.name}</h2>
-            {data.userId && (
-              <p className='text-base text-neutral-600 mb-2'>
-                Seller: <span className='font-semibold'>{data.userId.name}</span>
-              </p>
-            )}  
-            <p className=''>{data.unit}</p> 
-            <Divider/>
-            <div>
-              <p className=''>Price</p> 
-              <div className='flex items-center gap-2 lg:gap-4'>
-                <div className='border border-green-600 px-4 py-2 rounded bg-green-50 w-fit'>
-                    <p className='font-semibold text-lg lg:text-xl'>{DisplayPriceInRupees(pricewithDiscount(data.price,data.discount))}</p>
-                </div>
-                {
-                  data.discount && (
-                    <p className='line-through'>{DisplayPriceInRupees(data.price)}</p>
+        <div className='grid lg:grid-cols-[300px,1fr] gap-6'>
+          {/* LEFT SIDEBAR */}
+          <aside className='hidden lg:block'>
+            <div className='bg-white rounded-lg shadow-sm p-4 sticky top-4'>
+              <h3 className='font-semibold text-lg mb-4 text-gray-800'>More products</h3>
+              <div className='space-y-3 max-h-[480px] overflow-y-auto'>
+                {loading && relatedProducts.length === 0 && (
+                  <p className='text-sm text-gray-500'>Loading…</p>
+                )}
+                {!loading && relatedProducts.length === 0 && (
+                  <p className='text-sm text-gray-500'>
+                    No other products in this subcategory.
+                  </p>
+                )}
+                {relatedProducts.map(product => {
+                  const slug =
+                    product.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') ||
+                    'product'
+                  return (
+                    <Link
+                      key={product._id}
+                      to={`/product/${slug}-${product._id}`}
+                      className='flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition'
+                    >
+                      <img
+                        src={product.image?.[0] || fallbackImg}
+                        alt={product.name}
+                        className='w-12 h-12 object-cover rounded'
+                        loading='lazy'
+                      />
+                      <div className='flex-1 min-w-0'>
+                        <p className='text-sm font-medium text-gray-800 truncate'>
+                          {product.name}
+                        </p>
+                        <p className='text-xs text-gray-500 truncate'>
+                          {product.unit}
+                        </p>
+                      </div>
+                    </Link>
                   )
-                }
-                {
-                  data.discount && (
-                    <p className="font-bold text-green-600 lg:text-2xl">{data.discount}% <span className='text-base text-neutral-500'>Discount</span></p>
-                  )
-                }
-                
+                })}
               </div>
+            </div>
+          </aside>
 
-            </div> 
-              
-              {
-                data.stock === 0 ? (
-                  <p className='text-lg text-red-500 my-2'>Out of Stock</p>
-                ) 
-                : (
-                  // <button className='my-4 px-4 py-1 bg-green-600 hover:bg-green-700 text-white rounded'>Add</button>
-                  <>
-                  {user?.role !== "SELLER" && (
-                    <div className='my-4'>
-                      <AddToCartButton data={data}/>
+          {/* MAIN CONTENT */}
+          <div className='space-y-6'>
+            <div className='bg-white rounded-lg shadow-sm overflow-hidden'>
+              <div className='grid lg:grid-cols-2 gap-6 p-6'>
+                {/* PRODUCT IMAGES */}
+                <div>
+                  <div className='bg-white rounded-lg border border-gray-200 overflow-hidden mb-4'>
+                    <div className='aspect-square flex items-center justify-center bg-gray-50'>
+                      {loading ? (
+                        <div className='animate-pulse w-full h-full bg-gray-100' />
+                      ) : (
+                        <img
+                          src={data.image?.[imageIndex] || fallbackImg}
+                          alt={data.name}
+                          className='w-full h-full object-contain'
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Thumbnails */}
+                  <div className='relative'>
+                    <div
+                      ref={imageContainer}
+                      className='flex gap-2 overflow-x-auto scrollbar-none scroll-smooth'
+                    >
+                      {(data.image?.length ? data.image : [fallbackImg]).map((img, idx) => (
+                        <button
+                          type='button'
+                          key={img + idx}
+                          onClick={() => setImageIndex(idx)}
+                          className={`min-w-[80px] w-20 h-20 border-2 rounded-lg overflow-hidden ${
+                            idx === imageIndex ? 'border-green-500' : 'border-gray-200'
+                          }`}
+                        >
+                          <img
+                            src={img || fallbackImg}
+                            alt={`thumbnail-${idx}`}
+                            className='w-full h-full object-cover'
+                            loading='lazy'
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    {data.image?.length > 4 && (
+                      <div className='absolute inset-0 flex justify-between items-center px-1 pointer-events-none'>
+                        <button
+                          onClick={handleScrollLeft}
+                          className='pointer-events-auto bg-white rounded-full p-1 shadow-md hover:bg-gray-100'
+                        >
+                          <FaAngleLeft />
+                        </button>
+                        <button
+                          onClick={handleScrollRight}
+                          className='pointer-events-auto bg-white rounded-full p-1 shadow-md hover:bg-gray-100'
+                        >
+                          <FaAngleRight />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* PRODUCT INFO */}
+                <div className='flex flex-col'>
+                  <h1 className='text-2xl lg:text-3xl font-bold text-gray-900 mb-2'>
+                    {data.name || (loading ? 'Loading…' : 'Unnamed Product')}
+                  </h1>
+
+                  {data.userId && (
+                    <div className='flex items-center gap-2 text-sm text-gray-600 mb-4'>
+                      <MdStorefront className='text-green-600' />
+                      <span>{data.userId.name}</span>
                     </div>
                   )}
-    </>
-                )
-              }
-           
 
-            <h2 className='font-semibold'>Why shop from AgroLink? </h2>
-            <div>
-                  <div className='flex  items-center gap-4 my-4'>
-                      <img
-                        src={image1}
-                        alt='superfast delivery'
-                        className='w-20 h-20'
-                      />
-                      <div className='text-sm'>
-                        <div className='font-semibold'>Superfast Delivery</div>
-                        <p>Get your orer delivered to your doorstep at the earliest from dark stores near you.</p>
+                  <Divider />
+
+                  {/* PRICE */}
+                  <div className='mb-6'>
+                    <div className='flex items-baseline gap-3 mb-2'>
+                      <span className='text-3xl font-bold text-green-600'>
+                        {DisplayPriceInRupees(priceToShow || 0)}
+                      </span>
+                      {data.unit && (
+                        <span className='text-sm text-gray-500'>/per {data.unit}</span>
+                      )}
+                    </div>
+                    {data.discount > 0 && (
+                      <div className='flex items-center gap-2'>
+                        <span className='text-gray-500 line-through'>
+                          {DisplayPriceInRupees(data.price)}
+                        </span>
+                        <span className='bg-green-100 text-green-600 px-2 py-1 rounded text-sm font-semibold'>
+                          {data.discount}% OFF
+                        </span>
                       </div>
+                    )}
                   </div>
-                  <div className='flex  items-center gap-4 my-4'>
-                      <img
-                        src={image2}
-                        alt='Best prices offers'
-                        className='w-20 h-20'
-                      />
-                      <div className='text-sm'>
-                        <div className='font-semibold'>Best Prices & Offers</div>
-                        <p>Best price destination with offers directly from the nanufacturers.</p>
+
+                  {/* META */}
+                  <div className='space-y-3 mb-6'>
+                    <div className='flex border-b pb-2'>
+                      <span className='font-semibold text-gray-700 w-32'>Category</span>
+                      <span className='text-gray-600 truncate'>
+                        {data.category?.[0]?.name || '-'}{' '}
+                        {data.subCategory?.[0]?.name ? `/ ${data.subCategory?.[0]?.name}` : ''}
+                      </span>
+                    </div>
+                    <div className='flex border-b pb-2'>
+                      <span className='font-semibold text-gray-700 w-32'>Unit</span>
+                      <span className='text-gray-600'>{data.unit || '—'}</span>
+                    </div>
+                    <div className='flex border-b pb-2'>
+                      <span className='font-semibold text-gray-700 w-32'>Stock</span>
+                      <span
+                        className={`font-semibold ${
+                          data.stock > 0 ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {data.stock > 0 ? `${data.stock} available` : 'Out of Stock'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* DESCRIPTION + ADD TO CART */}
+                  <div className='mt-2'>
+                    <h3 className='font-semibold text-lg mb-3 text-gray-800'>Description</h3>
+                    <p className='text-gray-600 leading-relaxed whitespace-pre-line'>
+                      {data.description || 'No description available.'}
+                    </p>
+
+                    {data?.more_details && Object.keys(data.more_details).length > 0 && (
+                      <div className='mt-6 space-y-3'>
+                        <h3 className='font-semibold text-lg text-gray-800'>
+                          Additional Information
+                        </h3>
+                        {Object.keys(data.more_details).map(key => (
+                          <div key={key} className='flex border-b pb-2'>
+                            <span className='font-semibold text-gray-700 w-48 capitalize'>
+                              {key}
+                            </span>
+                            <span className='text-gray-600'>
+                              {String(data.more_details[key])}
+                            </span>
+                          </div>
+                        ))}
                       </div>
+                    )}
+
+                    {/* Add to Cart below description */}
+                    <div className='mt-6'>
+                      {data.stock > 0 ? (
+                        user?.role !== 'SELLER' && <AddToCartButton data={data} />
+                      ) : (
+                        <button
+                          disabled
+                          className='w-full py-3 bg-gray-300 text-gray-500 rounded-lg font-semibold cursor-not-allowed'
+                        >
+                          Out of Stock
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className='flex  items-center gap-4 my-4'>
-                      <img
-                        src={image3}
-                        alt='Wide Assortment'
-                        className='w-20 h-20'
-                      />
-                      <div className='text-sm'>
-                        <div className='font-semibold'>Wide Assortment</div>
-                        <p>Choose from 5000+ products across food personal care, household & other categories.</p>
-                      </div>
-                  </div>
+                </div>
+              </div>
             </div>
 
-            {/****only mobile */}
-            <div className='my-4 grid gap-3 '>
-                <div>
-                    <p className='font-semibold'>Description</p>
-                    <p className='text-base'>{data.description}</p>
+            {/* SELLER PRODUCTS */}
+            {sellerProducts.length > 0 && (
+              <div className='bg-white rounded-lg shadow-sm p-6'>
+                <div className='flex justify-between items-center mb-6'>
+                  <h2 className='text-xl font-bold text-gray-900'>Seller&apos;s Other Products</h2>
+                  <Link
+                    to={`/seller/${data.userId?._id}`}
+                    className='text-green-600 hover:text-green-700 font-medium'
+                  >
+                    See all
+                  </Link>
                 </div>
-                <div>
-                    <p className='font-semibold'>Unit</p>
-                    <p className='text-base'>{data.unit}</p>
+                <div className='grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
+                  {sellerProducts.slice(0, 10).map(product => (
+                    <CardProduct key={product._id} data={product} />
+                  ))}
                 </div>
-                {
-                  data?.more_details && Object.keys(data?.more_details).map((element,index)=>{
-                    return(
-                      <div>
-                          <p className='font-semibold'>{element}</p>
-                          <p className='text-base'>{data?.more_details[element]}</p>
-                      </div>
-                    )
-                  })
-                }
-            </div>
+              </div>
+            )}
+          </div>
         </div>
+      </div>
     </section>
   )
 }

@@ -40,7 +40,7 @@ const CategoryWiseProductDisplay = ({ id, name }) => {
 
     useEffect(() => {
         fetchCategoryWiseProduct()
-    }, [])
+    }, [id])
 
     const handleScrollRight = () => {
         containerRef.current.scrollLeft += 200

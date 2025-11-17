@@ -211,9 +211,9 @@ export const getProductByCategoryAndSubCategory  = async(request,response)=>{
 export const getProductDetails = async(request,response)=>{
     try {
         const { productId } = request.body 
-
-        const product = await ProductModel.findOne({ _id : productId }).populate('userId');
-
+        const product = await ProductModel
+          .findOne({ _id : productId })
+          .populate('userId category subCategory');
 
         return response.json({
             message : "product details",
@@ -221,7 +221,6 @@ export const getProductDetails = async(request,response)=>{
             error : false,
             success : true
         })
-
     } catch (error) {
         return response.status(500).json({
             message : error.message || error,
@@ -437,3 +436,62 @@ export const suggestPriceController = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message || error });
   }
 };
+
+export const getProductBySubCategory = async (request, response) => {
+  try {
+    const { id } = request.body
+    if(!id){
+      return response.status(400).json({ message:"provide subcategory id", error:true, success:false })
+    }
+    const products = await ProductModel.find({ subCategory : { $in : id } })
+      .sort({ createdAt : -1 })
+      .limit(20)
+    return response.json({
+      message : "subcategory product list",
+      data : products,
+      error : false,
+      success : true
+    })
+  } catch (error) {
+    return response.status(500).json({ message:error.message||error, error:true, success:false })
+  }
+}
+
+export const getProductBySeller = async (request, response) => {
+  try {
+    const { sellerId, limit = 12, skip = 0 } = request.body
+    if (!sellerId) {
+      return response.status(400).json({
+        message: "provide sellerId",
+        error: true,
+        success: false
+      })
+    }
+
+    const products = await ProductModel.find({ userId: sellerId })
+      .sort({ createdAt: -1 })
+      .skip(Number(skip))
+      .limit(Number(limit))
+      .populate({
+        path: 'userId',
+        select: 'name address_details',
+        populate: {
+          path: 'address_details',
+          model: 'address'
+        }
+      })
+
+    return response.json({
+      message: "seller product list",
+      data: products,
+      error: false,
+      success: true
+    })
+  } catch (error) {
+    return response.status(500).json({
+      message: error.message || error,
+      error: true,
+      success: false
+    })
+  }
+}

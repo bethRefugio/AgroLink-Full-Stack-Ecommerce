@@ -319,7 +319,7 @@ def main():
             train_df, test_df = train_test_split(item_df, test_size=args.test_size)
             prophet_test_pred, prophet_next_pred, prophet_model, prophet_dates, prophet_full_pred = prophet_predict(train_df, test_df)
             xgb_test_pred, xgb_next_pred, xgb_model, xgb_dates, xgb_full_pred = xgboost_predict(train_df, test_df)
-            arima_test_pred, arima_next_pred, arima_model, arima_dates, arima_full_pred = arima_predict(train_df, test_df)
+            lstm_test_pred, lstm_next_pred, lstm_model, lstm_dates, lstm_full_pred = lstm_predict(train_df, test_df)
             all_dates = prophet_dates
             history_prices = np.concatenate([train_df['price'].values, test_df['price'].values])
             pred_dates_dict = {

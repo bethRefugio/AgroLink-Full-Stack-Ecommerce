@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import auth from '../middleware/auth.js'
-import { createProductController, deleteProductDetails, getProductByCategory, getProductByCategoryAndSubCategory, getProductController, getProductDetails, searchProduct, updateProductDetails, suggestPriceController } from '../controllers/product.controller.js'
+import { createProductController, deleteProductDetails, getProductByCategory, getProductByCategoryAndSubCategory, getProductController, getProductDetails, searchProduct, updateProductDetails, suggestPriceController, getProductBySeller, getProductBySubCategory } from '../controllers/product.controller.js'
 import { admin } from '../middleware/Admin.js'
 import seller from '../middleware/Seller.js'
 
@@ -23,6 +23,9 @@ productRouter.post('/get',getProductController)
 productRouter.post("/get-product-by-category",getProductByCategory)
 productRouter.post('/get-product-by-category-and-subcategory',getProductByCategoryAndSubCategory)
 productRouter.post('/get-product-details',getProductDetails)
+productRouter.post('/get-product-by-subcategory', getProductBySubCategory)
+productRouter.post('/get-product-by-seller', getProductBySeller)
+
 
 //update product
 productRouter.put('/update-product-details', auth, (req, res, next) => {
