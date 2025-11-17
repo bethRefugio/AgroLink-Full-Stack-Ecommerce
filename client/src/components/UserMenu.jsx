@@ -9,7 +9,7 @@ import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
 import { HiOutlineExternalLink } from "react-icons/hi"
 import { FiSettings, FiPackage, FiShoppingBag, FiMapPin, FiUsers, FiLogOut } from "react-icons/fi"
-import { MdCategory, MdOutlineCategory, MdEmail } from "react-icons/md"
+import { MdCategory, MdOutlineCategory, MdEmail, MdAttachMoney} from "react-icons/md"
 import isAdmin from '../utils/isAdmin'
 import isSeller from '../utils/isSeller'
 import isBuyer from '../utils/isBuyer'
@@ -208,12 +208,12 @@ const UserMenu = ({ close }) => {
 
 
 
-        {/* Address - Buyers and Sellers */}
+        {/* Address - Buyers and Sellers 
         {(isBuyer(user?.role) || isSeller(user?.role)) && (
           <MenuItem to="/dashboard/address" icon={FiMapPin}>
             Saved Addresses
           </MenuItem>
-        )}
+        )}*/}
 
 
 
@@ -240,6 +240,13 @@ const UserMenu = ({ close }) => {
             Messages
           </MenuItem>
         )}
+
+        {isAdmin(user?.role) && (
+          <MenuItem to="/dashboard/price-suggestion" icon={MdAttachMoney}>
+            Price Suggestion
+          </MenuItem>
+        )}
+
 
 
       </div>

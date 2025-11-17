@@ -8,11 +8,13 @@ import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import AxiosToastError from '../utils/AxiosToastError'
 import CardLoading from '../components/CardLoading'
+import isSeller from '../utils/isSeller'
 
 const Home = () => {
   const loadingCategory = useSelector(state => state.product.loadingCategory)
   const categoryData = useSelector(state => state.product.allCategory)
   const subCategoryData = useSelector(state => state.product.allSubCategory)
+  const user = useSelector(state => state.user)
   const navigate = useNavigate()
 
   const [activeCategory, setActiveCategory] = useState('all')
@@ -20,8 +22,12 @@ const Home = () => {
   const [prefLoading, setPrefLoading] = useState(false)
   const [preferredProducts, setPreferredProducts] = useState([])
 
+  const seller = isSeller(user.role)
+
   // fetch preferences once
   useEffect(() => {
+    if (seller) return // Skip if seller
+    
     const loadPrefs = async () => {
       try {
         const res = await Axios({ ...SummaryApi.getPreferences })
@@ -31,10 +37,12 @@ const Home = () => {
       }
     }
     loadPrefs()
-  }, [])
+  }, [seller])
 
   // build (categoryId, subCategoryId) pairs from name-only prefs
   useEffect(() => {
+    if (seller) return // Skip if seller
+    
     const run = async () => {
       if (!userPreferences.length || !categoryData.length || !subCategoryData.length) return
       setPrefLoading(true)
@@ -89,7 +97,7 @@ const Home = () => {
       }
     }
     run()
-  }, [userPreferences, categoryData, subCategoryData])
+  }, [seller, userPreferences, categoryData, subCategoryData])
 
   const filterPills = useMemo(() => [{ _id: 'all', name: 'All' }, ...categoryData], [categoryData])
 
@@ -106,35 +114,37 @@ const Home = () => {
         <img src={banner} alt="banner" className="absolute inset-0 w-full h-full object-cover" />
       </div>
 
-      {/* Headline + preference products */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-900">Your Daily Fresh Finds !</h2>
-        </div>
+      {/* Headline + preference products - Hide for sellers */}
+      {!seller && (
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Your Daily Fresh Finds !</h2>
+          </div>
 
-        {/* preference product cards */}
-        <div>
-          {prefLoading && (
-            <div className='flex flex-wrap gap-4'>
-              {new Array(8).fill(null).map((_, i) => <CardLoading key={'pref-load-' + i} />)}
-            </div>
-          )}
+          {/* preference product cards */}
+          <div>
+            {prefLoading && (
+              <div className='flex flex-wrap gap-4'>
+                {new Array(8).fill(null).map((_, i) => <CardLoading key={'pref-load-' + i} />)}
+              </div>
+            )}
 
             {!prefLoading && userPreferences.length === 0 && (
               <p className='text-sm text-gray-500'>Add preferences in your profile to see personalized picks.</p>
             )}
 
-          {!prefLoading && userPreferences.length > 0 && preferredProducts.length === 0 && (
-            <p className='text-sm text-gray-500'>No products found for your preferred subcategories.</p>
-          )}
+            {!prefLoading && userPreferences.length > 0 && preferredProducts.length === 0 && (
+              <p className='text-sm text-gray-500'>No products found for your preferred subcategories.</p>
+            )}
 
-          {!prefLoading && preferredProducts.length > 0 && (
-            <div className='flex flex-wrap gap-4'>
-              {preferredProducts.map(p => <CardProduct key={p._id} data={p} />)}
-            </div>
-          )}
+            {!prefLoading && preferredProducts.length > 0 && (
+              <div className='flex flex-wrap gap-4'>
+                {preferredProducts.map(p => <CardProduct key={p._id} data={p} />)}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* category filter pills */}
       <div className="container mx-auto px-4 py-4">
@@ -192,10 +202,10 @@ const Home = () => {
             <div className="relative z-10">
               <p className="text-green-600 font-medium text-sm mb-2">Regular Offer</p>
               <h3 className="text-3xl font-bold text-gray-900 mb-3">
-                10% cash-back on personal care
+                10% cash-back on your first order
               </h3>
               <p className="text-gray-600 mb-6">
-                Max cashback: $12. Code: CARE12
+                Promo Code: AGROLINKPH12
               </p>
               <button className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-full transition-colors">
                 Browse Now →

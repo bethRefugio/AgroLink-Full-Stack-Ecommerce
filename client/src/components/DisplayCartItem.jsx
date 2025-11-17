@@ -3,7 +3,7 @@ import { IoClose } from 'react-icons/io5'
 import { Link, useNavigate } from 'react-router-dom'
 import { useGlobalContext } from '../provider/GlobalProvider'
 import { DisplayPriceInRupees } from '../utils/DisplayPriceInRupees'
-import { FaCaretRight } from "react-icons/fa";
+import { FaCaretRight, FaShoppingCart, FaTag } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
 import { useSelector } from 'react-redux'
 import AddToCartButton from './AddToCartButton'
@@ -58,114 +58,189 @@ const DisplayCartItem = ({close}) => {
     }
 
     return (
-        <section className='bg-neutral-900 fixed top-0 bottom-0 right-0 left-0 bg-opacity-70 z-50'>
-            <div className='bg-white w-full max-w-sm min-h-screen max-h-screen ml-auto'>
-                <div className='flex items-center p-4 shadow-md gap-3 justify-between'>
-                    <h2 className='font-semibold'>Cart</h2>
+        <section className='bg-black fixed top-0 bottom-0 right-0 left-0 bg-opacity-50 z-50 backdrop-blur-sm'>
+            <div className='bg-white w-full max-w-md min-h-screen max-h-screen ml-auto shadow-2xl flex flex-col'>
+                {/* Header */}
+                <div className='flex items-center justify-between p-5 border-b border-gray-200 bg-white sticky top-0 z-10'>
+                    <div className='flex items-center gap-3'>
+                        <div className='w-10 h-10 bg-green-100 rounded-full flex items-center justify-center'>
+                            <FaShoppingCart className='text-green-600 text-lg' />
+                        </div>
+                        <div>
+                            <h2 className='font-bold text-gray-900 text-lg'>My Cart</h2>
+                            <p className='text-xs text-gray-500'>{cartItem.length} {cartItem.length === 1 ? 'item' : 'items'}</p>
+                        </div>
+                    </div>
                     <div className='flex items-center gap-2'>
                         {cartItem[0] && (
                             <button 
                                 onClick={() => setShowEmptyCartConfirm(true)}
-                                className='text-red-600 hover:text-red-700 flex items-center gap-1 text-sm font-medium transition-colors'
+                                className='text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg flex items-center gap-1.5 text-sm font-medium transition-all'
                                 title='Empty Cart'
                             >
                                 <MdDeleteOutline size={20} />
-                                <span className='hidden sm:inline'>Empty Cart</span>
+                                <span className='hidden sm:inline'>Clear</span>
                             </button>
                         )}
-                        <Link to={"/"} className='lg:hidden'>
-                            <IoClose size={25}/>
-                        </Link>
-                        <button onClick={close} className='hidden lg:block'>
-                            <IoClose size={25}/>
+                        <button 
+                            onClick={close} 
+                            className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors'
+                        >
+                            <IoClose size={24}/>
                         </button>
                     </div>
                 </div>
 
-                <div className='min-h-[75vh] lg:min-h-[80vh] h-full max-h-[calc(100vh-150px)] bg-blue-50 p-2 flex flex-col gap-4'>
-                    {/***display items */}
-                    {
-                        cartItem[0] ? (
-                            <>
-                                <div className='flex items-center justify-between px-4 py-2 bg-blue-100 text-blue-500 rounded-full'>
-                                        <p>Your total savings</p>
-                                        <p>{DisplayPriceInRupees(notDiscountTotalPrice - totalPrice )}</p>
-                                </div>
-                                <div className='bg-white rounded-lg p-4 grid gap-5 overflow-auto'>
-                                        {
-                                            cartItem[0] && (
-                                                cartItem.map((item,index)=>{
-                                                    return(
-                                                        <div key={item?._id+"cartItemDisplay"} className='flex  w-full gap-4'>
-                                                            <div className='w-16 h-16 min-h-16 min-w-16 bg-red-500 border rounded'>
-                                                                <img
-                                                                    src={item?.productId?.image[0]}
-                                                                    className='object-scale-down'
-                                                                />
-                                                            </div>
-                                                            <div className='w-full max-w-sm text-xs'>
-                                                                <p className='text-xs text-ellipsis line-clamp-2'>{item?.productId?.name}</p>
-                                                                <p className='text-neutral-400'>{item?.productId?.unit}</p>
-                                                                <p className='font-semibold'>{DisplayPriceInRupees(pricewithDiscount(item?.productId?.price,item?.productId?.discount))}</p>
-                                                            </div>
-                                                            <div>
-                                                                <AddToCartButton data={item?.productId}/>
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                })
-                                            )
-                                        }
-                                </div>
-                                <div className='bg-white p-4'>
-                                    <h3 className='font-semibold'>Bill details</h3>
-                                    <div className='flex gap-4 justify-between ml-1'>
-                                        <p>Items total</p>
-                                        <p className='flex items-center gap-2'><span className='line-through text-neutral-400'>{DisplayPriceInRupees(notDiscountTotalPrice)}</span><span>{DisplayPriceInRupees(totalPrice)}</span></p>
+                {/* Content */}
+                <div className='flex-1 overflow-auto bg-gray-50'>
+                    {cartItem[0] ? (
+                        <div className='p-4 space-y-4'>
+                            {/* Savings Banner */}
+                            {(notDiscountTotalPrice - totalPrice) > 0 && (
+                                <div className='bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl p-4 flex items-center justify-between'>
+                                    <div className='flex items-center gap-2'>
+                                        <div className='w-8 h-8 bg-green-200 rounded-full flex items-center justify-center'>
+                                            <FaTag className='text-green-700 text-sm' />
+                                        </div>
+                                        <div>
+                                            <p className='text-xs text-green-700 font-medium'>Total Savings</p>
+                                            <p className='text-lg font-bold text-green-800'>
+                                                {DisplayPriceInRupees(notDiscountTotalPrice - totalPrice)}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className='flex gap-4 justify-between ml-1'>
-                                        <p>Quantity total</p>
-                                        <p className='flex items-center gap-2'>{totalQty} item</p>
-                                    </div>
-                                    <div className='flex gap-4 justify-between ml-1'>
-                                        <p>Delivery Charge</p>
-                                        <p className='flex items-center gap-2'>Free</p>
-                                    </div>
-                                    <div className='font-semibold flex items-center justify-between gap-4'>
-                                        <p >Grand total</p>
-                                        <p>{DisplayPriceInRupees(totalPrice)}</p>
+                                    <div className='text-green-600'>
+                                        <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"/>
+                                            <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
+                                        </svg>
                                     </div>
                                 </div>
-                            </>
-                        ) : (
-                            <div className='bg-white flex flex-col justify-center items-center'>
-                                <img
-                                    src={imageEmpty}
-                                    className='w-full h-full object-scale-down' 
-                                />
-                                <Link onClick={close} to={"/home"} className='block bg-green-600 px-4 py-2 text-white rounded'>Shop Now</Link>
-                            </div>
-                        )
-                    }
-                    
-                </div>
+                            )}
 
-                {
-                    cartItem[0] && (
-                        <div className='p-2'>
-                            <div className='bg-green-700 text-neutral-100 px-4 font-bold text-base py-4 static bottom-3 rounded flex items-center gap-4 justify-between'>
-                                <div>
-                                    {DisplayPriceInRupees(totalPrice)}
+                            {/* Cart Items */}
+                            <div className='space-y-3'>
+                                {cartItem.map((item, index) => (
+                                    <div 
+                                        key={item?._id + "cartItemDisplay"} 
+                                        className='bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow'
+                                    >
+                                        <div className='flex gap-4'>
+                                            <div className='w-20 h-20 min-w-[80px] bg-gray-100 border border-gray-200 rounded-lg overflow-hidden flex-shrink-0'>
+                                                <img
+                                                    src={item?.productId?.image[0]}
+                                                    alt={item?.productId?.name}
+                                                    className='w-full h-full object-cover'
+                                                />
+                                            </div>
+                                            <div className='flex-1 min-w-0'>
+                                                <h3 className='text-sm font-semibold text-gray-900 line-clamp-2 mb-1'>
+                                                    {item?.productId?.name}
+                                                </h3>
+                                                <p className='text-xs text-gray-500 mb-2'>
+                                                    {item?.productId?.unit}
+                                                </p>
+                                                <div className='flex items-center gap-2'>
+                                                    <span className='text-lg font-bold text-green-600'>
+                                                        {DisplayPriceInRupees(pricewithDiscount(item?.productId?.price, item?.productId?.discount))}
+                                                    </span>
+                                                    {item?.productId?.discount > 0 && (
+                                                        <span className='text-xs text-gray-400 line-through'>
+                                                            {DisplayPriceInRupees(item?.productId?.price)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className='flex items-start'>
+                                                <AddToCartButton data={item?.productId}/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Bill Details */}
+                            <div className='bg-white rounded-xl p-5 shadow-sm border border-gray-100'>
+                                <h3 className='font-bold text-gray-900 mb-4 flex items-center gap-2'>
+                                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    Bill Details
+                                </h3>
+                                <div className='space-y-3'>
+                                    <div className='flex justify-between items-center text-sm'>
+                                        <span className='text-gray-600'>Items Total</span>
+                                        <div className='flex items-center gap-2'>
+                                            <span className='line-through text-gray-400 text-xs'>
+                                                {DisplayPriceInRupees(notDiscountTotalPrice)}
+                                            </span>
+                                            <span className='font-semibold text-gray-900'>
+                                                {DisplayPriceInRupees(totalPrice)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className='flex justify-between items-center text-sm'>
+                                        <span className='text-gray-600'>Quantity</span>
+                                        <span className='font-semibold text-gray-900'>
+                                            {totalQty} {totalQty === 1 ? 'item' : 'items'}
+                                        </span>
+                                    </div>
+                                    <div className='flex justify-between items-center text-sm'>
+                                        <span className='text-gray-600'>Delivery Charge</span>
+                                        <span className='font-semibold text-green-600'>Free</span>
+                                    </div>
+                                    <div className='pt-3 border-t border-gray-200'>
+                                        <div className='flex justify-between items-center'>
+                                            <span className='font-bold text-gray-900'>Grand Total</span>
+                                            <span className='text-2xl font-bold text-green-600'>
+                                                {DisplayPriceInRupees(totalPrice)}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button onClick={redirectToCheckoutPage} className='flex items-center gap-1'>
-                                    Proceed
-                                    <span><FaCaretRight/></span>
-                                </button>
                             </div>
                         </div>
-                    )
-                }
-                
+                    ) : (
+                        <div className='flex flex-col justify-center items-center h-full p-8'>
+                            <div className='w-48 h-48 mb-6'>
+                                <img
+                                    src={imageEmpty}
+                                    alt="Empty cart"
+                                    className='w-full h-full object-contain' 
+                                />
+                            </div>
+                            <h3 className='text-xl font-bold text-gray-900 mb-2'>Your cart is empty</h3>
+                            <p className='text-gray-600 text-center mb-6'>Add items to get started</p>
+                            <Link 
+                                onClick={close} 
+                                to={"/home"} 
+                                className='bg-green-600 hover:bg-green-700 px-6 py-3 text-white font-semibold rounded-lg transition-colors flex items-center gap-2'
+                            >
+                                <FaShoppingCart />
+                                Start Shopping
+                            </Link>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer - Proceed Button */}
+                {cartItem[0] && (
+                    <div className='p-4 bg-white border-t border-gray-200 sticky bottom-0'>
+                        <button 
+                            onClick={redirectToCheckoutPage} 
+                            className='w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold text-lg py-4 rounded-xl flex items-center justify-between px-6 shadow-lg hover:shadow-xl transition-all group'
+                        >
+                            <div className='flex flex-col items-start'>
+                                <span className='text-xs font-normal opacity-90'>Total Amount</span>
+                                <span className='text-xl'>{DisplayPriceInRupees(totalPrice)}</span>
+                            </div>
+                            <div className='flex items-center gap-2'>
+                                <span>Proceed to Checkout</span>
+                                <FaCaretRight className='group-hover:translate-x-1 transition-transform'/>
+                            </div>
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Empty Cart Confirmation Modal */}

@@ -50,6 +50,10 @@ const UploadProduct = () => {
   const [suggestionError, setSuggestionError] = useState("");
   const [showSuggestionErrorModal, setShowSuggestionErrorModal] = useState(false);
 
+  const [descriptionLanguage, setDescriptionLanguage] = useState('en');
+  const [translatedDescriptions, setTranslatedDescriptions] = useState({});
+  const [translating, setTranslating] = useState(false);
+
   useEffect(() => {
     const fetchFilteredSubCategories = async () => {
       if (!selectCategory || !selectCategory._id) {
@@ -242,6 +246,48 @@ const UploadProduct = () => {
     }
   };
 
+    const getTranslatedDescription = async (subcat) => {
+    if (!subcat?.description || descriptionLanguage === 'en') {
+      return subcat?.description || '';
+    }
+
+    const cacheKey = `${subcat._id}-${descriptionLanguage}`;
+    if (translatedDescriptions[cacheKey]) {
+      return translatedDescriptions[cacheKey];
+    }
+
+    try {
+      console.log('Requesting translation:', {
+        text: subcat.description,
+        targetLanguage: descriptionLanguage
+      });
+
+      const res = await Axios({
+        ...SummaryApi.translateText,
+        data: {
+          text: subcat.description,
+          targetLanguage: descriptionLanguage
+        }
+      });
+
+      console.log('Translation response:', res.data);
+
+      if (res.data.success) {
+        const translated = res.data.translatedText;
+        setTranslatedDescriptions(prev => ({
+          ...prev,
+          [cacheKey]: translated
+        }));
+        return translated;
+      }
+      return subcat.description;
+    } catch (error) {
+      console.error('Translation failed:', error);
+      console.error('Error response:', error.response?.data);
+      return subcat.description;
+    }
+  };
+
   return (
     <section className='max-w-6xl mx-auto p-6'>
       {/* Header */}
@@ -287,101 +333,169 @@ const UploadProduct = () => {
 
           {/* Category Section */}
           <div className='bg-white rounded-lg border border-gray-200 p-6'>
-            <h2 className='font-semibold text-gray-900 mb-4'>Category</h2>
-            
-            <div className='space-y-4'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Product Category</label>
-                <div className='relative'>
-                  <button
-                    type="button"
-                    onClick={() => setOpenCatDropdown(prev => !prev)}
-                    className='w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
-                  >
-                    {selectCategory ? selectCategory.name : "Select Category"}
-                  </button>
-
-                  {openCatDropdown && (
-                    <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
-                      {allCategory.map((c) => (
-                        <div
-                          key={c._id}
-                          className='px-3 py-2 hover:bg-gray-100 cursor-pointer'
-                          onClick={() => {
-                            setData(prev => ({
-                              ...prev,
-                              category: [c],
-                              subCategory: []
-                            }));
-                            setSelectCategory(c);
-                            setSelectSubCategory("");
-                            setOpenCatDropdown(false);
-                          }}
-                        >
-                          {c.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+            <div className='flex items-center justify-between mb-4'>
+              <h2 className='font-semibold text-gray-900'>Category</h2>
+              
+              {/* Language Selector */}
+              <div className='flex items-center gap-2'>
+                <span className='text-xs text-gray-500'>Description:</span>
+                <select
+                  value={descriptionLanguage}
+                  onChange={(e) => {
+                    setDescriptionLanguage(e.target.value);
+                    setTranslatedDescriptions({});
+                  }}
+                  className='text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500'
+                >
+                  <option value='en'>English</option>
+                  <option value='tl'>Filipino</option>
+                  <option value='ceb'>Cebuano</option>
+                </select>
               </div>
+            </div>
 
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Product Sub Category</label>
-                <div className='relative'>
-                  <button
-                    type="button"
-                    onClick={() => setOpenSubDropdown(!openSubDropdown)}
-                    disabled={!selectCategory}
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white ${!selectCategory ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-400'}`}
-                  >
-                    {selectSubCategory ? selectSubCategory.name : selectCategory ? "Select Subcategory" : "Select Category First"}
-                  </button>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+              {/* Left Side - Dropdowns */}
+              <div className='space-y-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>Product Category</label>
+                  <div className='relative'>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpenCatDropdown(prev => !prev);
+                        setOpenSubDropdown(false); // Close subcategory dropdown
+                      }}
+                      className='w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    >
+                      {selectCategory ? selectCategory.name : "Select Category"}
+                    </button>
 
-                  {openSubDropdown && selectCategory && (
-                    <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
-                      {filteredSubCategories.length > 0 ? (
-                        filteredSubCategories.map((c) => (
+                    {openCatDropdown && (
+                      <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
+                        {allCategory.map((c) => (
                           <div
                             key={c._id}
                             className='px-3 py-2 hover:bg-gray-100 cursor-pointer'
                             onClick={() => {
                               setData(prev => ({
                                 ...prev,
-                                subCategory: [...prev.subCategory, c],
+                                category: [c],
+                                subCategory: []
                               }));
-                              setSelectSubCategory(c);
-                              setOpenSubDropdown(false);
+                              setSelectCategory(c);
+                              setSelectSubCategory("");
+                              setHoveredSubCategory(null);
+                              setOpenCatDropdown(false);
                             }}
                           >
                             {c.name}
                           </div>
-                        ))
-                      ) : (
-                        <div className='px-3 py-2 text-gray-500 text-sm text-center'>
-                          No subcategories available
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className='flex flex-wrap gap-2 mt-3'>
-                  {data.subCategory.map((c, index) => (
-                    <span
-                      key={c._id + index}
-                      className='inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full'
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>Product Sub Category</label>
+                  <div className='relative'>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpenSubDropdown(!openSubDropdown);
+                        setOpenCatDropdown(false); // Close category dropdown
+                      }}
+                      disabled={!selectCategory}
+                      className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white ${!selectCategory ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-400'}`}
                     >
-                      {c.name}
-                      <button
-                        onClick={() => handleRemoveSubCategory(index)}
-                        className='hover:text-red-600'
+                      {selectSubCategory ? selectSubCategory.name : selectCategory ? "Select Subcategory" : "Select Category First"}
+                    </button>
+
+                    {openSubDropdown && selectCategory && (
+                      <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
+                        {filteredSubCategories.length > 0 ? (
+                          filteredSubCategories.map((c) => (
+                            <div
+                              key={c._id}
+                              className='px-3 py-2 hover:bg-gray-100 cursor-pointer'
+                              onMouseEnter={async () => {
+                                setHoveredSubCategory(c);
+                                if (c.description && descriptionLanguage !== 'en') {
+                                  setTranslating(true);
+                                  await getTranslatedDescription(c);
+                                  setTranslating(false);
+                                }
+                              }}
+                              onMouseLeave={() => setHoveredSubCategory(null)}
+                              onClick={() => {
+                                setData(prev => ({
+                                  ...prev,
+                                  subCategory: [...prev.subCategory, c],
+                                }));
+                                setSelectSubCategory(c);
+                                setOpenSubDropdown(false);
+                                setHoveredSubCategory(null);
+                              }}
+                            >
+                              {c.name}
+                            </div>
+                          ))
+                        ) : (
+                          <div className='px-3 py-2 text-gray-500 text-sm text-center'>
+                            No subcategories available
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className='flex flex-wrap gap-2 mt-3'>
+                    {data.subCategory.map((c, index) => (
+                      <span
+                        key={c._id + index}
+                        className='inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full'
                       >
-                        <IoClose size={16} />
-                      </button>
-                    </span>
-                  ))}
+                        {c.name}
+                        <button
+                          onClick={() => handleRemoveSubCategory(index)}
+                          className='hover:text-red-600'
+                        >
+                          <IoClose size={16} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 </div>
+              </div>
+
+              {/* Right Side - Description Panel */}
+              <div className='bg-gray-50 rounded-lg p-4 border border-gray-200'>
+                {hoveredSubCategory && hoveredSubCategory.description ? (
+                  <div>
+                    <h3 className='font-medium text-gray-900 mb-2 flex items-center gap-2'>
+                      {hoveredSubCategory.name}
+                      {descriptionLanguage !== 'en' && !translating && (
+                        <span className='text-xs text-gray-500'>
+                          {descriptionLanguage === 'tl' ? '🇵🇭 Filipino' : '🇵🇭 Cebuano'}
+                        </span>
+                      )}
+                    </h3>
+                    <div className='text-sm text-gray-700'>
+                      {translating ? (
+                        <span className='text-gray-400 italic'>Translating...</span>
+                      ) : descriptionLanguage === 'en' ? (
+                        hoveredSubCategory.description
+                      ) : (
+                        translatedDescriptions[`${hoveredSubCategory._id}-${descriptionLanguage}`] || hoveredSubCategory.description
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className='flex items-center justify-center h-full text-gray-400 text-sm'>
+                    Hover over a subcategory to see its description
+                  </div>
+                )}
               </div>
             </div>
           </div>

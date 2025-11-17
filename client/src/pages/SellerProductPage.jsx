@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import AxiosToastError from '../utils/AxiosToastError'
 import CardProduct from '../components/CardProduct'
-import { MdStorefront, MdLocationOn } from 'react-icons/md'
+import { MdStorefront, MdLocationOn, MdArrowBack } from 'react-icons/md'
 
 const formatAddress = (addr) => {
   if (!addr) return ''
@@ -21,6 +21,7 @@ const formatAddress = (addr) => {
 
 const SellerProductPage = () => {
   const { sellerId } = useParams()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [products, setProducts] = useState([])
   const [sellerName, setSellerName] = useState('')
@@ -88,10 +89,22 @@ const SellerProductPage = () => {
     }
   }
 
+  const handleGoBack = () => {
+    navigate(-1)
+  }
 
   return (
     <section className="bg-gray-50 min-h-screen py-6">
       <div className="container mx-auto px-4">
+        {/* Back Button */}
+        <button
+          onClick={handleGoBack}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 px-4 py-2 rounded-lg hover:bg-white transition-all group"
+        >
+          <MdArrowBack className="text-xl group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium text-sm">Back</span>
+        </button>
+
         {/* Seller Header */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

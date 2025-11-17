@@ -4,17 +4,22 @@ import { FaRegUserCircle } from "react-icons/fa"
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6"
 import UserProfileAvatarEdit from '../components/UserProfileAvatarEdit'
 import AddAddress from '../components/AddAddress'
+import EditAddressDetails from '../components/EditAddressDetails'
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import AxiosToastError from '../utils/AxiosToastError'
 import toast from 'react-hot-toast'
 import { setUserDetails } from '../store/userSlice'
 import fetchUserDetails from '../utils/fetchUserDetails'
+import isSeller from '../utils/isSeller'
 
 const Profile = () => {
   const user = useSelector(state => state.user)
   const dispatch = useDispatch()
 
+  const seller = isSeller(user.role)
+
+  // ...existing state declarations...
   const [openProfileAvatarEdit, setProfileAvatarEdit] = useState(false)
   const [openAddAddress, setOpenAddAddress] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -63,8 +68,10 @@ const Profile = () => {
     })
   }, [user])
 
-  // Fetch categories on mount
+  // Fetch categories on mount - only if not seller
   useEffect(() => {
+    if (seller) return
+    
     const fetchCategories = async () => {
       try {
         const res = await Axios({ ...SummaryApi.getCategory })
@@ -74,15 +81,17 @@ const Profile = () => {
       }
     }
     fetchCategories()
-  }, [])
+  }, [seller])
 
-  // Fetch ALL subcategories for display mapping
+  // Fetch ALL subcategories for display mapping - only if not seller
   useEffect(() => {
+    if (seller) return
+    
     const fetchAllSubCat = async () => {
       try {
         const res = await Axios({
           ...SummaryApi.getSubCategory,
-          data: {} // Empty data to fetch all subcategories
+          data: {}
         })
         if (res.data.success) setAllSubCategories(res.data.data || [])
       } catch (e) {
@@ -90,10 +99,12 @@ const Profile = () => {
       }
     }
     fetchAllSubCat()
-  }, [])
+  }, [seller])
 
-  // Fetch subcategories when category changes (for the dropdown)
+  // Fetch subcategories when category changes - only if not seller
   useEffect(() => {
+    if (seller) return
+    
     const fetchSubCat = async () => {
       if (!preferences.categoryId) {
         setSubCategories([])
@@ -103,7 +114,7 @@ const Profile = () => {
       try {
         const res = await Axios({
           ...SummaryApi.getSubCategory,
-          data: { _id: preferences.categoryId } // Filter by selected category
+          data: { _id: preferences.categoryId }
         })
         if (res.data.success) setSubCategories(res.data.data || [])
       } catch (e) {
@@ -111,8 +122,9 @@ const Profile = () => {
       }
     }
     fetchSubCat()
-  }, [preferences.categoryId])
+  }, [seller, preferences.categoryId])
 
+  // ...existing handlers...
   const handleOnChange = (e) => {
     const { name, value } = e.target
     setUserData(prev => ({ ...prev, [name]: value }))
@@ -174,6 +186,8 @@ const Profile = () => {
   }
 
   const fetchPreferences = async () => {
+    if (seller) return
+    
     try {
       const response = await Axios({ ...SummaryApi.getPreferences })
       if (response.data.success) {
@@ -268,9 +282,9 @@ const Profile = () => {
   useEffect(() => {
     fetchPreferences()
     fetchAddresses()
-  }, [])
+  }, [seller])
 
-  // Helpers for displaying preference groups - use allSubCategories for mapping
+  // Helpers for displaying preference groups
   const categoryMap = categories.reduce((acc, c) => {
     acc[c._id] = c.name
     return acc
@@ -281,7 +295,6 @@ const Profile = () => {
     return acc
   }, {})
 
-  // Build grouped preferences by category name
   const grouped = userPreferences.reduce((acc, pref) => {
     const categoryName = categoryMap[pref.categoryId] || pref.category || 'Unknown'
     if (!acc[categoryName]) acc[categoryName] = []
@@ -471,91 +484,98 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Preferences */}
-      <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
-        <h3 className='font-semibold text-gray-900 mb-4'>Preferences</h3>
-        <div className='grid grid-cols-2 gap-4 mb-4'>
-          <div>
-            <label className='block text-sm text-gray-600 mb-2'>Category</label>
-            <select
-              name="categoryId"
-              value={preferences.categoryId}
-              onChange={handlePrefChange}
-              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
-            >
-              <option value="">Select Category</option>
-              {categories.map(c => (
-                <option key={c._id} value={c._id}>{c.name}</option>
-              ))}
-            </select>
+      {/* Preferences - Hide for sellers */}
+      {!seller && (
+        <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
+          <h3 className='font-semibold text-gray-900 mb-4'>Preferences</h3>
+          <div className='grid grid-cols-2 gap-4 mb-4'>
+            <div>
+              <label className='block text-sm text-gray-600 mb-2'>Category</label>
+              <select
+                name="categoryId"
+                value={preferences.categoryId}
+                onChange={handlePrefChange}
+                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+              >
+                <option value="">Select Category</option>
+                {categories.map(c => (
+                  <option key={c._id} value={c._id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className='block text-sm text-gray-600 mb-2'>SubCategory</label>
+              <select
+                name="subCategoryId"
+                value={preferences.subCategoryId}
+                onChange={handlePrefChange}
+                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                disabled={!preferences.categoryId}
+              >
+                <option value="">Select SubCategory</option>
+                {subCategories.map(sc => (
+                  <option key={sc._id} value={sc._id}>{sc.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div>
-            <label className='block text-sm text-gray-600 mb-2'>SubCategory</label>
-            <select
-              name="subCategoryId"
-              value={preferences.subCategoryId}
-              onChange={handlePrefChange}
-              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
-              disabled={!preferences.categoryId}
-            >
-              <option value="">Select SubCategory</option>
-              {subCategories.map(sc => (
-                <option key={sc._id} value={sc._id}>{sc.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <button
-          onClick={handleAddPreference}
-          disabled={prefLoading}
-          className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
-        >
-          {prefLoading ? "Adding..." : "Add Preference"}
-        </button>
+          <button
+            onClick={handleAddPreference}
+            disabled={prefLoading}
+            className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
+          >
+            {prefLoading ? "Adding..." : "Add Preference"}
+          </button>
 
-        {Object.keys(grouped).length > 0 && (
-          <div className='mt-6'>
-            <h4 className='font-medium text-gray-900 mb-3'>Saved Preferences</h4>
-            {Object.entries(grouped).map(([categoryName, prefs]) => (
-              <div key={categoryName} className='mb-4'>
-                <h5 className='text-sm font-semibold text-gray-700 mb-2'>{categoryName}</h5>
-                <div className='flex flex-wrap gap-2'>
-                  {prefs.map((pref, idx) => {
-                    const subName = subCategoryMap[pref.subCategoryId] || pref.subCategory || pref.subCategoryId
-                    return (
-                      <span
-                        key={pref._id || idx}
-                        className='relative inline-flex items-center px-4 py-2 pr-8 bg-white border border-gray-300 rounded-full text-sm text-gray-700 hover:bg-gray-50 transition-colors'
-                      >
-                        {subName}
-                        <button
-                          type="button"
-                          aria-label="Remove preference"
-                          onClick={() => handleDeletePreference(pref._id)}
-                          className='absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 text-gray-600 hover:bg-red-600 hover:text-white flex items-center justify-center text-xs leading-none'
+          {Object.keys(grouped).length > 0 && (
+            <div className='mt-6'>
+              <h4 className='font-medium text-gray-900 mb-3'>Saved Preferences</h4>
+              {Object.entries(grouped).map(([categoryName, prefs]) => (
+                <div key={categoryName} className='mb-4'>
+                  <h5 className='text-sm font-semibold text-gray-700 mb-2'>{categoryName}</h5>
+                  <div className='flex flex-wrap gap-2'>
+                    {prefs.map((pref, idx) => {
+                      const subName = subCategoryMap[pref.subCategoryId] || pref.subCategory || pref.subCategoryId
+                      return (
+                        <span
+                          key={pref._id || idx}
+                          className='relative inline-flex items-center px-4 py-2 pr-8 bg-white border border-gray-300 rounded-full text-sm text-gray-700 hover:bg-gray-50 transition-colors'
                         >
-                          ×
-                        </button>
-                      </span>
-                    )
-                  })}
+                          {subName}
+                          <button
+                            type="button"
+                            aria-label="Remove preference"
+                            onClick={() => handleDeletePreference(pref._id)}
+                            className='absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 text-gray-600 hover:bg-red-600 hover:text-white flex items-center justify-center text-xs leading-none'
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {openProfileAvatarEdit && (
         <UserProfileAvatarEdit close={() => setProfileAvatarEdit(false)} />
       )}
 
-      {openAddAddress && (
+      {openAddAddress?.mode === 'create' && (
         <AddAddress
-          mode={openAddAddress.mode}
-          initialData={openAddAddress.data}
           close={() => setOpenAddAddress(null)}
-          onSuccess={fetchAddresses}
+          fetchAddress={fetchAddresses}
+        />
+      )}
+
+      {openAddAddress?.mode === 'edit' && (
+        <EditAddressDetails
+          close={() => setOpenAddAddress(null)}
+          data={openAddAddress.data}
         />
       )}
     </div>

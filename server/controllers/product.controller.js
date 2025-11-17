@@ -4,6 +4,8 @@ import { execFile } from "child_process";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import { syncSingleProductToPriceAI } from "./price_suggestion_ai.controller.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,6 +51,14 @@ export const createProductController = async(request,response)=>{
             userId
         })
         const saveProduct = await product.save()
+
+        // Auto-sync to Price AI (non-blocking)
+        syncSingleProductToPriceAI({
+            name,
+            subCategory,
+            unit,
+            price
+        }).catch(err => console.error('[createProduct] Sync error:', err))
 
         return response.json({
             message : "Product Created Successfully",
@@ -246,6 +256,19 @@ export const updateProductDetails = async(request,response)=>{
         const updateProduct = await ProductModel.updateOne({ _id : _id },{
             ...request.body
         })
+
+        // If price was updated, sync to Price AI (non-blocking)
+        if (request.body.price) {
+            const updatedProductData = await ProductModel.findById(_id)
+            if (updatedProductData) {
+                syncSingleProductToPriceAI({
+                    name: updatedProductData.name,
+                    subCategory: updatedProductData.subCategory,
+                    unit: updatedProductData.unit,
+                    price: updatedProductData.price
+                }).catch(err => console.error('[updateProduct] Sync error:', err))
+            }
+        }
 
         return response.json({
             message : "updated successfully",

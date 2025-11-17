@@ -34,6 +34,7 @@ import AllOrders from "../pages/AllOrders";
 import UsersTable from "../pages/UsersTable";
 import SellerProductPage from "../pages/SellerProductPage";
 import EmailPage from "../pages/EmailPage";
+import PriceSuggestionPage from "../pages/PriceSuggestionPage";
 
 const router = createBrowserRouter([
     {
@@ -143,6 +144,10 @@ const router = createBrowserRouter([
                     {
                         path : "messages",
                         element : <AdminPermision><EmailPage/></AdminPermision>
+                    },
+                    {
+                        path: "price-suggestion",
+                        element: <AdminPermision><PriceSuggestionPage /></AdminPermision>
                     },
                 ]
             },

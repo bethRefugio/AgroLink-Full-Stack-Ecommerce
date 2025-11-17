@@ -1,0 +1,832 @@
+import React, { useEffect, useState } from 'react'
+import Axios from '../utils/Axios'
+import SummaryApi from '../common/SummaryApi'
+import AxiosToastError from '../utils/AxiosToastError'
+import toast from 'react-hot-toast'
+import { IoSearch } from "react-icons/io5"
+import { MdDelete, MdEdit, MdUploadFile } from "react-icons/md"
+import { createColumnHelper } from '@tanstack/react-table'
+import DisplayTable from '../components/DisplayTable'
+import ConfirmBox from '../components/CofirmBox'
+import { IoClose } from "react-icons/io5"
+
+const PriceSuggestionPage = () => {
+  const [data, setData] = useState([])
+  const [filteredData, setFilteredData] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [sortOrder, setSortOrder] = useState('newest')
+  const [deleteEntry, setDeleteEntry] = useState({ _id: "" })
+  const [openDeleteConfirmBox, setOpenDeleteConfirmBox] = useState(false)
+  const [openAddModal, setOpenAddModal] = useState(false)
+  const [openEditModal, setOpenEditModal] = useState(false)
+  const [openUploadCSV, setOpenUploadCSV] = useState(false)
+  const [editData, setEditData] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
+  const rowsPerPage = 10
+  const [syncing, setSyncing] = useState(false)
+
+  const columnHelper = createColumnHelper()
+
+  const fetchPriceData = async (page = 1) => {
+    try {
+      setLoading(true)
+      const response = await Axios({
+        ...SummaryApi.getAllPriceEntries,
+        params: {
+          page,
+          limit: rowsPerPage
+        }
+      })
+      const { data: responseData } = response
+
+      if (responseData.success) {
+        setData(responseData.data)
+        setFilteredData(responseData.data)
+        setTotal(responseData.total)
+        setTotalPages(responseData.totalPages)
+        setCurrentPage(responseData.page)
+      }
+    } catch (error) {
+      AxiosToastError(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPriceData(currentPage)
+  }, [currentPage])
+
+  useEffect(() => {
+    let filtered = [...data]
+
+    if (searchTerm) {
+      filtered = filtered.filter(item =>
+        item.commodity?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.item?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.month?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.year?.toString().includes(searchTerm)
+      )
+    }
+
+    filtered.sort((a, b) => {
+      const months = [
+        'january', 'february', 'march', 'april',
+        'may', 'june', 'july', 'august',
+        'september', 'october', 'november', 'december'
+      ]
+
+      const aMonthIndex = months.indexOf(a.month.toLowerCase())
+      const bMonthIndex = months.indexOf(b.month.toLowerCase())
+
+      const aDate = a.year * 12 + aMonthIndex
+      const bDate = b.year * 12 + bMonthIndex
+
+      return sortOrder === 'newest' ? bDate - aDate : aDate - bDate
+    })
+
+    setFilteredData(filtered)
+  }, [searchTerm, data, sortOrder])
+
+  const handleDeleteEntry = async () => {
+    try {
+      const response = await Axios({
+        url: SummaryApi.deletePriceEntry.url(deleteEntry._id),
+        method: SummaryApi.deletePriceEntry.method
+      })
+
+      const { data: responseData } = response
+
+      if (responseData.success) {
+        toast.success(responseData.message)
+        fetchPriceData(currentPage)
+        setOpenDeleteConfirmBox(false)
+        setDeleteEntry({ _id: "" })
+      }
+    } catch (error) {
+      AxiosToastError(error)
+    }
+  }
+
+  // Move handleSyncProducts here - at component level
+  const handleSyncProducts = async () => {
+    try {
+      setSyncing(true)
+      const response = await Axios({
+        ...SummaryApi.syncProductsToPriceAI
+      })
+
+      if (response.data.success) {
+        toast.success(response.data.message)
+        fetchPriceData(1)
+      }
+    } catch (error) {
+      AxiosToastError(error)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  // Add/Edit Modal
+  const AddEditModal = ({ isEdit = false }) => {
+    const [formData, setFormData] = useState(
+      isEdit && editData
+        ? editData
+        : {
+            year: new Date().getFullYear(),
+            month: 'january',
+            commodity: 'local rice',
+            item: '',
+            unit: 'kg',
+            price: '',
+            source: 'manual'
+          }
+    )
+    const [saving, setSaving] = useState(false)
+
+    const handleSubmit = async (e) => {
+      e.preventDefault()
+      try {
+        setSaving(true)
+        const response = await Axios({
+          ...(isEdit
+            ? {
+                url: SummaryApi.updatePriceEntry.url(editData._id),
+                method: SummaryApi.updatePriceEntry.method
+              }
+            : SummaryApi.createPriceEntry),
+          data: formData
+        })
+
+        if (response.data.success) {
+          toast.success(response.data.message)
+          fetchPriceData(currentPage)
+          isEdit ? setOpenEditModal(false) : setOpenAddModal(false)
+          setEditData(null)
+        }
+      } catch (error) {
+        AxiosToastError(error)
+      } finally {
+        setSaving(false)
+      }
+    }
+
+    return (
+      <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+        <div className='bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden'>
+          <div className='flex justify-between items-center p-6 border-b border-gray-200'>
+            <h3 className='font-semibold text-lg text-gray-900'>
+              {isEdit ? 'Edit Price Entry' : 'Add New Price Entry'}
+            </h3>
+            <button
+              onClick={() => {
+                isEdit ? setOpenEditModal(false) : setOpenAddModal(false)
+                setEditData(null)
+              }}
+              className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors'
+            >
+              <IoClose size={24} />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className='p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-140px)]'>
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Year *</label>
+                <input
+                  type='number'
+                  value={formData.year}
+                  onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
+                  required
+                  min='2020'
+                  max='2100'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                />
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Month *</label>
+                <select
+                  value={formData.month}
+                  onChange={(e) => setFormData({ ...formData, month: e.target.value })}
+                  required
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                >
+                  <option value='january'>January</option>
+                  <option value='february'>February</option>
+                  <option value='march'>March</option>
+                  <option value='april'>April</option>
+                  <option value='may'>May</option>
+                  <option value='june'>June</option>
+                  <option value='july'>July</option>
+                  <option value='august'>August</option>
+                  <option value='september'>September</option>
+                  <option value='october'>October</option>
+                  <option value='november'>November</option>
+                  <option value='december'>December</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>Commodity *</label>
+              <select
+                value={formData.commodity}
+                onChange={(e) => setFormData({ ...formData, commodity: e.target.value })}
+                required
+                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+              >
+                <option value='local rice'>Local Rice</option>
+                <option value='lowland vegetables'>Lowland Vegetables</option>
+                <option value='high land vegetables'>Highland Vegetables</option>
+                <option value='spices'>Spices</option>
+                <option value='fruits'>Fruits</option>
+                <option value='corn'>Corn</option>
+                <option value='rootcrops'>Rootcrops</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>Item *</label>
+              <input
+                type='text'
+                value={formData.item}
+                onChange={(e) => setFormData({ ...formData, item: e.target.value })}
+                required
+                placeholder='e.g., Special Rice, Tomato, Mango'
+                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+              />
+            </div>
+
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Unit *</label>
+                <select
+                  value={formData.unit}
+                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                  required
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                >
+                  <option value='kg'>Kilogram (kg)</option>
+                  <option value='small bundle'>Small Bundle</option>
+                  <option value='piece'>Piece</option>
+                  <option value='liter'>Liter</option>
+                  <option value='gram'>Gram</option>
+                </select>
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Price (₱) *</label>
+                <input
+                  type='number'
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                  required
+                  min='0'
+                  step='0.01'
+                  placeholder='0.00'
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>Source</label>
+              <select
+                value={formData.source}
+                onChange={(e) => setFormData({ ...formData, source: e.target.value })}
+                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+              >
+                <option value='manual'>Manual</option>
+                <option value='import'>Import</option>
+                <option value='api'>API</option>
+                <option value='prediction'>Prediction</option>
+              </select>
+            </div>
+
+            <div className='flex justify-end gap-3 pt-4'>
+              <button
+                type='button'
+                onClick={() => {
+                  isEdit ? setOpenEditModal(false) : setOpenAddModal(false)
+                  setEditData(null)
+                }}
+                className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+              >
+                Cancel
+              </button>
+              <button
+                type='submit'
+                disabled={saving}
+                className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
+              >
+                {saving ? 'Saving...' : isEdit ? 'Update' : 'Add Entry'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
+  // CSV Upload Modal
+  const CSVUploadModal = () => {
+    const [file, setFile] = useState(null)
+    const [uploading, setUploading] = useState(false)
+    const [preview, setPreview] = useState([])
+    const [uploadProgress, setUploadProgress] = useState(0)
+
+    const handleFileChange = (e) => {
+      const selectedFile = e.target.files[0]
+      if (selectedFile && selectedFile.type === 'text/csv') {
+        setFile(selectedFile)
+        previewCSV(selectedFile)
+      } else {
+        toast.error('Please select a valid CSV file')
+      }
+    }
+
+    const previewCSV = (file) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const text = e.target.result
+        const rows = text.split('\n').slice(1, 6)
+        const data = rows
+          .map((row) => {
+            const cols = row.split(',')
+            if (cols.length >= 6) {
+              return {
+                year: cols[0],
+                month: cols[1],
+                commodity: cols[2],
+                item: cols[3],
+                unit: cols[4],
+                price: cols[5]
+              }
+            }
+            return null
+          })
+          .filter(Boolean)
+        setPreview(data)
+      }
+      reader.readAsText(file)
+    }
+
+    const chunkArray = (array, size) => {
+      const chunks = []
+      for (let i = 0; i < array.length; i += size) {
+        chunks.push(array.slice(i, i + size))
+      }
+      return chunks
+    }
+
+    const handleUpload = async () => {
+      if (!file) {
+        toast.error('Please select a file')
+        return
+      }
+
+      try {
+        setUploading(true)
+        setUploadProgress(0)
+
+        const reader = new FileReader()
+        reader.onload = async (e) => {
+          const text = e.target.result
+          const rows = text.split('\n').slice(1)
+          
+          const allData = rows
+            .map((row) => {
+              const cols = row.split(',').map((col) => col.trim())
+              if (cols.length >= 6 && cols[5]) {
+                return {
+                  year: parseInt(cols[0]),
+                  month: cols[1].toLowerCase(),
+                  commodity: cols[2].toLowerCase(),
+                  item: cols[3].toLowerCase(),
+                  unit: cols[4].toLowerCase(),
+                  price: parseFloat(cols[5]),
+                  source: 'import'
+                }
+              }
+              return null
+            })
+            .filter(Boolean)
+
+          if (allData.length === 0) {
+            toast.error('No valid data found in CSV')
+            setUploading(false)
+            return
+          }
+
+          const chunks = chunkArray(allData, 100)
+          let successCount = 0
+
+          for (let i = 0; i < chunks.length; i++) {
+            try {
+              const response = await Axios({
+                ...SummaryApi.bulkImportPrices,
+                data: { data: chunks[i] }
+              })
+
+              if (response.data.success) {
+                successCount += chunks[i].length
+              }
+
+              setUploadProgress(Math.round(((i + 1) / chunks.length) * 100))
+            } catch (error) {
+              console.error(`Chunk ${i + 1} failed:`, error)
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 100))
+          }
+
+          if (successCount > 0) {
+            toast.success(`Successfully imported ${successCount} entries`)
+            fetchPriceData(1)
+            setOpenUploadCSV(false)
+            setFile(null)
+            setPreview([])
+          } else {
+            toast.error('Failed to import data')
+          }
+        }
+        reader.readAsText(file)
+      } catch (error) {
+        AxiosToastError(error)
+      } finally {
+        setUploading(false)
+        setUploadProgress(0)
+      }
+    }
+
+    return (
+      <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+        <div className='bg-white rounded-xl shadow-2xl w-full max-w-3xl'>
+          <div className='flex justify-between items-center p-6 border-b border-gray-200'>
+            <h3 className='font-semibold text-lg text-gray-900'>Upload CSV File</h3>
+            <button
+              onClick={() => {
+                if (!uploading) {
+                  setOpenUploadCSV(false)
+                  setFile(null)
+                  setPreview([])
+                }
+              }}
+              disabled={uploading}
+              className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors disabled:opacity-50'
+            >
+              <IoClose size={24} />
+            </button>
+          </div>
+
+          <div className='p-6 space-y-4'>
+            <div className='border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors'>
+              <MdUploadFile className='mx-auto text-gray-400 mb-4' size={48} />
+              <label className={`cursor-pointer ${uploading ? 'pointer-events-none' : ''}`}>
+                <span className='text-blue-600 hover:text-blue-700 font-medium'>
+                  Click to upload
+                </span>
+                <span className='text-gray-600'> or drag and drop</span>
+                <input
+                  type='file'
+                  accept='.csv'
+                  onChange={handleFileChange}
+                  disabled={uploading}
+                  className='hidden'
+                />
+              </label>
+              <p className='text-xs text-gray-500 mt-2'>CSV file only</p>
+            </div>
+
+            {file && (
+              <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
+                <p className='text-sm text-green-800 font-medium'>
+                  Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
+                </p>
+              </div>
+            )}
+
+            {uploading && (
+              <div>
+                <div className='flex justify-between text-sm text-gray-600 mb-2'>
+                  <span>Uploading...</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <div className='w-full bg-gray-200 rounded-full h-2'>
+                  <div
+                    className='bg-blue-600 h-2 rounded-full transition-all duration-300'
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {preview.length > 0 && !uploading && (
+              <div>
+                <h4 className='font-medium text-gray-900 mb-3'>Preview (First 5 rows)</h4>
+                <div className='overflow-x-auto border border-gray-200 rounded-lg'>
+                  <table className='min-w-full divide-y divide-gray-200'>
+                    <thead className='bg-gray-50'>
+                      <tr>
+                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Year</th>
+                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Month</th>
+                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Commodity</th>
+                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Item</th>
+                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Unit</th>
+                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Price</th>
+                      </tr>
+                    </thead>
+                    <tbody className='bg-white divide-y divide-gray-200'>
+                      {preview.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className='px-4 py-2 text-sm text-gray-900'>{row.year}</td>
+                          <td className='px-4 py-2 text-sm text-gray-900 capitalize'>{row.month}</td>
+                          <td className='px-4 py-2 text-sm text-gray-900 capitalize'>{row.commodity}</td>
+                          <td className='px-4 py-2 text-sm text-gray-900 capitalize'>{row.item}</td>
+                          <td className='px-4 py-2 text-sm text-gray-900'>{row.unit}</td>
+                          <td className='px-4 py-2 text-sm text-gray-900'>₱{row.price}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            <div className='flex justify-end gap-3 pt-4'>
+              <button
+                type='button'
+                onClick={() => {
+                  setOpenUploadCSV(false)
+                  setFile(null)
+                  setPreview([])
+                }}
+                disabled={uploading}
+                className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50'
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpload}
+                disabled={!file || uploading}
+                className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
+              >
+                {uploading ? `Uploading... ${uploadProgress}%` : 'Upload CSV'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const columns = [
+    columnHelper.display({
+      id: 'serialNumber',
+      header: 'No.',
+      cell: ({ row }) => (
+        <div className='text-gray-700 font-medium'>
+          {(currentPage - 1) * rowsPerPage + row.index + 1}
+        </div>
+      )
+    }),
+    columnHelper.accessor('year', {
+      header: 'YEAR',
+      cell: ({ row }) => <span className='text-gray-900 font-medium'>{row.original.year}</span>
+    }),
+    columnHelper.accessor('month', {
+      header: 'MONTH',
+      cell: ({ row }) => (
+        <span className='text-gray-900 capitalize'>{row.original.month}</span>
+      )
+    }),
+    columnHelper.accessor('commodity', {
+      header: 'COMMODITY',
+      cell: ({ row }) => (
+        <span className='text-gray-700 capitalize'>{row.original.commodity}</span>
+      )
+    }),
+    columnHelper.accessor('item', {
+      header: 'ITEM',
+      cell: ({ row }) => (
+        <span className='text-gray-700 capitalize'>{row.original.item}</span>
+      )
+    }),
+    columnHelper.accessor('unit', {
+      header: 'UNIT',
+      cell: ({ row }) => <span className='text-gray-700'>{row.original.unit}</span>
+    }),
+    columnHelper.accessor('price', {
+      header: 'PRICE',
+      cell: ({ row }) => (
+        <span className='text-gray-900 font-semibold'>₱{row.original.price.toFixed(2)}</span>
+      )
+    }),
+    columnHelper.accessor('source', {
+      header: 'SOURCE',
+      cell: ({ row }) => (
+        <span className='px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 capitalize'>
+          {row.original.source}
+        </span>
+      )
+    }),
+    columnHelper.accessor('_id', {
+      header: 'ACTION',
+      cell: ({ row }) => {
+        return (
+          <div className='flex items-center gap-3'>
+            <button
+              onClick={() => {
+                setEditData(row.original)
+                setOpenEditModal(true)
+              }}
+              className='text-gray-500 hover:text-gray-700 transition-colors'
+              title='Edit'
+            >
+              <MdEdit size={22} />
+            </button>
+            <button
+              onClick={() => {
+                setOpenDeleteConfirmBox(true)
+                setDeleteEntry(row.original)
+              }}
+              className='text-gray-500 hover:text-gray-700 transition-colors'
+              title='Delete'
+            >
+              <MdDelete size={22} />
+            </button>
+          </div>
+        )
+      }
+    })
+  ]
+
+  return (
+    <section className='max-w-full p-6'>
+      {/* Page Header */}
+      <div className='mb-6'>
+        <h1 className='text-2xl font-semibold text-gray-900 mb-1'>Price Suggestion Data</h1>
+        <p className='text-sm text-gray-500'>
+          Manage historical price data for AI predictions ({total} total entries)
+        </p>
+      </div>
+
+      {/* Search and Actions Bar */}
+      <div className='bg-white p-4 mb-6 flex items-center justify-between gap-4'>
+        <div className='relative flex-1 max-w-xs'>
+          <IoSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' size={20} />
+          <input
+            type='text'
+            placeholder='Search commodity, item, month, year...'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+          />
+        </div>
+
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
+            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2'
+          >
+            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4'
+              />
+            </svg>
+            {sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}
+          </button>
+
+          <button
+            onClick={handleSyncProducts}
+            disabled={syncing}
+            className='px-4 py-2 text-sm font-medium text-purple-700 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
+            title='Sync all products to Price AI dataset'
+          >
+            <svg className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+            </svg>
+            {syncing ? 'Syncing...' : 'Sync Products'}
+          </button>
+
+          <button
+            onClick={() => setOpenUploadCSV(true)}
+            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2'
+          >
+            <MdUploadFile size={18} />
+            Upload CSV
+          </button>
+
+          <button
+            onClick={() => setOpenAddModal(true)}
+            className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2'
+          >
+            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
+            </svg>
+            Add Entry
+          </button>
+        </div>
+      </div>
+
+      {/* Table Container */}
+      <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+        <div className='overflow-x-auto'>
+          {loading ? (
+            <div className='p-8 text-center text-gray-500'>Loading...</div>
+          ) : filteredData.length === 0 ? (
+            <div className='p-8 text-center text-gray-500'>No price data found.</div>
+          ) : (
+            <DisplayTable data={filteredData} column={columns} />
+          )}
+        </div>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className='mt-4 flex items-center justify-between'>
+          <div className='text-sm text-gray-600'>
+            Showing {(currentPage - 1) * rowsPerPage + 1} to{' '}
+            {Math.min(currentPage * rowsPerPage, total)} of {total} entries
+          </div>
+          <div className='flex items-center gap-2'>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className='px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              Previous
+            </button>
+
+            {[...Array(totalPages)].map((_, idx) => {
+              const pageNum = idx + 1
+              if (
+                pageNum === 1 ||
+                pageNum === totalPages ||
+                (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+              ) {
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
+                      currentPage === pageNum
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                )
+              } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                return (
+                  <span key={pageNum} className='px-2 text-gray-500'>
+                    ...
+                  </span>
+                )
+              }
+              return null
+            })}
+
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className='px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Results Info */}
+      {searchTerm && (
+        <div className='mt-4 text-sm text-gray-600'>
+          Showing {filteredData.length} results for "{searchTerm}"
+        </div>
+      )}
+
+      {/* Modals */}
+      {openDeleteConfirmBox && (
+        <ConfirmBox
+          cancel={() => setOpenDeleteConfirmBox(false)}
+          close={() => setOpenDeleteConfirmBox(false)}
+          confirm={handleDeleteEntry}
+        />
+      )}
+
+      {openAddModal && <AddEditModal isEdit={false} />}
+      {openEditModal && <AddEditModal isEdit={true} />}
+      {openUploadCSV && <CSVUploadModal />}
+    </section>
+  )
+}
+
+export default PriceSuggestionPage

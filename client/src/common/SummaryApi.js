@@ -250,6 +250,59 @@ const SummaryApi = {
         url: "/api/email/contact/reply",
         method: "post",
     },
+        // Price AI endpoints
+    getLatestPrice: {
+        url: "/api/price-ai/price/latest",
+        method: "get",
+    },
+    getPriceHistory: {
+        url: "/api/price-ai/price/history",
+        method: "get",
+    },
+    getAveragePrice: {
+        url: "/api/price-ai/price/average",
+        method: "get",
+    },
+    getPriceSuggestion: {
+        url: "/api/price-ai/price/suggestion",
+        method: "get",
+    },
+    getCommodities: {
+        url: "/api/price-ai/commodities",
+        method: "get",
+    },
+    getItemsByCommodity: {
+        url: "/api/price-ai/items",
+        method: "get",
+    },
+    createPriceEntry: {
+        url: "/api/price-ai/price",
+        method: "post",
+    },
+    getAllPriceEntries: {
+        url: "/api/price-ai/price/all",
+        method: "get",
+    },
+    updatePriceEntry: {
+        url: (id) => `/api/price-ai/price/${id}`,
+        method: "put",
+    },
+    deletePriceEntry: {
+        url: (id) => `/api/price-ai/price/${id}`,
+        method: "delete",
+    },
+    bulkImportPrices: {
+        url: "/api/price-ai/price/bulk-import",
+        method: "post",
+    },
+    syncProductsToPriceAI: {
+        url: "/api/price-ai/sync-products",
+        method: "post",
+    },
+    translateText: {
+        url: '/api/translate',
+        method: 'post'
+    }
 }
 
 
