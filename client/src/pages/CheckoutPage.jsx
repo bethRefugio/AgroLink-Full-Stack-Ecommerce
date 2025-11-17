@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { FaMapMarkerAlt, FaPhone, FaStore, FaTruck, FaCheckCircle } from 'react-icons/fa'
 import { IoAdd } from 'react-icons/io5'
+import { MdArrowBack } from 'react-icons/md'
 
 const CheckoutPage = () => {
     const { notDiscountTotalPrice, totalPrice, totalQty, fetchCartItem, fetchOrder } = useGlobalContext()
@@ -319,11 +320,22 @@ const CheckoutPage = () => {
     return (
         <section className='bg-gray-50 min-h-screen py-8'>
             <div className='container mx-auto px-4'>
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-xl font-bold text-gray-900 mb-2">Checkout</h1>
-                    <p className="text-gray-600 text-sm">Complete your order by choosing delivery method and payment</p>
+              {/* Header with back on the left */}
+              <div className="mb-8">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => navigate(-1)}
+                    aria-label="Back"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  >
+                    <MdArrowBack className="text-base" />
+                  </button>
+                  <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
                 </div>
+                <p className="text-gray-600 text-sm mt-1">
+                  Complete your order by choosing delivery method and payment
+                </p>
+              </div>
 
                 <div className='flex flex-col lg:flex-row gap-6'>
                     {/* Left Column - Address/Pickup */}
@@ -348,8 +360,8 @@ const CheckoutPage = () => {
                                 <button
                                     className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                                         isPickup 
-                                            ? 'bg-green-600 text-white hover:bg-green-700' 
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            ? 'bg-green-500 text-white hover:bg-green-600' 
+                                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
                                     }`}
                                     onClick={() => setIsPickup(prev => !prev)}
                                 >

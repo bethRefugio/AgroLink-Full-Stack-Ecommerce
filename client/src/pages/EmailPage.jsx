@@ -265,96 +265,99 @@ const EmailPage = () => {
   }
 
   // Reply Modal
-  const ReplyModal = () => {
-    if (!selectedMessage) return null
+const ReplyModal = () => {
+  if (!selectedMessage) return null
 
-    return (
-      <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
-        <div className='bg-white rounded-xl shadow-2xl w-full max-w-2xl'>
-          <div className='flex justify-between items-center p-6 border-b border-gray-200'>
-            <h3 className='font-semibold text-lg text-gray-900'>Reply to {selectedMessage.name}</h3>
+  return (
+    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+      <div className='bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden'>
+        {/* Header */}
+        <div className='flex justify-between items-center p-4 sm:p-6 border-b border-gray-200'>
+          <h3 className='font-semibold text-lg text-gray-900'>Reply to {selectedMessage.name}</h3>
+          <button
+            onClick={() => {
+              setOpenReplyModal(false)
+              setReplyData({ subject: '', message: '' })
+              setSelectedMessage(null)
+            }}
+            className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors'
+          >
+            <IoClose size={24} />
+          </button>
+        </div>
+
+        {/* Scrollable body + form */}
+        <form onSubmit={handleReply} className='flex-1 overflow-y-auto p-4 sm:p-6 space-y-4'>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>To</label>
+            <input
+              type='text'
+              value={selectedMessage.email}
+              disabled
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600'
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>Subject</label>
+            <input
+              type='text'
+              value={replyData.subject}
+              onChange={(e) => setReplyData({ ...replyData, subject: e.target.value })}
+              required
+              placeholder='Enter subject'
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>Message</label>
+            <textarea
+              value={replyData.message}
+              onChange={(e) => setReplyData({ ...replyData, message: e.target.value })}
+              required
+              rows={8}
+              placeholder='Write your reply...'
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none'
+            />
+          </div>
+
+          <div className='bg-gray-50 p-4 rounded-lg'>
+            <p className='text-xs font-medium text-gray-500 mb-2'>Original Message:</p>
+            <p className='text-sm text-gray-700 whitespace-pre-wrap'>{selectedMessage.message}</p>
+          </div>
+
+          {/* Sticky actions */}
+          <div className='sticky bottom-0 bg-white pt-4 border-t border-gray-200 flex justify-end gap-3'>
             <button
+              type='button'
               onClick={() => {
                 setOpenReplyModal(false)
                 setReplyData({ subject: '', message: '' })
                 setSelectedMessage(null)
               }}
-              className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors'
+              className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
             >
-              <IoClose size={24} />
+              Cancel
+            </button>
+            <button
+              type='submit'
+              disabled={sending}
+              className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2'
+            >
+              {sending ? 'Sending...' : (
+                <>
+                  <MdReply size={18} />
+                  Send Reply
+                </>
+              )}
             </button>
           </div>
-
-          <form onSubmit={handleReply} className='p-6 space-y-4'>
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>To</label>
-              <input
-                type='text'
-                value={selectedMessage.email}
-                disabled
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600'
-              />
-            </div>
-
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>Subject</label>
-              <input
-                type='text'
-                value={replyData.subject}
-                onChange={(e) => setReplyData({ ...replyData, subject: e.target.value })}
-                required
-                placeholder='Enter subject'
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
-              />
-            </div>
-
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>Message</label>
-              <textarea
-                value={replyData.message}
-                onChange={(e) => setReplyData({ ...replyData, message: e.target.value })}
-                required
-                rows='8'
-                placeholder='Write your reply...'
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none'
-              />
-            </div>
-
-            <div className='bg-gray-50 p-4 rounded-lg'>
-              <p className='text-xs font-medium text-gray-500 mb-2'>Original Message:</p>
-              <p className='text-sm text-gray-700 line-clamp-3'>{selectedMessage.message}</p>
-            </div>
-
-            <div className='flex justify-end gap-3 pt-4'>
-              <button
-                type='button'
-                onClick={() => {
-                  setOpenReplyModal(false)
-                  setReplyData({ subject: '', message: '' })
-                  setSelectedMessage(null)
-                }}
-                className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
-              >
-                Cancel
-              </button>
-              <button
-                type='submit'
-                disabled={sending}
-                className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2'
-              >
-                {sending ? 'Sending...' : (
-                  <>
-                    <MdReply size={18} />
-                    Send Reply
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
   const columns = [
     columnHelper.display({
