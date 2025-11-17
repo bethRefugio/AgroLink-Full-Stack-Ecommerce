@@ -1,6 +1,6 @@
 {
     "version" : 2,
-    "name" : "Blinkit",
+    "name" : "AgroL ink",
     "builds" : [
         {
             "src" : "./index.js",

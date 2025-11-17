@@ -41,7 +41,6 @@ const UploadProduct = () => {
   const allSubCategory = useSelector(state => state.product.allSubCategory);
   const user = useSelector(state => state.user);
 
-  // NEW: State for filtered subcategories
   const [filteredSubCategories, setFilteredSubCategories] = useState([]);
 
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
@@ -51,7 +50,6 @@ const UploadProduct = () => {
   const [suggestionError, setSuggestionError] = useState("");
   const [showSuggestionErrorModal, setShowSuggestionErrorModal] = useState(false);
 
-  // NEW: Fetch filtered subcategories when category is selected
   useEffect(() => {
     const fetchFilteredSubCategories = async () => {
       if (!selectCategory || !selectCategory._id) {
@@ -132,7 +130,6 @@ const UploadProduct = () => {
       category: updatedCategories
     }));
 
-    // Reset selected category if it's being removed
     if (selectCategory && updatedCategories.length === 0) {
       setSelectCategory("");
       setFilteredSubCategories([]);
@@ -164,7 +161,6 @@ const UploadProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("data", data);
 
     try {
       const response = await Axios({
@@ -247,352 +243,364 @@ const UploadProduct = () => {
   };
 
   return (
-    <section className=''>
-      <div className='p-2 bg-white shadow-md flex items-center justify-between'>
-        <h2 className='font-semibold'>Upload Product</h2>
+    <section className='max-w-6xl mx-auto p-6'>
+      {/* Header */}
+      <div className='mb-6'>
+        <h1 className='text-2xl font-semibold text-gray-900'>Add New Product</h1>
       </div>
 
-      <div className='grid p-3'>
-        <form className='grid gap-4' onSubmit={handleSubmit}>
-          {/* Name Field */}
-          <div className='grid gap-1'>
-            <label htmlFor='name' className='font-medium'>Name</label>
-            <input
-              id='name'
-              type='text'
-              placeholder='Enter product name'
-              name='name'
-              value={data.name}
-              onChange={handleChange}
-              required
-              className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded'
-            />
-          </div>
-
-          {/* Description Field */}
-          <div className='grid gap-1'>
-            <label htmlFor='description' className='font-medium'>Description</label>
-            <textarea
-              id='description'
-              type='text'
-              placeholder='Enter product description'
-              name='description'
-              value={data.description}
-              onChange={handleChange}
-              required
-              multiple
-              rows={3}
-              className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded resize-none'
-            />
-          </div>
-
-          {/* Image Upload */}
-          <div>
-            <p className='font-medium'>Image</p>
-            <div>
-              <label htmlFor='productImage' className='bg-blue-50 h-24 border rounded flex justify-center items-center cursor-pointer'>
-                <div className='text-center flex justify-center items-center flex-col'>
-                  {imageLoading ? (
-                    <Loading />
-                  ) : (
-                    <>
-                      <FaCloudUploadAlt size={35} />
-                      <p>Upload Image</p>
-                    </>
-                  )}
-                </div>
+      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+        {/* Left Column - Description & Details */}
+        <div className='lg:col-span-2 space-y-6'>
+          {/* Description Section */}
+          <div className='bg-white rounded-lg border border-gray-200 p-6'>
+            <h2 className='font-semibold text-gray-900 mb-4'>Description</h2>
+            
+            <div className='space-y-4'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Product Name</label>
                 <input
-                  type='file'
-                  id='productImage'
-                  className='hidden'
-                  accept='image/*'
-                  onChange={handleUploadImage}
+                  type='text'
+                  placeholder='Enter product name'
+                  name='name'
+                  value={data.name}
+                  onChange={handleChange}
+                  required
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                 />
-              </label>
+              </div>
 
-              {/* Display Uploaded Images */}
-              <div className='flex flex-wrap gap-4'>
-                {data.image.map((img, index) => (
-                  <div key={img + index} className='h-20 mt-1 w-20 min-w-20 bg-blue-50 border relative group'>
-                    <img
-                      src={img}
-                      alt={img}
-                      className='w-full h-full object-scale-down cursor-pointer'
-                      onClick={() => setViewImageURL(img)}
-                    />
-                    <div
-                      onClick={() => handleDeleteImage(index)}
-                      className='absolute bottom-0 right-0 p-1 bg-red-600 hover:bg-red-600 rounded text-white hidden group-hover:block cursor-pointer'
-                    >
-                      <MdDelete />
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Business Description</label>
+                <textarea
+                  placeholder='Enter product description'
+                  name='description'
+                  value={data.description}
+                  onChange={handleChange}
+                  required
+                  rows={4}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none'
+                />
               </div>
             </div>
           </div>
 
-          {/* Category Selection */}
-          <div className='grid gap-1 relative'>
-            <label className='font-medium'>Category</label>
-            <div className='relative'>
-              <button
-                type="button"
-                onClick={() => setOpenCatDropdown(prev => !prev)}
-                className='bg-blue-50 border w-full p-2 rounded text-left'
-              >
-                {selectCategory ? selectCategory.name : "Select Category"}
-              </button>
+          {/* Category Section */}
+          <div className='bg-white rounded-lg border border-gray-200 p-6'>
+            <h2 className='font-semibold text-gray-900 mb-4'>Category</h2>
+            
+            <div className='space-y-4'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Product Category</label>
+                <div className='relative'>
+                  <button
+                    type="button"
+                    onClick={() => setOpenCatDropdown(prev => !prev)}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                  >
+                    {selectCategory ? selectCategory.name : "Select Category"}
+                  </button>
 
-              {openCatDropdown && (
-                <div className='absolute left-0 mt-1 w-full bg-white border rounded shadow-lg z-50 max-h-48 overflow-y-auto'>
-                  {allCategory.map((c) => (
-                    <div
-                      key={c._id}
-                      className='px-3 py-2 hover:bg-blue-100 cursor-pointer'
-                      onClick={() => {
-                        setData(prev => ({
-                          ...prev,
-                          category: [c],
-                          subCategory: [] // Reset subcategories when category changes
-                        }));
-                        setSelectCategory(c);
-                        setSelectSubCategory("");
-                        setOpenCatDropdown(false);
-                      }}
-                    >
-                      {c.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className='flex flex-wrap gap-3 mt-2'>
-              {data.category.map((c, index) => (
-                <div
-                  key={c._id + index}
-                  className='text-sm flex items-center gap-1 bg-blue-50 px-2 py-1 rounded'
-                >
-                  <p>{c.name}</p>
-                  <IoClose
-                    onClick={() => handleRemoveCategory(index)}
-                    className='cursor-pointer hover:text-red-500'
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Sub Category Selection with Filtered Results */}
-          <div className='grid gap-1 relative'>
-            <label className='font-medium'>Sub Category</label>
-            <div className='relative'>
-              <button
-                type="button"
-                onClick={() => setOpenSubDropdown(!openSubDropdown)}
-                disabled={!selectCategory}
-                className={`bg-blue-50 border w-full p-2 rounded text-left ${!selectCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {selectSubCategory ? selectSubCategory.name : selectCategory ? "Select Subcategory" : "Select Category First"}
-              </button>
-
-              {openSubDropdown && selectCategory && (
-                <div className='absolute left-0 mt-1 w-full bg-white border rounded shadow-lg z-50 max-h-48 overflow-y-auto'>
-                  {filteredSubCategories.length > 0 ? (
-                    filteredSubCategories.map((c) => (
-                      <div
-                        key={c._id}
-                        className='px-3 py-2 hover:bg-blue-100 cursor-pointer relative group'
-                        onMouseEnter={() => setHoveredSubCategory(c.name)}
-                        onMouseLeave={() => setHoveredSubCategory(null)}
-                        onClick={() => {
-                          setData(prev => ({
-                            ...prev,
-                            subCategory: [...prev.subCategory, c],
-                          }));
-                          setSelectSubCategory(c);
-                          setOpenSubDropdown(false);
-                        }}
-                      >
-                        {c.name}
-
-                        {/* Hover Tooltip */}
-                        {hoveredSubCategory === c.name && (
-                          <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded w-64 z-50 shadow-lg">
-                            <div className="font-semibold mb-1 text-white border-b border-gray-600 pb-1">{c.name}</div>
-                            <div className="text-gray-200 leading-relaxed">
-                              {c.description || "No description available"}
-                            </div>
-                            <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-800"></div>
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <div className='px-3 py-2 text-gray-500 text-center'>
-                      No subcategories available for this category
+                  {openCatDropdown && (
+                    <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
+                      {allCategory.map((c) => (
+                        <div
+                          key={c._id}
+                          className='px-3 py-2 hover:bg-gray-100 cursor-pointer'
+                          onClick={() => {
+                            setData(prev => ({
+                              ...prev,
+                              category: [c],
+                              subCategory: []
+                            }));
+                            setSelectCategory(c);
+                            setSelectSubCategory("");
+                            setOpenCatDropdown(false);
+                          }}
+                        >
+                          {c.name}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
-              )}
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Product Sub Category</label>
+                <div className='relative'>
+                  <button
+                    type="button"
+                    onClick={() => setOpenSubDropdown(!openSubDropdown)}
+                    disabled={!selectCategory}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white ${!selectCategory ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-400'}`}
+                  >
+                    {selectSubCategory ? selectSubCategory.name : selectCategory ? "Select Subcategory" : "Select Category First"}
+                  </button>
+
+                  {openSubDropdown && selectCategory && (
+                    <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
+                      {filteredSubCategories.length > 0 ? (
+                        filteredSubCategories.map((c) => (
+                          <div
+                            key={c._id}
+                            className='px-3 py-2 hover:bg-gray-100 cursor-pointer'
+                            onClick={() => {
+                              setData(prev => ({
+                                ...prev,
+                                subCategory: [...prev.subCategory, c],
+                              }));
+                              setSelectSubCategory(c);
+                              setOpenSubDropdown(false);
+                            }}
+                          >
+                            {c.name}
+                          </div>
+                        ))
+                      ) : (
+                        <div className='px-3 py-2 text-gray-500 text-sm text-center'>
+                          No subcategories available
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className='flex flex-wrap gap-2 mt-3'>
+                  {data.subCategory.map((c, index) => (
+                    <span
+                      key={c._id + index}
+                      className='inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full'
+                    >
+                      {c.name}
+                      <button
+                        onClick={() => handleRemoveSubCategory(index)}
+                        className='hover:text-red-600'
+                      >
+                        <IoClose size={16} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Inventory Section */}
+          <div className='bg-white rounded-lg border border-gray-200 p-6'>
+            <h2 className='font-semibold text-gray-900 mb-4'>Inventory</h2>
+            
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Quantity</label>
+                <input
+                  type='number'
+                  placeholder='Enter stock quantity'
+                  name='stock'
+                  value={data.stock}
+                  onChange={handleChange}
+                  required
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                />
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Unit</label>
+                <div className='relative'>
+                  <button
+                    type="button"
+                    onClick={() => setOpenUnitDropdown(prev => !prev)}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg text-left bg-white hover:border-gray-400'
+                  >
+                    {data.unit || "Select Unit"}
+                  </button>
+
+                  {openUnitDropdown && (
+                    <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
+                      {["kilograms", "grams", "dozen", "tray", "bundle", "piece"].map((unit) => (
+                        <div
+                          key={unit}
+                          className='px-3 py-2 hover:bg-gray-100 cursor-pointer'
+                          onClick={() => {
+                            setData(prev => ({
+                              ...prev,
+                              unit: unit
+                            }));
+                            setOpenUnitDropdown(false);
+                          }}
+                        >
+                          {unit}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing Section */}
+          <div className='bg-white rounded-lg border border-gray-200 p-6'>
+            <h2 className='font-semibold text-gray-900 mb-4'>Pricing</h2>
+            
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Price</label>
+                <div className='relative'>
+                  <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-500'>₱</span>
+                  <input
+                    type='number'
+                    placeholder='0.00'
+                    name='price'
+                    value={data.price}
+                    onChange={handleChange}
+                    required
+                    className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSuggestPrice}
+                  disabled={isSuggestingPrice}
+                  className='mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium'
+                >
+                  {isSuggestingPrice ? "Suggesting..." : "Suggest Price"}
+                </button>
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Discount (%)</label>
+                <input
+                  type='number'
+                  placeholder='0'
+                  name='discount'
+                  value={data.discount}
+                  onChange={handleChange}
+                  required
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Fields */}
+          {Object.keys(data?.more_details).length > 0 && (
+            <div className='bg-white rounded-lg border border-gray-200 p-6'>
+              <h2 className='font-semibold text-gray-900 mb-4'>Additional Details</h2>
+              <div className='space-y-4'>
+                {Object.keys(data?.more_details).map((k, index) => (
+                  <div key={k + index}>
+                    <label className='block text-sm font-medium text-gray-700 mb-2'>{k}</label>
+                    <input
+                      type='text'
+                      value={data?.more_details[k]}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setData(prev => ({
+                          ...prev,
+                          more_details: {
+                            ...prev.more_details,
+                            [k]: value
+                          }
+                        }));
+                      }}
+                      required
+                      className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column - Images */}
+        <div className='space-y-6'>
+          <div className='bg-white rounded-lg border border-gray-200 p-6'>
+            <div className='flex items-center justify-between mb-4'>
+              <h2 className='font-semibold text-gray-900'>Product Images</h2>
+              <button className='text-gray-400 hover:text-gray-600'>
+                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
+                </svg>
+              </button>
             </div>
 
-            {/* Display Selected Subcategories */}
-            <div className='flex flex-wrap gap-3 mt-2'>
-              {data.subCategory.map((c, index) => (
-                <div
-                  key={c._id + index}
-                  className='text-sm flex items-center gap-1 bg-blue-50 px-2 py-1 rounded group relative'
-                >
-                  <p>{c.name}</p>
-                  <IoClose
-                    onClick={() => handleRemoveSubCategory(index)}
-                    className='cursor-pointer hover:text-red-500'
-                  />
-
-                  {/* Show description on hover for selected subcategories */}
-                  <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs px-3 py-2 rounded w-64 z-50 shadow-lg">
-                    <div className="font-semibold mb-1 text-white border-b border-gray-600 pb-1">{c.name}</div>
-                    <div className="text-gray-200 leading-relaxed">
-                      {c.description || "No description available"}
+            <label htmlFor='productImage' className='block border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors'>
+              <div className='flex flex-col items-center'>
+                {imageLoading ? (
+                  <Loading />
+                ) : (
+                  <>
+                    <div className='w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-3'>
+                      <FaCloudUploadAlt size={24} className='text-gray-600' />
                     </div>
-                    <div className="absolute top-full left-4 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                    <p className='text-sm font-medium text-blue-600 mb-1'>Click to upload</p>
+                    <p className='text-xs text-gray-500'>or drag and drop</p>
+                  </>
+                )}
+              </div>
+              <input
+                type='file'
+                id='productImage'
+                className='hidden'
+                accept='image/*'
+                onChange={handleUploadImage}
+              />
+            </label>
+
+            {/* Image Gallery */}
+            <div className='grid grid-cols-2 gap-3 mt-4'>
+              {data.image.map((img, index) => (
+                <div key={img + index} className='relative group aspect-square bg-gray-100 rounded-lg overflow-hidden'>
+                  <img
+                    src={img}
+                    alt={`Product ${index + 1}`}
+                    className='w-full h-full object-cover cursor-pointer'
+                    onClick={() => setViewImageURL(img)}
+                  />
+                  <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2'>
+                    <button
+                      onClick={() => setViewImageURL(img)}
+                      className='px-3 py-1 bg-white text-gray-700 text-xs rounded hover:bg-gray-100'
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => handleDeleteImage(index)}
+                      className='px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700'
+                    >
+                      Remove
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Unit Field */}
-          <div className='grid gap-1 relative'>
-            <label className='font-medium'>Unit</label>
-            <div className='relative'>
-              <button
-                type="button"
-                onClick={() => setOpenUnitDropdown(prev => !prev)}
-                className='bg-blue-50 border w-full p-2 rounded text-left'
-              >
-                {data.unit || "Select Unit"}
-              </button>
-
-              {openUnitDropdown && (
-                <div className='absolute left-0 mt-1 w-full bg-white border rounded shadow-lg z-50 max-h-48 overflow-y-auto'>
-                  {["kilograms", "grams", "dozen", "tray", "bundle", "piece"].map((unit) => (
-                    <div
-                      key={unit}
-                      className='px-3 py-2 hover:bg-blue-100 cursor-pointer'
-                      onClick={() => {
-                        setData(prev => ({
-                          ...prev,
-                          unit: unit
-                        }));
-                        setOpenUnitDropdown(false);
-                      }}
-                    >
-                      {unit}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Stock Field */}
-          <div className='grid gap-1'>
-            <label htmlFor='stock' className='font-medium'>Number of Stock</label>
-            <input
-              id='stock'
-              type='number'
-              placeholder='Enter product stock'
-              name='stock'
-              value={data.stock}
-              onChange={handleChange}
-              required
-              className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded'
-            />
-          </div>
-
-          {/* Price Field with Suggest button */}
-          <div className='grid gap-1'>
-            <label htmlFor='price' className='font-medium'>Price</label>
-            <div className='flex gap-2 items-center'>
-              <input
-                id='price'
-                type='number'
-                placeholder='Enter product price'
-                name='price'
-                value={data.price}
-                onChange={handleChange}
-                required
-                className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded flex-grow'
-              />
-              <button
-                type="button"
-                onClick={handleSuggestPrice}
-                disabled={isSuggestingPrice}
-                className={`bg-green-500 text-white p-2 rounded text-sm font-medium transition-colors w-36 flex justify-center items-center ${isSuggestingPrice ? 'opacity-60 cursor-not-allowed' : 'hover:bg-green-600'}`}
-              >
-                {isSuggestingPrice ? <Loading /> : "Suggest Price"}
-              </button>
-            </div>
-          </div>
-
-          {/* Discount Field */}
-          <div className='grid gap-1'>
-            <label htmlFor='discount' className='font-medium'>Discount</label>
-            <input
-              id='discount'
-              type='number'
-              placeholder='0'
-              name='discount'
-              value={data.discount}
-              onChange={handleChange}
-              required
-              className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded'
-            />
-          </div>
-
-          {/* Additional Fields */}
-          {Object.keys(data?.more_details).map((k, index) => (
-            <div key={k + index} className='grid gap-1'>
-              <label htmlFor={k} className='font-medium'>{k}</label>
-              <input
-                id={k}
-                type='text'
-                value={data?.more_details[k]}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setData(prev => ({
-                    ...prev,
-                    more_details: {
-                      ...prev.more_details,
-                      [k]: value
-                    }
-                  }));
-                }}
-                required
-                className='bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded'
-              />
-            </div>
-          ))}
-
-          {/* Add Fields Button */}
-          <div
-            onClick={() => setOpenAddField(true)}
-            className='hover:bg-primary-200 bg-white py-1 px-3 w-32 text-center font-semibold border border-primary-200 hover:text-neutral-900 cursor-pointer rounded'
-          >
-            Add Fields
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className='bg-primary-100 hover:bg-primary-200 py-2 rounded font-semibold'
-          >
-            Submit
-          </button>
-        </form>
+      {/* Action Buttons */}
+      <div className='mt-6 flex justify-end gap-3 sticky bottom-0 bg-gray-50 p-4 border-t border-gray-200 -mx-6'>
+        <button
+          type="button"
+          onClick={() => setOpenAddField(true)}
+          className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+        >
+          Add Custom Field
+        </button>
+        <button
+          type="button"
+          className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+        >
+          Discard
+        </button>
+        <button
+          onClick={handleSubmit}
+          className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors'
+        >
+          Add Product
+        </button>
       </div>
 
       {/* Modals */}
@@ -609,27 +617,24 @@ const UploadProduct = () => {
         />
       )}
 
-      {/* Price Suggestion Modal */}
       {showSuggestionModal && suggestedPrice != null && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]'>
-          <div className='bg-white p-6 rounded-lg shadow-2xl w-96'>
-            <h3 className='text-lg font-bold mb-3'>Price Suggestion</h3>
-            <p className='mb-4'>
-              The recommended price for <strong>{data.name}</strong> is <strong>₱{suggestedPrice.toFixed(2)}</strong> (based on previous sales data + 5% markup).
+        <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+          <div className='bg-white rounded-xl shadow-2xl w-full max-w-md p-6'>
+            <h3 className='text-lg font-semibold text-gray-900 mb-3'>Price Suggestion</h3>
+            <p className='text-gray-700 mb-4'>
+              The recommended price for <strong>{data.name}</strong> is <strong>₱{suggestedPrice.toFixed(2)}</strong> based on previous sales data.
             </p>
-            <p className='text-sm text-gray-600 mb-4'>
+            <p className='text-sm text-gray-600 mb-6'>
               Do you want to apply this suggested price?
             </p>
             <div className='flex justify-end gap-3'>
               <button
-                type="button"
                 onClick={() => setShowSuggestionModal(false)}
-                className='px-4 py-2 bg-gray-200 rounded hover:bg-gray-300'
+                className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50'
               >
                 Cancel
               </button>
               <button
-                type="button"
                 onClick={() => {
                   setData(prev => ({
                     ...prev,
@@ -638,28 +643,24 @@ const UploadProduct = () => {
                   setShowSuggestionModal(false);
                   successAlert("Suggested price applied!");
                 }}
-                className='px-4 py-2 bg-primary-100 text-white rounded hover:bg-primary-200 font-semibold'
+                className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700'
               >
-                Yes, Apply Price
+                Apply Price
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Suggestion Error Modal */}
       {showSuggestionErrorModal && suggestionError && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]'>
-          <div className='bg-white p-6 rounded-lg shadow-2xl w-96'>
-            <h3 className='text-lg font-bold mb-3'>Price Suggestion</h3>
-            <p className='mb-4 text-gray-700'>
-              {suggestionError}
-            </p>
+        <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+          <div className='bg-white rounded-xl shadow-2xl w-full max-w-md p-6'>
+            <h3 className='text-lg font-semibold text-gray-900 mb-3'>Price Suggestion</h3>
+            <p className='text-gray-700 mb-6'>{suggestionError}</p>
             <div className='flex justify-end'>
               <button
-                type="button"
                 onClick={() => setShowSuggestionErrorModal(false)}
-                className='px-4 py-2 bg-primary-100 text-white rounded hover:bg-primary-200 font-semibold'
+                className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700'
               >
                 Close
               </button>
@@ -667,7 +668,6 @@ const UploadProduct = () => {
           </div>
         </div>
       )}
-
     </section>
   );
 };
