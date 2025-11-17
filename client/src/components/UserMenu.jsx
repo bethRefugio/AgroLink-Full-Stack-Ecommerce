@@ -9,10 +9,12 @@ import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
 import { HiOutlineExternalLink } from "react-icons/hi"
 import { FiSettings, FiPackage, FiShoppingBag, FiMapPin, FiUsers, FiLogOut } from "react-icons/fi"
-import { MdCategory, MdOutlineCategory } from "react-icons/md"
+import { MdCategory, MdOutlineCategory, MdEmail } from "react-icons/md"
 import isAdmin from '../utils/isAdmin'
 import isSeller from '../utils/isSeller'
 import isBuyer from '../utils/isBuyer'
+
+
 
 
 const UserMenu = ({ close }) => {
@@ -20,6 +22,8 @@ const UserMenu = ({ close }) => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [avatarError, setAvatarError] = useState(false)
+
+
 
 
   const handleLogout = async () => {
@@ -38,9 +42,13 @@ const UserMenu = ({ close }) => {
   }
 
 
+
+
   const handleClose = () => {
     if (close) close()
   }
+
+
 
 
   const MenuItem = ({ to, icon: Icon, children, onClick }) => {
@@ -50,6 +58,8 @@ const UserMenu = ({ close }) => {
         <span className="flex-1 text-left">{children}</span>
       </>
     )
+
+
 
 
     if (to) {
@@ -65,6 +75,8 @@ const UserMenu = ({ close }) => {
     }
 
 
+
+
     return (
       <button
         onClick={onClick}
@@ -74,6 +86,8 @@ const UserMenu = ({ close }) => {
       </button>
     )
   }
+
+
 
 
   return (
@@ -113,6 +127,8 @@ const UserMenu = ({ close }) => {
         </div>
 
 
+
+
         {/* Role Badge */}
         {user?.role && (
           <div className="mt-3">
@@ -132,7 +148,11 @@ const UserMenu = ({ close }) => {
       </div>
 
 
+
+
       <div className="h-px bg-gray-200 my-2" />
+
+
 
 
       {/* Menu Items */}
@@ -141,6 +161,8 @@ const UserMenu = ({ close }) => {
         <MenuItem to="/dashboard/profile" icon={FiSettings}>
           Account Settings
         </MenuItem>
+
+
 
 
         {/* Admin Items */}
@@ -159,6 +181,8 @@ const UserMenu = ({ close }) => {
         )}
 
 
+
+
         {/* Seller & Admin Items */}
         {(isAdmin(user?.role) || isSeller(user?.role)) && (
           <>
@@ -172,11 +196,16 @@ const UserMenu = ({ close }) => {
         )}
 
 
+
+
         {/* Orders - All logged in users */}
+        {(isBuyer(user?.role) ) && (
         <MenuItem to="/dashboard/myorders" icon={FiShoppingBag}>
           My Orders
         </MenuItem>
-       
+       )}
+
+
 
 
         {/* Address - Buyers and Sellers */}
@@ -187,12 +216,16 @@ const UserMenu = ({ close }) => {
         )}
 
 
+
+
         {/* Sellers and Admin - Orders Received */}
-        {(isSeller(user?.role) || isAdmin(user?.role)) && (
+        {(isSeller(user?.role) ) && (
           <MenuItem to="/dashboard/seller-orders" icon={FiShoppingBag}>
             Orders Received
           </MenuItem>
         )}
+
+
 
 
         {/* Admin - All Orders */}
@@ -201,10 +234,22 @@ const UserMenu = ({ close }) => {
             All Orders
           </MenuItem>
         )}
+
+        {isAdmin(user?.role) && (
+          <MenuItem to="/dashboard/messages" icon={MdEmail}>
+            Messages
+          </MenuItem>
+        )}
+
+
       </div>
 
 
+
+
       <div className="h-px bg-gray-200 my-2" />
+
+
 
 
      {/* Logout */}
@@ -224,4 +269,11 @@ const UserMenu = ({ close }) => {
 
 
 
+
+
+
+
 export default UserMenu
+
+
+

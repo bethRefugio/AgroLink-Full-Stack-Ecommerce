@@ -226,6 +226,30 @@ const SummaryApi = {
         url : '/api/product/get-product-by-seller',
         method : 'post'
     },
+    contactCreate: {
+        url: "/api/email/contact",
+        method: "post",
+    },
+    listContacts: {
+        url: "/api/email/contact",
+        method: "get",
+    },
+    deleteContact: {
+        url: (id) => `/api/email/contact/${id}`,
+        method: "delete",
+    },
+    replyContact: {
+        url: "/api/email/contact/reply",
+        method: "post",
+    },
+    markContactAsRead: {
+        url: (id) => `/api/email/contact/${id}/read`,
+        method: "put",
+    },
+    replyContact: {
+        url: "/api/email/contact/reply",
+        method: "post",
+    },
 }
 
 

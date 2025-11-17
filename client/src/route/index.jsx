@@ -33,6 +33,7 @@ import VerifyEmail from "../pages/VerifyEmail";
 import AllOrders from "../pages/AllOrders";
 import UsersTable from "../pages/UsersTable";
 import SellerProductPage from "../pages/SellerProductPage";
+import EmailPage from "../pages/EmailPage";
 
 const router = createBrowserRouter([
     {
@@ -138,7 +139,11 @@ const router = createBrowserRouter([
                     {
                         path : 'product',
                         element : <AdminPermision><ProductAdmin/></AdminPermision>
-                    }
+                    },
+                    {
+                        path : "messages",
+                        element : <AdminPermision><EmailPage/></AdminPermision>
+                    },
                 ]
             },
             {
