@@ -37,7 +37,8 @@ const PriceSuggestionPage = () => {
         ...SummaryApi.getAllPriceEntries,
         params: {
           page,
-          limit: rowsPerPage
+          limit: rowsPerPage,
+          sort: sortOrder // Add sort parameter
         }
       })
       const { data: responseData } = response
@@ -58,38 +59,23 @@ const PriceSuggestionPage = () => {
 
   useEffect(() => {
     fetchPriceData(currentPage)
-  }, [currentPage])
+  }, [currentPage, sortOrder])
 
   useEffect(() => {
-    let filtered = [...data]
+  let filtered = [...data]
 
-    if (searchTerm) {
-      filtered = filtered.filter(item =>
-        item.commodity?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.item?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.month?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.year?.toString().includes(searchTerm)
-      )
-    }
+  if (searchTerm) {
+    filtered = filtered.filter(item =>
+      item.commodity?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.item?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.month?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.year?.toString().includes(searchTerm)
+    )
+  }
 
-    filtered.sort((a, b) => {
-      const months = [
-        'january', 'february', 'march', 'april',
-        'may', 'june', 'july', 'august',
-        'september', 'october', 'november', 'december'
-      ]
-
-      const aMonthIndex = months.indexOf(a.month.toLowerCase())
-      const bMonthIndex = months.indexOf(b.month.toLowerCase())
-
-      const aDate = a.year * 12 + aMonthIndex
-      const bDate = b.year * 12 + bMonthIndex
-
-      return sortOrder === 'newest' ? bDate - aDate : aDate - bDate
-    })
-
-    setFilteredData(filtered)
-  }, [searchTerm, data, sortOrder])
+  // Remove the sorting logic from here since it's handled by backend
+  setFilteredData(filtered)
+}, [searchTerm, data])
 
   const handleDeleteEntry = async () => {
     try {
@@ -338,6 +324,7 @@ const PriceSuggestionPage = () => {
     const [uploading, setUploading] = useState(false)
     const [preview, setPreview] = useState([])
     const [uploadProgress, setUploadProgress] = useState(0)
+    const [isDragging, setIsDragging] = useState(false)
 
     const handleFileChange = (e) => {
       const selectedFile = e.target.files[0]
@@ -346,6 +333,37 @@ const PriceSuggestionPage = () => {
         previewCSV(selectedFile)
       } else {
         toast.error('Please select a valid CSV file')
+      }
+    }
+
+    // Handle drag over
+    const handleDragOver = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setIsDragging(true)
+    }
+
+    // Handle drag leave
+    const handleDragLeave = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setIsDragging(false)
+    }
+
+    // Handle drop
+    const handleDrop = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setIsDragging(false)
+
+      if (uploading) return
+
+      const droppedFile = e.dataTransfer.files[0]
+      if (droppedFile && droppedFile.type === 'text/csv') {
+        setFile(droppedFile)
+        previewCSV(droppedFile)
+      } else {
+        toast.error('Please drop a valid CSV file')
       }
     }
 
@@ -464,125 +482,145 @@ const PriceSuggestionPage = () => {
     }
 
     return (
-      <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
-        <div className='bg-white rounded-xl shadow-2xl w-full max-w-3xl'>
-          <div className='flex justify-between items-center p-6 border-b border-gray-200'>
-            <h3 className='font-semibold text-lg text-gray-900'>Upload CSV File</h3>
-            <button
-              onClick={() => {
-                if (!uploading) {
-                  setOpenUploadCSV(false)
-                  setFile(null)
-                  setPreview([])
-                }
-              }}
-              disabled={uploading}
-              className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors disabled:opacity-50'
-            >
-              <IoClose size={24} />
-            </button>
+    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+      <div className='bg-white rounded-xl shadow-2xl w-full max-w-3xl'>
+        <div className='flex justify-between items-center p-6 border-b border-gray-200'>
+          <h3 className='font-semibold text-lg text-gray-900'>Upload CSV File</h3>
+          <button
+            onClick={() => {
+              if (!uploading) {
+                setOpenUploadCSV(false)
+                setFile(null)
+                setPreview([])
+              }
+            }}
+            disabled={uploading}
+            className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors disabled:opacity-50'
+          >
+            <IoClose size={24} />
+          </button>
+        </div>
+
+        <div className='p-6 space-y-4'>
+          {/* Drag and Drop Area */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+              isDragging
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-300 hover:border-blue-500'
+            } ${uploading ? 'pointer-events-none opacity-50' : ''}`}
+          >
+            <MdUploadFile 
+              className={`mx-auto mb-4 transition-colors ${
+                isDragging ? 'text-blue-500' : 'text-gray-400'
+              }`} 
+              size={48} 
+            />
+            <label className={`cursor-pointer ${uploading ? 'pointer-events-none' : ''}`}>
+              <span className='text-blue-600 hover:text-blue-700 font-medium'>
+                Click to upload
+              </span>
+              <span className='text-gray-600'> or drag and drop</span>
+              <input
+                type='file'
+                accept='.csv'
+                onChange={handleFileChange}
+                disabled={uploading}
+                className='hidden'
+              />
+            </label>
+            <p className='text-xs text-gray-500 mt-2'>CSV file only</p>
+            {isDragging && (
+              <p className='text-sm text-blue-600 font-medium mt-2'>
+                Drop your CSV file here
+              </p>
+            )}
           </div>
 
-          <div className='p-6 space-y-4'>
-            <div className='border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors'>
-              <MdUploadFile className='mx-auto text-gray-400 mb-4' size={48} />
-              <label className={`cursor-pointer ${uploading ? 'pointer-events-none' : ''}`}>
-                <span className='text-blue-600 hover:text-blue-700 font-medium'>
-                  Click to upload
-                </span>
-                <span className='text-gray-600'> or drag and drop</span>
-                <input
-                  type='file'
-                  accept='.csv'
-                  onChange={handleFileChange}
-                  disabled={uploading}
-                  className='hidden'
+          {file && (
+            <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
+              <p className='text-sm text-green-800 font-medium'>
+                Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
+              </p>
+            </div>
+          )}
+
+          {uploading && (
+            <div>
+              <div className='flex justify-between text-sm text-gray-600 mb-2'>
+                <span>Uploading...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className='w-full bg-gray-200 rounded-full h-2'>
+                <div
+                  className='bg-blue-600 h-2 rounded-full transition-all duration-300'
+                  style={{ width: `${uploadProgress}%` }}
                 />
-              </label>
-              <p className='text-xs text-gray-500 mt-2'>CSV file only</p>
+              </div>
             </div>
+          )}
 
-            {file && (
-              <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
-                <p className='text-sm text-green-800 font-medium'>
-                  Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
-                </p>
-              </div>
-            )}
-
-            {uploading && (
-              <div>
-                <div className='flex justify-between text-sm text-gray-600 mb-2'>
-                  <span>Uploading...</span>
-                  <span>{uploadProgress}%</span>
-                </div>
-                <div className='w-full bg-gray-200 rounded-full h-2'>
-                  <div
-                    className='bg-blue-600 h-2 rounded-full transition-all duration-300'
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {preview.length > 0 && !uploading && (
-              <div>
-                <h4 className='font-medium text-gray-900 mb-3'>Preview (First 5 rows)</h4>
-                <div className='overflow-x-auto border border-gray-200 rounded-lg'>
-                  <table className='min-w-full divide-y divide-gray-200'>
-                    <thead className='bg-gray-50'>
-                      <tr>
-                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Year</th>
-                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Month</th>
-                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Commodity</th>
-                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Item</th>
-                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Unit</th>
-                        <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Price</th>
+          {preview.length > 0 && !uploading && (
+            <div>
+              <h4 className='font-medium text-gray-900 mb-3'>Preview (First 5 rows)</h4>
+              <div className='overflow-x-auto border border-gray-200 rounded-lg'>
+                <table className='min-w-full divide-y divide-gray-200'>
+                  <thead className='bg-gray-50'>
+                    <tr>
+                      <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Year</th>
+                      <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Month</th>
+                      <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Commodity</th>
+                      <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Item</th>
+                      <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Unit</th>
+                      <th className='px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase'>Price</th>
+                    </tr>
+                  </thead>
+                  <tbody className='bg-white divide-y divide-gray-200'>
+                    {preview.map((row, idx) => (
+                      <tr key={idx}>
+                        <td className='px-4 py-2 text-sm text-gray-900'>{row.year}</td>
+                        <td className='px-4 py-2 text-sm text-gray-900 capitalize'>{row.month}</td>
+                        <td className='px-4 py-2 text-sm text-gray-900 capitalize'>{row.commodity}</td>
+                        <td className='px-4 py-2 text-sm text-gray-900 capitalize'>{row.item}</td>
+                        <td className='px-4 py-2 text-sm text-gray-900'>{row.unit}</td>
+                        <td className='px-4 py-2 text-sm text-gray-900'>₱{row.price}</td>
                       </tr>
-                    </thead>
-                    <tbody className='bg-white divide-y divide-gray-200'>
-                      {preview.map((row, idx) => (
-                        <tr key={idx}>
-                          <td className='px-4 py-2 text-sm text-gray-900'>{row.year}</td>
-                          <td className='px-4 py-2 text-sm text-gray-900 capitalize'>{row.month}</td>
-                          <td className='px-4 py-2 text-sm text-gray-900 capitalize'>{row.commodity}</td>
-                          <td className='px-4 py-2 text-sm text-gray-900 capitalize'>{row.item}</td>
-                          <td className='px-4 py-2 text-sm text-gray-900'>{row.unit}</td>
-                          <td className='px-4 py-2 text-sm text-gray-900'>₱{row.price}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
-
-            <div className='flex justify-end gap-3 pt-4'>
-              <button
-                type='button'
-                onClick={() => {
-                  setOpenUploadCSV(false)
-                  setFile(null)
-                  setPreview([])
-                }}
-                disabled={uploading}
-                className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50'
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpload}
-                disabled={!file || uploading}
-                className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
-              >
-                {uploading ? `Uploading... ${uploadProgress}%` : 'Upload CSV'}
-              </button>
             </div>
+          )}
+
+          <div className='flex justify-end gap-3 pt-4'>
+            <button
+              type='button'
+              onClick={() => {
+                setOpenUploadCSV(false)
+                setFile(null)
+                setPreview([])
+              }}
+              disabled={uploading}
+              className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50'
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpload}
+              disabled={!file || uploading}
+              className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed'
+            >
+              {uploading ? `Uploading... ${uploadProgress}%` : 'Upload CSV'}
+            </button>
           </div>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
   const columns = [
     columnHelper.display({

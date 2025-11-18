@@ -24,7 +24,7 @@ userRouter.put('/add-preference', auth, addPreferences)
 userRouter.get('/preferences', auth, getPreferences);
 userRouter.delete('/delete-preference', auth, deletePreference);
 userRouter.put('/admin-update-user', auth, adminUpdateUserController);
-userRouter.delete('/delete', auth, deleteUserController);
+userRouter.delete('/delete-user', auth, deleteUserController);
 userRouter.get('/users-table', auth, async (req, res) => {
   try {
     if (req.user.role !== 'ADMIN') {

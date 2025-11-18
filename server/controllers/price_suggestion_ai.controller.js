@@ -48,37 +48,48 @@ export const createPriceEntry = async (req, res) => {
  */
 export const getAllPriceEntries = async (req, res) => {
   try {
-    const { year, month, commodity, item, limit = 100, page = 1 } = req.query
-    
-    const filter = {}
-    if (year) filter.year = parseInt(year)
-    if (month) filter.month = month.toLowerCase()
-    if (commodity) filter.commodity = commodity.toLowerCase()
-    if (item) filter.item = item.toLowerCase()
+    const { page = 1, limit = 10, sort = 'newest' } = req.query
 
-    const skip = (parseInt(page) - 1) * parseInt(limit)
+    const months = [
+      'january', 'february', 'march', 'april',
+      'may', 'june', 'july', 'august',
+      'september', 'october', 'november', 'december'
+    ]
 
-    const [data, total] = await Promise.all([
-      PriceSuggestionModel.find(filter)
-        .sort({ year: -1, month: -1 })
-        .limit(parseInt(limit))
-        .skip(skip),
-      PriceSuggestionModel.countDocuments(filter)
-    ])
+    // Fetch all entries first
+    const allEntries = await PriceSuggestionModel.find()
 
-    return res.json({
-      data,
-      total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / parseInt(limit)),
+    // Sort entries
+    const sortedEntries = allEntries.sort((a, b) => {
+      const aMonthIndex = months.indexOf(a.month.toLowerCase())
+      const bMonthIndex = months.indexOf(b.month.toLowerCase())
+      const aDate = a.year * 12 + aMonthIndex
+      const bDate = b.year * 12 + bMonthIndex
+
+      return sort === 'newest' ? bDate - aDate : aDate - bDate
+    })
+
+    // Calculate pagination
+    const total = sortedEntries.length
+    const totalPages = Math.ceil(total / limit)
+    const skip = (page - 1) * limit
+
+    // Get paginated results
+    const paginatedData = sortedEntries.slice(skip, skip + parseInt(limit))
+
+    res.json({
       success: true,
-      error: false
+      data: paginatedData,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      totalPages
     })
   } catch (error) {
-    return res.status(500).json({
-      message: error.message || error,
-      error: true,
-      success: false
+    console.error('Get all price entries error:', error)
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch price entries'
     })
   }
 }
@@ -667,3 +678,4 @@ export const syncSingleProductToPriceAI = async (productData) => {
     return { success: false, message: error.message }
   }
 }
+

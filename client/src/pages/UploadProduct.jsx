@@ -738,8 +738,15 @@ const UploadProduct = () => {
             <p className='text-gray-700 mb-4'>
               The recommended price for <strong>{data.name}</strong> is <strong>₱{suggestedPrice.toFixed(2)}</strong> based on previous sales data.
             </p>
+            {/* Added Final Suggested Price with 5% Markup */}
+            <p className='text-gray-700 mb-4'>
+              <strong>Final suggested price (including 5% markup):</strong>{' '}
+              <span className='font-semibold text-green-700'>
+                ₱{(suggestedPrice * 1.05).toFixed(2)}
+              </span>
+            </p>
             <p className='text-sm text-gray-600 mb-6'>
-              Do you want to apply this suggested price?
+              Do you want to apply this final suggested price?
             </p>
             <div className='flex justify-end gap-3'>
               <button
@@ -752,10 +759,10 @@ const UploadProduct = () => {
                 onClick={() => {
                   setData(prev => ({
                     ...prev,
-                    price: suggestedPrice.toFixed(2)
+                    price: (suggestedPrice * 1.05).toFixed(2)
                   }));
                   setShowSuggestionModal(false);
-                  successAlert("Suggested price applied!");
+                  successAlert("Final suggested price (with markup) applied!");
                 }}
                 className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700'
               >

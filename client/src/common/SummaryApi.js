@@ -179,7 +179,7 @@ const SummaryApi = {
         method : 'put'
     },
     deleteUser : {
-        url : '/api/user/users-table',
+        url : '/api/user/delete-user',
         method : 'delete'
     },
     adminUpdateUser : {
