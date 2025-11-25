@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
-import Divider from './Divider'
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import { logout } from '../store/userSlice'
@@ -9,7 +8,7 @@ import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
 import { HiOutlineExternalLink } from "react-icons/hi"
 import { FiSettings, FiPackage, FiShoppingBag, FiMapPin, FiUsers, FiLogOut } from "react-icons/fi"
-import { MdCategory, MdOutlineCategory, MdEmail, MdAttachMoney} from "react-icons/md"
+import { MdCategory, MdOutlineCategory, MdEmail, MdAttachMoney } from "react-icons/md"
 import isAdmin from '../utils/isAdmin'
 import isSeller from '../utils/isSeller'
 import isBuyer from '../utils/isBuyer'
@@ -17,11 +16,16 @@ import isBuyer from '../utils/isBuyer'
 
 
 
-const UserMenu = ({ close }) => {
+const UserMenu = ({ close, collapsed, setCollapsed }) => {
   const user = useSelector((state) => state.user)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [avatarError, setAvatarError] = useState(false)
+
+
+
+
+  const toggleSidebar = () => setCollapsed(!collapsed)
 
 
 
@@ -55,7 +59,7 @@ const UserMenu = ({ close }) => {
     const content = (
       <>
         <Icon size={20} className="text-gray-600 flex-shrink-0" />
-        <span className="flex-1 text-left">{children}</span>
+        {!collapsed && <span className="flex-1 text-left">{children}</span>}
       </>
     )
 
@@ -91,32 +95,38 @@ const UserMenu = ({ close }) => {
 
 
   return (
-    <div className="py-2 w-64 md:w-80">
-      {/* User Info Section */}
-      <div className="px-4 py-3 mb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-            {user?.avatar && !avatarError ? (
-              <img
-                src={user.avatar}
-                alt={user.name || user.email || 'User avatar'}
-                className="w-full h-full object-cover"
-                onError={() => setAvatarError(true)}
-              />
-            ) : (
-              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                {(user?.name || user?.mobile || 'U').charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
+    <div className={`bg-white h-full transition-all duration-300 ${collapsed ? "w-20" : "w-64 md:w-80"}`}>
+      {/* User Info / Avatar Toggle */}
+      <div className={`px-4 py-3 mb-2 flex items-center gap-3 cursor-pointer`} onClick={toggleSidebar}>
+        <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+          {user?.avatar && !avatarError ? (
+            <img
+              src={user.avatar}
+              alt={user.name || user.email || 'User avatar'}
+              className="w-full h-full object-cover"
+              onError={() => setAvatarError(true)}
+            />
+          ) : (
+            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+              {(user?.name || user?.mobile || 'U').charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
+
+
+
+
+        {!collapsed && (
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate">
-              {user?.name || user?.mobile}
-            </h3>
-            <p className="text-sm text-gray-500 truncate">
-              {user?.email || user?.mobile}
-            </p>
+            <h3 className="font-semibold text-gray-900 truncate">{user?.name || user?.mobile}</h3>
+            <p className="text-sm text-gray-500 truncate">{user?.email || user?.mobile}</p>
           </div>
+        )}
+
+
+
+
+        {!collapsed && (
           <Link
             to="/dashboard/profile"
             onClick={handleClose}
@@ -124,28 +134,28 @@ const UserMenu = ({ close }) => {
           >
             <HiOutlineExternalLink size={18} />
           </Link>
-        </div>
-
-
-
-
-        {/* Role Badge */}
-        {user?.role && (
-          <div className="mt-3">
-            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-              user.role === "ADMIN" ? "bg-red-100 text-red-700" :
-              user.role === "SELLER" ? "bg-blue-100 text-blue-700" :
-              user.role === "BUYER" ? "bg-green-100 text-green-700" :
-              "bg-purple-100 text-purple-700"
-            }`}>
-              {user.role === "ADMIN" && "Admin"}
-              {user.role === "BUYER" && "Buyer"}
-              {user.role === "SELLER" && "Seller"}
-              {user.role === "COOPERATIVE" && "Cooperative"}
-            </span>
-          </div>
         )}
       </div>
+
+
+
+
+      {/* Role Badge */}
+      {!collapsed && user?.role && (
+        <div className="px-4 mb-2">
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+            user.role === "ADMIN" ? "bg-red-100 text-red-700" :
+            user.role === "SELLER" ? "bg-blue-100 text-blue-700" :
+            user.role === "BUYER" ? "bg-green-100 text-green-700" :
+            "bg-purple-100 text-purple-700"
+          }`}>
+            {user.role === "ADMIN" && "Admin"}
+            {user.role === "BUYER" && "Buyer"}
+            {user.role === "SELLER" && "Seller"}
+            {user.role === "COOPERATIVE" && "Cooperative"}
+          </span>
+        </div>
+      )}
 
 
 
@@ -157,99 +167,39 @@ const UserMenu = ({ close }) => {
 
       {/* Menu Items */}
       <div className="px-2">
-        {/* Profile Settings */}
-        <MenuItem to="/dashboard/profile" icon={FiSettings}>
-          Account Settings
-        </MenuItem>
+        <MenuItem to="/dashboard/profile" icon={FiSettings}>Account Settings</MenuItem>
 
 
 
 
-        {/* Admin Items */}
         {isAdmin(user?.role) && (
           <>
-            <MenuItem to="/dashboard/category" icon={MdCategory}>
-              Category
-            </MenuItem>
-            <MenuItem to="/dashboard/subcategory" icon={MdOutlineCategory}>
-              Sub Category
-            </MenuItem>
-            <MenuItem to="/dashboard/userstable" icon={FiUsers}>
-              Users Table
-            </MenuItem>
+            <MenuItem to="/dashboard/category" icon={MdCategory}>Category</MenuItem>
+            <MenuItem to="/dashboard/subcategory" icon={MdOutlineCategory}>Sub Category</MenuItem>
+            <MenuItem to="/dashboard/userstable" icon={FiUsers}>Users Table</MenuItem>
           </>
         )}
 
 
 
 
-        {/* Seller & Admin Items */}
         {(isAdmin(user?.role) || isSeller(user?.role)) && (
           <>
-            <MenuItem to="/dashboard/upload-product" icon={FiPackage}>
-              Upload Product
-            </MenuItem>
-            <MenuItem to="/dashboard/product" icon={FiShoppingBag}>
-              Products
-            </MenuItem>
+            <MenuItem to="/dashboard/upload-product" icon={FiPackage}>Upload Product</MenuItem>
+            <MenuItem to="/dashboard/product" icon={FiShoppingBag}>Products</MenuItem>
           </>
         )}
+       
 
 
 
 
-        {/* Orders - All logged in users */}
-        {(isBuyer(user?.role) ) && (
-        <MenuItem to="/dashboard/myorders" icon={FiShoppingBag}>
-          My Orders
-        </MenuItem>
-       )}
-
-
-
-
-        {/* Address - Buyers and Sellers 
-        {(isBuyer(user?.role) || isSeller(user?.role)) && (
-          <MenuItem to="/dashboard/address" icon={FiMapPin}>
-            Saved Addresses
-          </MenuItem>
-        )}*/}
-
-
-
-
-        {/* Sellers and Admin - Orders Received */}
-        {(isSeller(user?.role) ) && (
-          <MenuItem to="/dashboard/seller-orders" icon={FiShoppingBag}>
-            Orders Received
-          </MenuItem>
-        )}
-
-
-
-
-        {/* Admin - All Orders */}
-        {isAdmin(user?.role) && (
-          <MenuItem to="/dashboard/allorders" icon={FiShoppingBag}>
-            All Orders
-          </MenuItem>
-        )}
-
-        {isAdmin(user?.role) && (
-          <MenuItem to="/dashboard/messages" icon={MdEmail}>
-            Messages
-          </MenuItem>
-        )}
-
-        {isAdmin(user?.role) && (
-          <MenuItem to="/dashboard/price-suggestion" icon={MdAttachMoney}>
-            Price Suggestion
-          </MenuItem>
-        )}
-
-
-
-      </div>
+        {isBuyer(user?.role) && <MenuItem to="/dashboard/myorders" icon={FiShoppingBag}>My Orders</MenuItem>}
+        {/*(isBuyer(user?.role) || isSeller(user?.role)) && <MenuItem to="/dashboard/address" icon={FiMapPin}>Saved Addresses</MenuItem>}*/}
+        {isSeller(user?.role) && <MenuItem to="/dashboard/seller-orders" icon={FiShoppingBag}>Orders Received</MenuItem>}
+        {isAdmin(user?.role) && <MenuItem to="/dashboard/allorders" icon={FiShoppingBag}>All Orders</MenuItem>}
+        {isAdmin(user?.role) && <MenuItem to="/dashboard/messages" icon={MdEmail}>Messages</MenuItem>}
+        {isAdmin(user?.role) && (<MenuItem to="/dashboard/price-suggestion" icon={MdAttachMoney}>Price Suggestion</MenuItem>)}</div>
 
 
 
@@ -259,14 +209,14 @@ const UserMenu = ({ close }) => {
 
 
 
-     {/* Logout */}
+      {/* Logout */}
       <div className="px-2">
         <button
           onClick={handleLogout}
-          className="w-40 flex items-center gap-3 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white font-semibold shadow-md transition-colors"
+          className="w-50 flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white font-semibold shadow-md transition-colors"
         >
           <FiLogOut size={20} className="text-white flex-shrink-0" />
-          <span className="flex-1 text-left">Log Out</span>
+          {!collapsed && <span className="flex-1 text-left">Log Out</span>}
         </button>
       </div>
     </div>
@@ -276,11 +226,15 @@ const UserMenu = ({ close }) => {
 
 
 
-
-
-
-
 export default UserMenu
+
+
+
+
+
+
+
+
 
 
 

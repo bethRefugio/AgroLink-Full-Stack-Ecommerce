@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import AxiosToastError from '../utils/AxiosToastError'
@@ -10,262 +10,8 @@ import DisplayTable from '../components/DisplayTable'
 import ConfirmBox from '../components/CofirmBox'
 import { IoClose } from "react-icons/io5"
 
-const EmailPage = () => {
-  const [data, setData] = useState([])
-  const [filteredData, setFilteredData] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [deleteMessage, setDeleteMessage] = useState({ _id: "" })
-  const [openDeleteConfirmBox, setOpenDeleteConfirmBox] = useState(false)
-  const [openViewModal, setOpenViewModal] = useState(false)
-  const [openReplyModal, setOpenReplyModal] = useState(false)
-  const [selectedMessage, setSelectedMessage] = useState(null)
-  const [replyData, setReplyData] = useState({
-    subject: '',
-    message: ''
-  })
-  const [sending, setSending] = useState(false)
-
-  const columnHelper = createColumnHelper()
-
-  const fetchMessages = async () => {
-    try {
-      setLoading(true)
-      const response = await Axios({
-        ...SummaryApi.listContacts
-      })
-      const { data: responseData } = response
-
-      if (responseData.success) {
-        setData(responseData.data)
-        setFilteredData(responseData.data)
-      }
-    } catch (error) {
-      AxiosToastError(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchMessages()
-  }, [])
-
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = data.filter(item =>
-        item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.message?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      setFilteredData(filtered)
-    } else {
-      setFilteredData(data)
-    }
-  }, [searchTerm, data])
-
-  const handleDeleteMessage = async () => {
-    try {
-      const response = await Axios({
-        url: SummaryApi.deleteContact.url(deleteMessage._id),
-        method: SummaryApi.deleteContact.method
-      })
-
-      const { data: responseData } = response
-
-      if (responseData.success) {
-        toast.success(responseData.message)
-        fetchMessages()
-        setOpenDeleteConfirmBox(false)
-        setDeleteMessage({ _id: "" })
-      }
-    } catch (error) {
-      AxiosToastError(error)
-    }
-  }
-
-  const markAsRead = async (messageId) => {
-    try {
-      await Axios({
-        url: SummaryApi.markContactAsRead.url(messageId),
-        method: SummaryApi.markContactAsRead.method
-      })
-      fetchMessages()
-    } catch (error) {
-      // Silent fail - it's not critical
-      console.error(error)
-    }
-  }
-
-  const handleReply = async (e) => {
-    e.preventDefault()
-    try {
-      setSending(true)
-      const response = await Axios({
-        ...SummaryApi.replyContact,
-        data: {
-          messageId: selectedMessage._id,
-          subject: replyData.subject,
-          message: replyData.message
-        }
-      })
-
-      const { data: responseData } = response
-
-      if (responseData.success) {
-        toast.success("Reply sent successfully")
-        setOpenReplyModal(false)
-        setReplyData({ subject: '', message: '' })
-        setSelectedMessage(null)
-        fetchMessages()
-      }
-    } catch (error) {
-      AxiosToastError(error)
-    } finally {
-      setSending(false)
-    }
-  }
-
-  // View Message Modal
-  const ViewMessageModal = () => {
-    if (!selectedMessage) return null
-
-    return (
-      <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
-        <div className='bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col'>
-          <div className='flex justify-between items-center p-6 border-b border-gray-200'>
-            <div>
-              <h3 className='font-semibold text-lg text-gray-900'>Message Details</h3>
-              <div className='flex items-center gap-2 mt-1'>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  selectedMessage.status === 'unread' 
-                    ? 'bg-blue-100 text-blue-700'
-                    : selectedMessage.status === 'read'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-green-100 text-green-700'
-                }`}>
-                  {selectedMessage.status.toUpperCase()}
-                </span>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setOpenViewModal(false)
-                setSelectedMessage(null)
-              }}
-              className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors'
-            >
-              <IoClose size={24} />
-            </button>
-          </div>
-
-          <div className='flex-1 overflow-y-auto p-6 space-y-6'>
-            {/* Original Message */}
-            <div className='bg-white border border-gray-200 rounded-lg p-4'>
-              <div className='space-y-3'>
-                <div>
-                  <label className='text-sm font-medium text-gray-500'>From</label>
-                  <p className='text-gray-900 font-medium'>{selectedMessage.name}</p>
-                </div>
-
-                <div>
-                  <label className='text-sm font-medium text-gray-500'>Email</label>
-                  <p className='text-gray-900'>{selectedMessage.email}</p>
-                </div>
-
-                {selectedMessage.subject && (
-                  <div>
-                    <label className='text-sm font-medium text-gray-500'>Subject</label>
-                    <p className='text-gray-900'>{selectedMessage.subject}</p>
-                  </div>
-                )}
-
-                <div>
-                  <label className='text-sm font-medium text-gray-500'>Message</label>
-                  <p className='text-gray-700 whitespace-pre-wrap leading-relaxed bg-gray-50 p-4 rounded-lg mt-1'>
-                    {selectedMessage.message}
-                  </p>
-                </div>
-
-                <div>
-                  <label className='text-sm font-medium text-gray-500'>Date</label>
-                  <p className='text-gray-900'>
-                    {new Date(selectedMessage.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Replies */}
-            {selectedMessage.replies && selectedMessage.replies.length > 0 && (
-              <div>
-                <h4 className='font-semibold text-gray-900 mb-3'>
-                  Replies ({selectedMessage.replies.length})
-                </h4>
-                <div className='space-y-3'>
-                  {selectedMessage.replies.map((reply, index) => (
-                    <div key={reply._id || index} className='bg-green-50 border border-green-200 rounded-lg p-4'>
-                      <div className='flex justify-between items-start mb-2'>
-                        <div>
-                          <p className='text-sm font-medium text-gray-900'>
-                            {reply.repliedBy?.name || 'Admin'}
-                          </p>
-                          <p className='text-xs text-gray-500'>
-                            {reply.repliedBy?.email || ''}
-                          </p>
-                        </div>
-                        <p className='text-xs text-gray-500'>
-                          {new Date(reply.repliedAt).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className='mt-2'>
-                        <p className='text-sm font-medium text-gray-700 mb-1'>
-                          Subject: {reply.subject}
-                        </p>
-                        <p className='text-sm text-gray-700 whitespace-pre-wrap'>
-                          {reply.message}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className='p-6 border-t border-gray-200 flex justify-end gap-3'>
-            <button
-              onClick={() => {
-                setOpenViewModal(false)
-                setOpenReplyModal(true)
-                setReplyData({
-                  subject: `Re: ${selectedMessage.subject || 'Your message'}`,
-                  message: ''
-                })
-              }}
-              className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2'
-            >
-              <MdReply size={18} />
-              Reply
-            </button>
-            <button
-              onClick={() => {
-                setOpenViewModal(false)
-                setSelectedMessage(null)
-              }}
-              className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Reply Modal
-const ReplyModal = () => {
+// Move Reply Modal outside the main component
+const ReplyModal = ({ selectedMessage, replyData, setReplyData, onClose, onSubmit, sending }) => {
   if (!selectedMessage) return null
 
   return (
@@ -275,19 +21,16 @@ const ReplyModal = () => {
         <div className='flex justify-between items-center p-4 sm:p-6 border-b border-gray-200'>
           <h3 className='font-semibold text-lg text-gray-900'>Reply to {selectedMessage.name}</h3>
           <button
-            onClick={() => {
-              setOpenReplyModal(false)
-              setReplyData({ subject: '', message: '' })
-              setSelectedMessage(null)
-            }}
+            onClick={onClose}
             className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors'
+            type='button'
           >
             <IoClose size={24} />
           </button>
         </div>
 
         {/* Scrollable body + form */}
-        <form onSubmit={handleReply} className='flex-1 overflow-y-auto p-4 sm:p-6 space-y-4'>
+        <form onSubmit={onSubmit} className='flex-1 overflow-y-auto p-4 sm:p-6 space-y-4'>
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-2'>To</label>
             <input
@@ -303,7 +46,7 @@ const ReplyModal = () => {
             <input
               type='text'
               value={replyData.subject}
-              onChange={(e) => setReplyData({ ...replyData, subject: e.target.value })}
+              onChange={(e) => setReplyData(prev => ({ ...prev, subject: e.target.value }))}
               required
               placeholder='Enter subject'
               className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
@@ -314,7 +57,7 @@ const ReplyModal = () => {
             <label className='block text-sm font-medium text-gray-700 mb-2'>Message</label>
             <textarea
               value={replyData.message}
-              onChange={(e) => setReplyData({ ...replyData, message: e.target.value })}
+              onChange={(e) => setReplyData(prev => ({ ...prev, message: e.target.value }))}
               required
               rows={8}
               placeholder='Write your reply...'
@@ -331,11 +74,7 @@ const ReplyModal = () => {
           <div className='sticky bottom-0 bg-white pt-4 border-t border-gray-200 flex justify-end gap-3'>
             <button
               type='button'
-              onClick={() => {
-                setOpenReplyModal(false)
-                setReplyData({ subject: '', message: '' })
-                setSelectedMessage(null)
-              }}
+              onClick={onClose}
               className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
             >
               Cancel
@@ -358,6 +97,264 @@ const ReplyModal = () => {
     </div>
   )
 }
+
+// Move View Modal outside the main component
+const ViewMessageModal = ({ selectedMessage, onClose, onReply }) => {
+  if (!selectedMessage) return null
+
+  return (
+    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+      <div className='bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col'>
+        <div className='flex justify-between items-center p-6 border-b border-gray-200'>
+          <div>
+            <h3 className='font-semibold text-lg text-gray-900'>Message Details</h3>
+            <div className='flex items-center gap-2 mt-1'>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                selectedMessage.status === 'unread' 
+                  ? 'bg-blue-100 text-blue-700'
+                  : selectedMessage.status === 'read'
+                  ? 'bg-yellow-100 text-yellow-700'
+                  : 'bg-green-100 text-green-700'
+              }`}>
+                {selectedMessage.status.toUpperCase()}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className='text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors'
+          >
+            <IoClose size={24} />
+          </button>
+        </div>
+
+        <div className='flex-1 overflow-y-auto p-6 space-y-6'>
+          {/* Original Message */}
+          <div className='bg-white border border-gray-200 rounded-lg p-4'>
+            <div className='space-y-3'>
+              <div>
+                <label className='text-sm font-medium text-gray-500'>From</label>
+                <p className='text-gray-900 font-medium'>{selectedMessage.name}</p>
+              </div>
+
+              <div>
+                <label className='text-sm font-medium text-gray-500'>Email</label>
+                <p className='text-gray-900'>{selectedMessage.email}</p>
+              </div>
+
+              {selectedMessage.subject && (
+                <div>
+                  <label className='text-sm font-medium text-gray-500'>Subject</label>
+                  <p className='text-gray-900'>{selectedMessage.subject}</p>
+                </div>
+              )}
+
+              <div>
+                <label className='text-sm font-medium text-gray-500'>Message</label>
+                <p className='text-gray-700 whitespace-pre-wrap leading-relaxed bg-gray-50 p-4 rounded-lg mt-1'>
+                  {selectedMessage.message}
+                </p>
+              </div>
+
+              <div>
+                <label className='text-sm font-medium text-gray-500'>Date</label>
+                <p className='text-gray-900'>
+                  {new Date(selectedMessage.createdAt).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Replies */}
+          {selectedMessage.replies && selectedMessage.replies.length > 0 && (
+            <div>
+              <h4 className='font-semibold text-gray-900 mb-3'>
+                Replies ({selectedMessage.replies.length})
+              </h4>
+              <div className='space-y-3'>
+                {selectedMessage.replies.map((reply, index) => (
+                  <div key={reply._id || index} className='bg-green-50 border border-green-200 rounded-lg p-4'>
+                    <div className='flex justify-between items-start mb-2'>
+                      <div>
+                        <p className='text-sm font-medium text-gray-900'>
+                          {reply.repliedBy?.name || 'Admin'}
+                        </p>
+                        <p className='text-xs text-gray-500'>
+                          {reply.repliedBy?.email || ''}
+                        </p>
+                      </div>
+                      <p className='text-xs text-gray-500'>
+                        {new Date(reply.repliedAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className='mt-2'>
+                      <p className='text-sm font-medium text-gray-700 mb-1'>
+                        Subject: {reply.subject}
+                      </p>
+                      <p className='text-sm text-gray-700 whitespace-pre-wrap'>
+                        {reply.message}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className='p-6 border-t border-gray-200 flex justify-end gap-3'>
+          <button
+            onClick={onReply}
+            className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2'
+          >
+            <MdReply size={18} />
+            Reply
+          </button>
+          <button
+            onClick={onClose}
+            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const EmailPage = () => {
+  const [data, setData] = useState([])
+  const [filteredData, setFilteredData] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [deleteMessage, setDeleteMessage] = useState({ _id: "" })
+  const [openDeleteConfirmBox, setOpenDeleteConfirmBox] = useState(false)
+  const [openViewModal, setOpenViewModal] = useState(false)
+  const [openReplyModal, setOpenReplyModal] = useState(false)
+  const [selectedMessage, setSelectedMessage] = useState(null)
+  const [replyData, setReplyData] = useState({
+    subject: '',
+    message: ''
+  })
+  const [sending, setSending] = useState(false)
+
+  const columnHelper = createColumnHelper()
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      setLoading(true)
+      const response = await Axios({
+        ...SummaryApi.listContacts
+      })
+      const { data: responseData } = response
+
+      if (responseData.success) {
+        setData(responseData.data)
+        setFilteredData(responseData.data)
+      }
+    } catch (error) {
+      AxiosToastError(error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchMessages()
+  }, [fetchMessages])
+
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = data.filter(item =>
+        item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.message?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setFilteredData(filtered)
+    } else {
+      setFilteredData(data)
+    }
+  }, [searchTerm, data])
+
+  const handleDeleteMessage = useCallback(async () => {
+    try {
+      const response = await Axios({
+        url: SummaryApi.deleteContact.url(deleteMessage._id),
+        method: SummaryApi.deleteContact.method
+      })
+
+      const { data: responseData } = response
+
+      if (responseData.success) {
+        toast.success(responseData.message)
+        fetchMessages()
+        setOpenDeleteConfirmBox(false)
+        setDeleteMessage({ _id: "" })
+      }
+    } catch (error) {
+      AxiosToastError(error)
+    }
+  }, [deleteMessage._id, fetchMessages])
+
+  const markAsRead = useCallback(async (messageId) => {
+    try {
+      await Axios({
+        url: SummaryApi.markContactAsRead.url(messageId),
+        method: SummaryApi.markContactAsRead.method
+      })
+      fetchMessages()
+    } catch (error) {
+      console.error(error)
+    }
+  }, [fetchMessages])
+
+  const handleReplyClose = useCallback(() => {
+    setOpenReplyModal(false)
+    setReplyData({ subject: '', message: '' })
+    setSelectedMessage(null)
+  }, [])
+
+  const handleViewClose = useCallback(() => {
+    setOpenViewModal(false)
+    setSelectedMessage(null)
+  }, [])
+
+  const handleReply = useCallback(async (e) => {
+    e.preventDefault()
+    try {
+      setSending(true)
+      const response = await Axios({
+        ...SummaryApi.replyContact,
+        data: {
+          messageId: selectedMessage._id,
+          subject: replyData.subject,
+          message: replyData.message
+        }
+      })
+
+      const { data: responseData } = response
+
+      if (responseData.success) {
+        toast.success("Reply sent successfully")
+        handleReplyClose()
+        fetchMessages()
+      }
+    } catch (error) {
+      AxiosToastError(error)
+    } finally {
+      setSending(false)
+    }
+  }, [selectedMessage, replyData, handleReplyClose, fetchMessages])
+
+  const handleViewToReply = useCallback(() => {
+    setOpenViewModal(false)
+    setOpenReplyModal(true)
+    setReplyData({
+      subject: `Re: ${selectedMessage?.subject || 'Your message'}`,
+      message: ''
+    })
+  }, [selectedMessage])
 
   const columns = [
     columnHelper.display({
@@ -533,8 +530,24 @@ const ReplyModal = () => {
         />
       )}
 
-      {openViewModal && <ViewMessageModal />}
-      {openReplyModal && <ReplyModal />}
+      {openViewModal && (
+        <ViewMessageModal
+          selectedMessage={selectedMessage}
+          onClose={handleViewClose}
+          onReply={handleViewToReply}
+        />
+      )}
+
+      {openReplyModal && (
+        <ReplyModal
+          selectedMessage={selectedMessage}
+          replyData={replyData}
+          setReplyData={setReplyData}
+          onClose={handleReplyClose}
+          onSubmit={handleReply}
+          sending={sending}
+        />
+      )}
     </section>
   )
 }
