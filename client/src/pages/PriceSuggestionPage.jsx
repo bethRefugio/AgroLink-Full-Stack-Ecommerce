@@ -27,6 +27,11 @@ const PriceSuggestionPage = () => {
   const [total, setTotal] = useState(0)
   const rowsPerPage = 10
   const [syncing, setSyncing] = useState(false)
+  
+  const [suggestName, setSuggestName] = useState('')
+  const [suggestLoading, setSuggestLoading] = useState(false)
+  const [suggestResult, setSuggestResult] = useState(null)
+  const [suggestError, setSuggestError] = useState('')
 
   const columnHelper = createColumnHelper()
 
@@ -159,6 +164,8 @@ const PriceSuggestionPage = () => {
         setSaving(false)
       }
     }
+
+
 
     return (
       <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
@@ -703,8 +710,183 @@ const PriceSuggestionPage = () => {
     })
   ]
 
+  const handleAISuggestPrice = async () => {
+    if (!suggestName.trim()) {
+      toast.error('Enter a product name')
+      return
+    }
+    setSuggestLoading(true)
+    setSuggestResult(null)
+    setSuggestError('')
+    try {
+      const res = await Axios({
+        ...SummaryApi.suggestPrice,
+        data: { item_name: suggestName.trim() }
+      })
+      const payload = res.data
+      if (!payload.success) {
+        setSuggestError(payload.message || 'Failed to get suggestion')
+        return
+      }
+
+      // Python returns:
+      // payload.suggestedPrice (already includes 5% markup)
+      // payload.bestModel
+      // payload.data (contains next_preds, recommended, metrics, etc.)
+      const full = payload.data
+      const best = full.bestModel
+      const basePred = full.next_preds?.[best]
+      const finalWithMarkup = full.suggestedPrice            // already has 5% markup
+      const markupAmount = basePred != null ? (finalWithMarkup - basePred) : null
+      const metrics = full.metrics || {}
+
+      // Build reason
+      let reason = 'Chosen due to lowest RMSE among available models.'
+      if (metrics && metrics[best] && metrics[best].RMSE != null) {
+        // Compare RMSEs
+        const rmseEntries = Object.entries(metrics)
+          .filter(([m, v]) => v && v.RMSE != null)
+          .sort((a, b) => a[1].RMSE - b[1].RMSE)
+        if (rmseEntries.length > 0) {
+            const ordered = rmseEntries.map(([m, v]) => `${m}: ${v.RMSE.toFixed(2)}`).join(', ')
+            reason = `Selected because it has the lowest RMSE (${metrics[best].RMSE.toFixed(2)}). RMSE comparison -> ${ordered}.`
+        }
+      }
+
+      setSuggestResult({
+        item: full.item,
+        bestModel: best,
+        basePrediction: basePred,
+        finalSuggestedPrice: finalWithMarkup,
+        markupAmount,
+        metrics,
+        recommendedAll: full.recommended,
+        nextPredsAll: full.next_preds,
+        dataPoints: full.dataPoints,
+        reason
+      })
+    } catch (err) {
+      const msg = err?.response?.data?.message || err.message || 'Request failed'
+      setSuggestError(msg)
+    } finally {
+      setSuggestLoading(false)
+    }
+  }
+
   return (
     <section className='max-w-full p-6'>
+
+      {/* New AI Suggestion Panel */}
+      <div className='bg-white border border-gray-200 rounded-lg p-5 mb-6'>
+        <h2 className='text-lg font-semibold text-gray-900 mb-3'>AI Price Suggestion</h2>
+        <div className='flex flex-col md:flex-row gap-3 items-start md:items-end'>
+          <div className='flex-1'>
+            <label className='text-sm font-medium text-gray-700 mb-1 block'>Product Name</label>
+            <input
+              type='text'
+              value={suggestName}
+              onChange={(e) => setSuggestName(e.target.value)}
+              placeholder='e.g. Squash'
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+            />
+          </div>
+          <button
+            onClick={handleAISuggestPrice}
+            disabled={suggestLoading}
+            className='px-4 py-2 h-10 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400'
+          >
+            {suggestLoading ? 'Suggesting...' : 'Get AI Price Suggestion'}
+          </button>
+        </div>
+
+        {/* Result / Error */}
+        <div className='mt-4'>
+          {suggestError && (
+            <div className='p-3 text-sm bg-red-50 border border-red-200 text-red-700 rounded'>
+              {suggestError}
+            </div>
+          )}
+
+            {suggestResult && (
+              <div className='space-y-4'>
+                <div className='p-3 bg-green-50 border border-green-200 rounded text-sm'>
+                  <p><span className='font-medium'>Item:</span> {suggestResult.item}</p>
+                  <p><span className='font-medium'>Data Points:</span> {suggestResult.dataPoints}</p>
+                  <p>
+                    <span className='font-medium'>Chosen Model:</span> {suggestResult.bestModel}
+                  </p>
+                  <p className='text-gray-700'>
+                    <span className='font-medium'>Reason:</span> {suggestResult.reason}
+                  </p>
+                </div>
+
+                <div className='grid md:grid-cols-2 gap-4'>
+                  <div className='p-3 border rounded'>
+                    <h3 className='font-medium text-gray-900 mb-2 text-sm'>Predictions (Next Month)</h3>
+                    <ul className='text-sm space-y-1'>
+                      {Object.entries(suggestResult.nextPredsAll || {}).map(([m, v]) => (
+                        <li key={m}>
+                          <span className='font-medium'>{m}:</span> ₱{Number(v).toFixed(2)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className='p-3 border rounded'>
+                    <h3 className='font-medium text-gray-900 mb-2 text-sm'>Recommended (5% Markup)</h3>
+                    <ul className='text-sm space-y-1'>
+                      {Object.entries(suggestResult.recommendedAll || {}).map(([m, v]) => (
+                        <li key={m}>
+                          <span className='font-medium'>{m}:</span> ₱{Number(v).toFixed(2)}
+                          {m === suggestResult.bestModel && <span className='ml-1 text-xs text-green-600'>(chosen)</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className='p-3 border rounded'>
+                  <h3 className='font-medium text-gray-900 mb-2 text-sm'>Model Accuracy</h3>
+                  <table className='w-full text-sm'>
+                    <thead>
+                      <tr className='text-left border-b'>
+                        <th className='py-1'>Model</th>
+                        <th className='py-1'>MAE</th>
+                        <th className='py-1'>RMSE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(suggestResult.metrics || {}).map(([m, vals]) => (
+                        <tr key={m} className='border-b last:border-b-0'>
+                          <td className='py-1'>
+                            {m}
+                            {m === suggestResult.bestModel && <span className='ml-1 text-green-600 font-semibold'>(Best)</span>}
+                          </td>
+                          <td className='py-1'>{vals.MAE != null ? vals.MAE.toFixed(2) : '—'}</td>
+                          <td className='py-1'>{vals.RMSE != null ? vals.RMSE.toFixed(2) : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className='p-3 bg-blue-50 border border-blue-200 rounded text-sm'>
+                  <p>
+                    <span className='font-medium'>Base Prediction ({suggestResult.bestModel}):</span>{' '}
+                    {suggestResult.basePrediction != null ? `₱${suggestResult.basePrediction.toFixed(2)}` : 'N/A'}
+                  </p>
+                  <p>
+                    <span className='font-medium'>Markup (5%):</span>{' '}
+                    {suggestResult.markupAmount != null ? `₱${suggestResult.markupAmount.toFixed(2)}` : 'N/A'}
+                  </p>
+                  <p className='text-blue-800 font-semibold'>
+                    Final Suggested Price (with 5% markup): ₱{suggestResult.finalSuggestedPrice.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            )}
+        </div>
+      </div>
+
       {/* Page Header */}
       <div className='mb-6'>
         <h1 className='text-2xl font-semibold text-gray-900 mb-1'>Price Suggestion Data</h1>

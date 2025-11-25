@@ -134,6 +134,9 @@ def _clean_df(df: pd.DataFrame) -> pd.DataFrame:
             df[col] = ''
         df[col] = df[col].astype(str)
 
+    # Normalize item names to lowercase for case-insensitive matching
+    df['item'] = df['item'].str.lower().str.strip()
+
     # Drop invalid rows
     df = df.dropna(subset=['ds', 'price'])
 
@@ -148,49 +151,50 @@ def load_and_clean(csv_path: str) -> pd.DataFrame:
     return _clean_df(df)
 
 
-def load_from_mongo(mongo_uri: str, db_name: str, collection_name: str, commodity: str | None = None) -> pd.DataFrame:
+def load_from_mongo(mongo_uri: str, db_name: str, collection_name: str, commodity_filter: str = None) -> pd.DataFrame:
     """
-    Load from MongoDB pricesuggestions (or any compatible) collection and clean.
-
-    Expected document shape (typical):
-      { year, month, commodity, item, unit, price, ... }
-
-    Filters by 'commodity' if provided.
+    Load data from MongoDB pricesuggestions collection.
+    Expected fields: item, commodity, unit, price, year, month
     """
     if not _HAVE_PYMONGO:
-        raise RuntimeError("PyMongo is not installed. Run: pip install pymongo")
-
-    client = MongoClient(mongo_uri)
+        raise ImportError("pymongo not installed. Run: pip install pymongo")
+    
     try:
-        coll = client[db_name][collection_name]
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+        
+        # Test connection
+        client.server_info()
+        
+        db = client[db_name]
+        collection = db[collection_name]
+        
+        # Build query
         query = {}
-        if commodity:
-            query['commodity'] = str(commodity).lower()
-
-        projection = {
-            '_id': 0,
-            'year': 1,
-            'month': 1,
-            'commodity': 1,
-            'item': 1,
-            'unit': 1,
-            'price': 1
-        }
-
-        docs = list(coll.find(query, projection))
-        df = pd.DataFrame(docs) if docs else pd.DataFrame(
-            columns=['year', 'month', 'commodity', 'item', 'unit', 'price']
-        )
-        # Normalize text columns: commodity, item to lowercase for consistency
-        for c in ['commodity', 'item', 'unit']:
-            if c in df.columns:
-                df[c] = df[c].astype(str)
-                if c in ['commodity', 'item']:
-                    df[c] = df[c].str.lower()
-
-        return _clean_df(df)
-    finally:
+        if commodity_filter:
+            query['commodity'] = {'$regex': commodity_filter, '$options': 'i'}
+        
+        # Fetch all documents
+        cursor = collection.find(query)
+        docs = list(cursor)
         client.close()
+        
+        if not docs:
+            return pd.DataFrame()
+        
+        # Convert to DataFrame
+        df = pd.DataFrame(docs)
+        
+        # Ensure required columns exist
+        required = ['item', 'price', 'year', 'month']
+        missing = [col for col in required if col not in df.columns]
+        if missing:
+            raise ValueError(f"Missing required columns: {', '.join(missing)}")
+        
+        # Clean and normalize
+        return _clean_df(df)
+        
+    except Exception as e:
+        raise Exception(f"MongoDB load error: {str(e)}")
 
 
 def split_train_test(df: pd.DataFrame, test_size: int = 2) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -415,9 +419,27 @@ def suggest_for_item_from_df(df: pd.DataFrame, item_name: str, test_size: int = 
     """
     Filter by item, split, run models, compute metrics, and decide best.
     """
-    item_df = df[df['item'].str.lower() == item_name.lower()]
+    # Normalize search term to lowercase
+    item_name_lower = item_name.lower().strip()
+    
+    # Filter for the specific item (case-insensitive) - already normalized in _clean_df
+    item_df = df[df['item'] == item_name_lower].copy()
+    
     if item_df.empty:
-        return {"error": f"Item '{item_name}' not found"}
+        # Try partial matching if exact match fails
+        item_df = df[df['item'].str.contains(item_name_lower, case=False, na=False)].copy()
+        
+        if item_df.empty:
+            available_items = sorted(df['item'].unique().tolist())
+            return {
+                "error": f"Item '{item_name}' not found in database. Available items ({len(available_items)}): {', '.join(available_items[:20])}"
+            }
+    
+    # Check if we have enough data
+    if len(item_df) < test_size + 3:
+        return {
+            "error": f"Not enough historical data for '{item_name}'. Found {len(item_df)} records, need at least {test_size + 3}"
+        }
 
     train_df, test_df = split_train_test(item_df, test_size=test_size)
 
@@ -454,11 +476,7 @@ def suggest_for_item_from_df(df: pd.DataFrame, item_name: str, test_size: int = 
         "metrics": metrics,
         "bestModel": best,
         "suggestedPrice": float(recommended[best]),
-        # Optional: lightweight debug series (could be removed if not needed)
-        # "debug": {
-        #   "dates": [pd.Timestamp(d).isoformat() for d in prophet_dates],
-        #   "prophet_full_pred": prophet_full_pred.tolist()
-        # }
+        "dataPoints": len(item_df)
     }
 
 
@@ -516,11 +534,16 @@ def main():
             db_name = args.mongo_db
             if not db_name:
                 try:
-                    db_name = args.mongo_uri.rsplit('/', 1)[-1].split('?', 1)[0] or 'agrolink'
+                    db_name = args.mongo_uri.rsplit('/', 1)[-1].split('?', 1)[0] or 'test'
                 except Exception:
-                    db_name = 'agrolink'
+                    db_name = 'test'
 
             df = load_from_mongo(args.mongo_uri, db_name, args.mongo_coll, args.commodity)
+            
+            if df.empty:
+                result = {"error": f"No data found in MongoDB collection '{args.mongo_coll}'"}
+                print(json.dumps(result, default=_np_encoder))
+                sys.exit(1)
         else:
             # 2) Fallback to CSV
             df = load_and_clean(args.csv)
