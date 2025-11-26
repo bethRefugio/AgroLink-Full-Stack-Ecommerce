@@ -1,6 +1,6 @@
 {
     "version" : 2,
-    "name" : "AgroL ink",
+    "name" : "AgroLink",
     "builds" : [
         {
             "src" : "./index.js",

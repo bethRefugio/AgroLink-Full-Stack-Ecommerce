@@ -399,7 +399,7 @@ export const suggestPriceController = async (req, res) => {
     }
 
     // Get MongoDB URI from environment
-    const mongoUri = process.env.MONGODB_uri || process.env.MONGODB_URI;
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URI;
     if (!mongoUri) {
       console.error("[suggestPriceController] ❌ MONGODB_URI not found in environment");
       return res.status(500).json({
