@@ -35,7 +35,7 @@ Create a `.env` file in the `server` directory:
 FRONTEND_URL=http://localhost:3000
 
 # MongoDB Atlas connection
-MONGODB_URI=your_mongodb_connection_string
+MONGODB_uri=your_mongodb_connection_string
 
 # Resend API for email
 RESEND_API=your_resend_api_key
