@@ -26,7 +26,7 @@ def suggest_price():
             return jsonify({'success': False, 'message': 'item_name is required'}), 400
 
         mongo_uri = os.environ.get('MONGODB_URI')
-        mongo_db = os.environ.get('MONGO_DB', 'AgroLink')
+        mongo_db = os.environ.get('MONGO_DB', 'test')
         mongo_collection = os.environ.get('MONGO_COLLECTION', 'pricesuggestions')
 
         if not mongo_uri:
