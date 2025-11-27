@@ -61,7 +61,7 @@ const Search = () => {
                                     1000,
                                     'Search "eggplant"',
                                     1000,
-                                    'Search "chocolate"',
+                                    'Search "mango"',
                                     1000,
                                     'Search "ampalaya"',
                                     1000,

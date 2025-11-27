@@ -1,50 +1,94 @@
+import os
+import sys
+import json
+import traceback
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
+from dotenv import load_dotenv
 
-# package-relative import (folder has __init__.py)
-from ai_price_suggestion_new import suggest_for_item_from_df, load_from_mongo
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/', methods=['GET', 'HEAD'])
-def home():
-    return jsonify({
-        'service': 'AgroLink AI Price Suggestion',
-        'status': 'ok'
-    }), 200
+# Lazy import AI module (only when needed)
+ai_module = None
+
+def get_ai_module():
+    global ai_module
+    if ai_module is None:
+        try:
+            import ai_price_suggestion_new as ai
+            ai_module = ai
+        except Exception as e:
+            app.logger.error(f"Failed to load AI module: {e}")
+            raise
+    return ai_module
+
+@app.route('/', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy", "service": "AgroLink Price AI"}), 200
 
 @app.route('/suggest-price', methods=['POST'])
 def suggest_price():
     try:
-        data = request.get_json(force=True) or {}
-        item_name = (data.get('item_name') or '').strip()
-        test_size = int(data.get('test_size') or 2)
+        data = request.get_json()
+        item_name = data.get('item_name', '').strip()
+        test_size = int(data.get('test_size', 2))
 
         if not item_name:
-            return jsonify({'success': False, 'message': 'item_name is required'}), 400
+            return jsonify({
+                "success": False,
+                "message": "item_name is required"
+            }), 400
 
-        mongo_uri = os.environ.get('MONGODB_URI')
-        mongo_db = os.environ.get('MONGO_DB', 'test')
-        mongo_collection = os.environ.get('MONGO_COLLECTION', 'pricesuggestions')
+        # Lazy load AI module
+        ai = get_ai_module()
+
+        # MongoDB connection from env
+        mongo_uri = os.getenv('MONGODB_URI')
+        mongo_db = os.getenv('MONGO_DB', 'test')
+        mongo_coll = os.getenv('MONGO_COLLECTION', 'pricesuggestions')
 
         if not mongo_uri:
-            return jsonify({'success': False, 'message': 'MONGODB_URI not configured'}), 500
+            return jsonify({
+                "success": False,
+                "message": "Database connection not configured"
+            }), 500
 
-        df = load_from_mongo(mongo_uri, mongo_db, mongo_collection)
-        result = suggest_for_item_from_df(df, item_name, test_size=test_size)
+        # Load data from MongoDB
+        df = ai.load_from_mongo(mongo_uri, mongo_db, mongo_coll)
+        
+        if df.empty:
+            return jsonify({
+                "success": False,
+                "message": f"No historical data found"
+            }), 404
 
-        if isinstance(result, dict) and result.get('error'):
-            return jsonify({'success': False, 'message': result['error']}), 404
+        # Run prediction
+        result = ai.suggest_for_item_from_df(df, item_name, test_size)
+
+        if "error" in result:
+            return jsonify({
+                "success": False,
+                "message": result["error"]
+            }), 404
 
         return jsonify({
-            'success': True,
-            'data': result,
-            'suggestedPrice': result.get('suggestedPrice'),
-            'bestModel': result.get('bestModel')
+            "success": True,
+            "message": "Price suggestion generated",
+            "data": result,
+            "suggestedPrice": result.get("suggestedPrice"),
+            "bestModel": result.get("bestModel")
         }), 200
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
 
-# Do not run app.run on Render; Gunicorn starts the app
+    except Exception as e:
+        app.logger.error(f"suggest-price error: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({
+            "success": False,
+            "message": f"Internal error: {str(e)}"
+        }), 500
+
+if __name__ == '__main__':
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

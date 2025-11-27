@@ -1,3 +1,34 @@
-
 node_modules/
 .vercel
+
+# Python
+price_prediction_ai/.venv/
+price_prediction_ai/__pycache__/
+price_prediction_ai/*.pyc
+price_prediction_ai/*.pyo
+price_prediction_ai/*.pyd
+price_prediction_ai/.Python
+price_prediction_ai/pip-log.txt
+price_prediction_ai/pip-delete-this-directory.txt
+price_prediction_ai/.pytest_cache/
+price_prediction_ai/.coverage
+price_prediction_ai/htmlcov/
+
+# Environment & secrets
+price_prediction_ai/.env
+
+# CmdStan (Prophet dependency, ~100MB+)
+price_prediction_ai/.cmdstan/
+price_prediction_ai/.cmdstanpy/
+
+# CSV data (fallback, not needed if using MongoDB)
+price_prediction_ai/price_list.csv
+
+# Python version lock (optional, depends on deployment)
+price_prediction_ai/.python-version
+
+# Model artifacts (if any generated during training)
+price_prediction_ai/*.pkl
+price_prediction_ai/*.h5
+price_prediction_ai/*.joblib
+price_prediction_ai/models/

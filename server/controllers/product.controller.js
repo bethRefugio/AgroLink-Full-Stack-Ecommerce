@@ -374,22 +374,23 @@ export const suggestPriceController = async (req, res) => {
       });
     }
 
-    // External Python AI service URL (configure in Render env vars)
-    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:5000";
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "https://agrolink-full-stack-ecommerce-ai-price.onrender.com";
 
-    // Call the Python microservice
     const aiResponse = await axios.post(
       `${aiServiceUrl}/suggest-price`,
       { item_name: item_name.trim(), test_size },
-      { timeout: 90000 }
+      { 
+        timeout: 120000, // 2 minutes for first request
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
 
     const payload = aiResponse.data;
 
     if (!payload?.success) {
-      return res.status(500).json({
+      return res.status(404).json({
         success: false,
-        message: payload?.message || "Error generating price suggestion"
+        message: payload?.message || "No data available for this item"
       });
     }
 
@@ -401,12 +402,10 @@ export const suggestPriceController = async (req, res) => {
       bestModel: payload.bestModel
     });
   } catch (error) {
-    return res.status(500).json({
+    console.error('[suggestPrice] Error:', error.message);
+    return res.status(error.response?.status || 500).json({
       success: false,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "Error generating price suggestion"
+      message: error.response?.data?.message || error.message || "Price suggestion service unavailable"
     });
   }
 };
