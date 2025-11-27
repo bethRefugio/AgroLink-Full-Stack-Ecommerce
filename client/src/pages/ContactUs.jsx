@@ -5,6 +5,7 @@ import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import toast from 'react-hot-toast'
 
+
 export default function ContactUs() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -15,7 +16,9 @@ export default function ContactUs() {
     message: ''
   });
 
+
   const navigate = useNavigate();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,12 +38,14 @@ export default function ContactUs() {
     }
   };
 
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
+
 
   const developers = [
     {
@@ -90,8 +95,9 @@ export default function ContactUs() {
     }
   ];
 
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-green-50 font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-white to-green-50 font-sans overflow-x-hidden">
       {/* Google Fonts Import */}
       <style>
         {`
@@ -107,6 +113,7 @@ export default function ContactUs() {
         `}
       </style>
 
+
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -119,12 +126,14 @@ export default function ContactUs() {
               <X size={24} />
             </button>
 
+
             {/* Success Icon */}
             <div className="flex justify-center mb-6">
               <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
                 <Check size={40} className="text-white" strokeWidth={3} />
               </div>
             </div>
+
 
             {/* Content */}
             <div className="text-center">
@@ -145,10 +154,14 @@ export default function ContactUs() {
         </div>
       )}
 
+
       {/* Navigation */}
       <nav className="bg-gradient-to-r from-green-900 to-green-800 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
+
+
+            {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden text-white p-2 rounded-lg hover:bg-green-700 transition-colors"
@@ -156,17 +169,19 @@ export default function ContactUs() {
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
+
+            {/* Desktop menu */}
             <div className="hidden md:flex space-x-10 text-white font-body font-medium text-sm tracking-wider">
               <a href="/" className="hover:text-green-300 transition-all hover:scale-105">HOME</a>
               <a href="/about" className="hover:text-green-300 transition-all hover:scale-105">ABOUT US</a>
               <a href="/services" className="hover:text-green-300 transition-all hover:scale-105">SERVICES</a>
-              <a href="/contact" className="text-green-300 border-b-2 border-green-300">CONTACT US</a>
+              <a href="/contact" className="hover:text-green-300 transition-all hover:scale-105">CONTACT US</a>
               <a href="/blog" className="hover:text-green-300 transition-all hover:scale-105">BLOG</a>
             </div>
 
-            {/* Right side icons */}
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-3 font-body">
+
+            {/* Login button */}
+            <div className="flex items-center space-x-6">
               <button
                 type="button"
                 onClick={() => navigate('/login')}
@@ -176,22 +191,26 @@ export default function ContactUs() {
               </button>
             </div>
           </div>
-        </div>
 
+
+          {/* Mobile horizontal scrolling menu */}
           {isMenuOpen && (
-            <div className="md:hidden pb-4 space-y-2 font-body">
-              <a href="/" className="block text-white hover:text-green-300 py-2 tracking-wide">HOME</a>
-              <a href="/about" className="block text-white hover:text-green-300 py-2 tracking-wide">ABOUT US</a>
-              <a href="/services" className="block text-white hover:text-green-300 py-2 tracking-wide">SERVICES</a>
-              <a href="/contact" className="block text-green-300 py-2 tracking-wide">CONTACT US</a>
-              <a href="/blog" className="block text-white hover:text-green-300 py-2 tracking-wide">BLOG</a>
+            <div className="md:hidden pb-4 font-body overflow-x-auto">
+              <div className="flex space-x-6 whitespace-nowrap px-2 py-2">
+                <a href="/" className="text-white hover:text-green-300">HOME</a>
+                <a href="/about" className="text-white hover:text-green-300">ABOUT US</a>
+                <a href="/services" className="text-white hover:text-green-300">SERVICES</a>
+                <a href="/contact" className="text-white hover:text-green-300">CONTACT US</a>
+                <a href="/blog" className="text-white hover:text-green-300">BLOG</a>
+              </div>
             </div>
           )}
         </div>
       </nav>
 
+
       {/* Hero Section */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 overflow-x-hidden">
         <div className="text-center space-y-6">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black text-gray-900 leading-tight">
             Get In <span className="text-green-800">Touch</span>
@@ -201,6 +220,7 @@ export default function ContactUs() {
           </p>
         </div>
       </div>
+
 
       {/* Contact Info Cards */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -214,6 +234,7 @@ export default function ContactUs() {
             <p className="text-gray-600 font-body">Iligan City, Philippines</p>
           </div>
 
+
           <div className="bg-white p-8 rounded-2xl shadow-xl text-center transform hover:-translate-y-2 transition-all duration-300">
             <div className="w-16 h-16 bg-gradient-to-br from-green-800 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <Mail size={28} className="text-white" />
@@ -222,6 +243,7 @@ export default function ContactUs() {
             <p className="text-gray-600 font-body">info@smartagrolink.com</p>
             <p className="text-gray-600 font-body">support@smartagrolink.com</p>
           </div>
+
 
           <div className="bg-white p-8 rounded-2xl shadow-xl text-center transform hover:-translate-y-2 transition-all duration-300">
             <div className="w-16 h-16 bg-gradient-to-br from-green-800 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -232,6 +254,7 @@ export default function ContactUs() {
             <p className="text-gray-600 font-body">Mon-Fri: 8AM - 5PM</p>
           </div>
         </div>
+
 
         {/* Contact Form and Map */}
         <div className="grid lg:grid-cols-2 gap-12 mb-20">
@@ -266,6 +289,7 @@ export default function ContactUs() {
                 </div>
               </div>
 
+
               <div>
                 <label htmlFor="subject" className="sr-only">Subject</label>
                 <input
@@ -277,6 +301,7 @@ export default function ContactUs() {
                   className="w-full border border-gray-200 rounded-lg px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-green-200"
                 />
               </div>
+
 
               <div>
                 <label htmlFor="message" className="sr-only">Message</label>
@@ -292,6 +317,7 @@ export default function ContactUs() {
                 />
               </div>
 
+
               <div>
                 <button
                   type="submit"
@@ -303,6 +329,7 @@ export default function ContactUs() {
               </div>
             </form>
           </div>
+
 
           {/* Info Section */}
           <div className="space-y-8">
@@ -333,6 +360,7 @@ export default function ContactUs() {
               </div>
             </div>
 
+
             <div className="bg-gradient-to-br from-amber-50 to-rose-50 p-10 rounded-3xl shadow-xl">
               <h3 className="text-2xl font-display font-bold text-green-800 mb-4">Office Hours</h3>
               <div className="space-y-3 font-body text-gray-700">
@@ -353,6 +381,7 @@ export default function ContactUs() {
           </div>
         </div>
 
+
         {/* Development Team Section */}
         <div className="py-12">
           <div className="text-center mb-16">
@@ -363,6 +392,7 @@ export default function ContactUs() {
               The brilliant minds behind Smart AgroLink - Project 404
             </p>
           </div>
+
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {developers.map((dev, index) => (
@@ -419,6 +449,7 @@ export default function ContactUs() {
         </div>
       </div>
 
+
       <style>{`
         @keyframes scale-in {
           from {
@@ -437,3 +468,4 @@ export default function ContactUs() {
     </div>
   );
 }
+

@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Menu, X, User, Calendar, Tag } from 'lucide-react';
 
 
+
+
 export default function BlogPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+
 
 
   // Blog posts created from the themes in your other files
@@ -73,8 +77,10 @@ export default function BlogPage() {
   ];
 
 
+
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-green-50 font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-white to-green-50 font-sans overflow-x-hidden">
       {/* Google Fonts Import */}
       <style>
         {`
@@ -95,10 +101,15 @@ export default function BlogPage() {
       </style>
 
 
-      {/* Navigation - Only the green navigation bar remains */}
+
+
+      {/* Navigation */}
       <nav className="bg-gradient-to-r from-green-900 to-green-800 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
+
+
+            {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden text-white p-2 rounded-lg hover:bg-green-700 transition-colors"
@@ -107,37 +118,39 @@ export default function BlogPage() {
             </button>
 
 
+            {/* Desktop menu */}
             <div className="hidden md:flex space-x-10 text-white font-body font-medium text-sm tracking-wider">
               <a href="/" className="hover:text-green-300 transition-all hover:scale-105">HOME</a>
               <a href="/about" className="hover:text-green-300 transition-all hover:scale-105">ABOUT US</a>
               <a href="/services" className="hover:text-green-300 transition-all hover:scale-105">SERVICES</a>
               <a href="/contact" className="hover:text-green-300 transition-all hover:scale-105">CONTACT US</a>
-              <a href="/blog" className="text-green-300 border-b-2 border-green-300">BLOG</a>
+              <a href="/blog" className="hover:text-green-300 transition-all hover:scale-105">BLOG</a>
             </div>
 
 
-            {/* Right side icons */}
+            {/* Login button */}
             <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-3 font-body">
-                <button
-                  type="button"
-                  onClick={() => navigate('/login')}
-                  className="bg-white text-green-800 font-semibold px-5 py-2 rounded-lg shadow transition-all border border-green-800 hover:bg-green-50"
-                >
-                  Login
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="bg-white text-green-800 font-semibold px-5 py-2 rounded-lg shadow transition-all border border-green-800 hover:bg-green-50"
+              >
+                Login
+              </button>
             </div>
           </div>
 
 
+          {/* Mobile horizontal scrolling menu */}
           {isMenuOpen && (
-            <div className="md:hidden pb-4 space-y-2 font-body">
-              <a href="/" className="block text-white hover:text-green-300 py-2 tracking-wide">HOME</a>
-              <a href="/about" className="block text-white hover:text-green-300 py-2 tracking-wide">ABOUT US</a>
-              <a href="/services" className="block text-white hover:text-green-300 py-2 tracking-wide">SERVICES</a>
-              <a href="/contact" className="block text-white hover:text-green-300 py-2 tracking-wide">CONTACT US</a>
-              <a href="/blog" className="block text-green-300 py-2 tracking-wide">BLOG</a>
+            <div className="md:hidden pb-4 font-body overflow-x-auto">
+              <div className="flex space-x-6 whitespace-nowrap px-2 py-2">
+                <a href="/" className="text-white hover:text-green-300">HOME</a>
+                <a href="/about" className="text-white hover:text-green-300">ABOUT US</a>
+                <a href="/services" className="text-white hover:text-green-300">SERVICES</a>
+                <a href="/contact" className="text-white hover:text-green-300">CONTACT US</a>
+                <a href="/blog" className="text-white hover:text-green-300">BLOG</a>
+              </div>
             </div>
           )}
         </div>
@@ -192,4 +205,10 @@ export default function BlogPage() {
     </div>
   );
 }
+
+
+
+
+
+
 
