@@ -4,6 +4,7 @@ import os
 import sys
 
 # Import your AI functions
+sys.path.append(os.path.dirname(__file__))
 from ai_price_suggestion_new import suggest_for_item_from_df, load_from_mongo
 
 app = Flask(__name__)
