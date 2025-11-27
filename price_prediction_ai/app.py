@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 
 # package-relative import (folder has __init__.py)
-from .ai_price_suggestion_new import suggest_for_item_from_df, load_from_mongo
+from ai_price_suggestion_new import suggest_for_item_from_df, load_from_mongo
 
 app = Flask(__name__)
 CORS(app)
