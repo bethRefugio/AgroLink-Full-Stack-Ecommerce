@@ -13,11 +13,14 @@ import { setUserDetails } from '../store/userSlice'
 import fetchUserDetails from '../utils/fetchUserDetails'
 import isSeller from '../utils/isSeller'
 
+
 const Profile = () => {
   const user = useSelector(state => state.user)
   const dispatch = useDispatch()
 
+
   const seller = isSeller(user.role)
+
 
   // ...existing state declarations...
   const [openProfileAvatarEdit, setProfileAvatarEdit] = useState(false)
@@ -25,6 +28,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false)
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [prefLoading, setPrefLoading] = useState(false)
+
 
   // Preferences data
   const [userPreferences, setUserPreferences] = useState([])
@@ -36,9 +40,11 @@ const Profile = () => {
     subCategoryId: ''
   })
 
+
   // Addresses
   const [addresses, setAddresses] = useState([])
   const [addressLoading, setAddressLoading] = useState(false)
+
 
   // Personal info
   const [userData, setUserData] = useState({
@@ -47,6 +53,7 @@ const Profile = () => {
     mobile: user?.mobile || ""
   })
 
+
   // Password change
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
@@ -54,11 +61,13 @@ const Profile = () => {
     confirmPassword: ""
   })
 
+
   const [showPassword, setShowPassword] = useState({
     old: false,
     new: false,
     confirm: false
   })
+
 
   useEffect(() => {
     setUserData({
@@ -68,10 +77,11 @@ const Profile = () => {
     })
   }, [user])
 
+
   // Fetch categories on mount - only if not seller
   useEffect(() => {
     if (seller) return
-    
+   
     const fetchCategories = async () => {
       try {
         const res = await Axios({ ...SummaryApi.getCategory })
@@ -83,10 +93,11 @@ const Profile = () => {
     fetchCategories()
   }, [seller])
 
+
   // Fetch ALL subcategories for display mapping - only if not seller
   useEffect(() => {
     if (seller) return
-    
+   
     const fetchAllSubCat = async () => {
       try {
         const res = await Axios({
@@ -101,10 +112,11 @@ const Profile = () => {
     fetchAllSubCat()
   }, [seller])
 
+
   // Fetch subcategories when category changes - only if not seller
   useEffect(() => {
     if (seller) return
-    
+   
     const fetchSubCat = async () => {
       if (!preferences.categoryId) {
         setSubCategories([])
@@ -124,11 +136,13 @@ const Profile = () => {
     fetchSubCat()
   }, [seller, preferences.categoryId])
 
+
   // ...existing handlers...
   const handleOnChange = (e) => {
     const { name, value } = e.target
     setUserData(prev => ({ ...prev, [name]: value }))
   }
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -149,6 +163,7 @@ const Profile = () => {
       setLoading(false)
     }
   }
+
 
   const handlePasswordChange = async (e) => {
     e.preventDefault()
@@ -179,15 +194,17 @@ const Profile = () => {
     }
   }
 
+
   // Preferences handlers
   const handlePrefChange = (e) => {
     const { name, value } = e.target
     setPreferences(prev => ({ ...prev, [name]: value }))
   }
 
+
   const fetchPreferences = async () => {
     if (seller) return
-    
+   
     try {
       const response = await Axios({ ...SummaryApi.getPreferences })
       if (response.data.success) {
@@ -198,6 +215,7 @@ const Profile = () => {
     }
   }
 
+
   const handleAddPreference = async (e) => {
     e.preventDefault()
     if (!preferences.categoryId || !preferences.subCategoryId) {
@@ -206,6 +224,7 @@ const Profile = () => {
     }
     const categoryObj = categories.find(c => c._id === preferences.categoryId)
     const subCatObj = subCategories.find(sc => sc._id === preferences.subCategoryId)
+
 
     try {
       setPrefLoading(true)
@@ -232,6 +251,7 @@ const Profile = () => {
     }
   }
 
+
   const handleDeletePreference = async (preferenceId) => {
     try {
       const res = await Axios({
@@ -249,6 +269,7 @@ const Profile = () => {
     }
   }
 
+
   // Address CRUD
   const fetchAddresses = async () => {
     try {
@@ -261,6 +282,7 @@ const Profile = () => {
       setAddressLoading(false)
     }
   }
+
 
   const handleDeleteAddress = async (id) => {
     try {
@@ -279,21 +301,24 @@ const Profile = () => {
     }
   }
 
+
   useEffect(() => {
     fetchPreferences()
     fetchAddresses()
   }, [seller])
+
 
   // Helpers for displaying preference groups
   const categoryMap = categories.reduce((acc, c) => {
     acc[c._id] = c.name
     return acc
   }, {})
-  
+ 
   const subCategoryMap = allSubCategories.reduce((acc, s) => {
     acc[s._id] = s.name
     return acc
   }, {})
+
 
   const grouped = userPreferences.reduce((acc, pref) => {
     const categoryName = categoryMap[pref.categoryId] || pref.category || 'Unknown'
@@ -302,11 +327,13 @@ const Profile = () => {
     return acc
   }, {})
 
+
   return (
-    <div className='max-w-5xl mx-auto'>
+    <div className='max-w-5xl mx-auto overflow-x-hidden'>
       <div className='mb-8'>
         <h1 className='text-2xl font-semibold text-gray-900 mb-1'>Account</h1>
       </div>
+
 
       {/* Header */}
       <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
@@ -330,6 +357,7 @@ const Profile = () => {
           </button>
         </div>
       </div>
+
 
       {/* Personal Information */}
       <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
@@ -374,6 +402,7 @@ const Profile = () => {
           {loading ? "Saving..." : "Save Changes"}
         </button>
       </div>
+
 
       {/* Password */}
       <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
@@ -444,6 +473,7 @@ const Profile = () => {
         </button>
       </div>
 
+
       {/* Addresses */}
       <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
         <h3 className='font-semibold text-gray-900 mb-4 flex items-center justify-between'>
@@ -483,6 +513,7 @@ const Profile = () => {
           ))}
         </div>
       </div>
+
 
       {/* Preferences - Hide for sellers */}
       {!seller && (
@@ -527,6 +558,7 @@ const Profile = () => {
             {prefLoading ? "Adding..." : "Add Preference"}
           </button>
 
+
           {Object.keys(grouped).length > 0 && (
             <div className='mt-6'>
               <h4 className='font-medium text-gray-900 mb-3'>Saved Preferences</h4>
@@ -561,9 +593,11 @@ const Profile = () => {
         </div>
       )}
 
+
       {openProfileAvatarEdit && (
         <UserProfileAvatarEdit close={() => setProfileAvatarEdit(false)} />
       )}
+
 
       {openAddAddress?.mode === 'create' && (
         <AddAddress
@@ -571,6 +605,7 @@ const Profile = () => {
           fetchAddress={fetchAddresses}
         />
       )}
+
 
       {openAddAddress?.mode === 'edit' && (
         <EditAddressDetails
@@ -582,4 +617,6 @@ const Profile = () => {
   )
 }
 
+
 export default Profile
+

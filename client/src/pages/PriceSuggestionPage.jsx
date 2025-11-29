@@ -10,6 +10,7 @@ import DisplayTable from '../components/DisplayTable'
 import ConfirmBox from '../components/CofirmBox'
 import { IoClose } from "react-icons/io5"
 
+
 const PriceSuggestionPage = () => {
   const [data, setData] = useState([])
   const [filteredData, setFilteredData] = useState([])
@@ -25,15 +26,17 @@ const PriceSuggestionPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
-  const rowsPerPage = 10
+  const pageSize = 50
   const [syncing, setSyncing] = useState(false)
-  
+ 
   const [suggestName, setSuggestName] = useState('')
   const [suggestLoading, setSuggestLoading] = useState(false)
   const [suggestResult, setSuggestResult] = useState(null)
   const [suggestError, setSuggestError] = useState('')
 
+
   const columnHelper = createColumnHelper()
+
 
   const fetchPriceData = async (page = 1) => {
     try {
@@ -42,11 +45,12 @@ const PriceSuggestionPage = () => {
         ...SummaryApi.getAllPriceEntries,
         params: {
           page,
-          limit: rowsPerPage,
+          limit: pageSize,
           sort: sortOrder // Add sort parameter
         }
       })
       const { data: responseData } = response
+
 
       if (responseData.success) {
         setData(responseData.data)
@@ -62,12 +66,15 @@ const PriceSuggestionPage = () => {
     }
   }
 
+
   useEffect(() => {
     fetchPriceData(currentPage)
   }, [currentPage, sortOrder])
 
+
   useEffect(() => {
   let filtered = [...data]
+
 
   if (searchTerm) {
     filtered = filtered.filter(item =>
@@ -78,9 +85,11 @@ const PriceSuggestionPage = () => {
     )
   }
 
+
   // Remove the sorting logic from here since it's handled by backend
   setFilteredData(filtered)
 }, [searchTerm, data])
+
 
   const handleDeleteEntry = async () => {
     try {
@@ -89,7 +98,9 @@ const PriceSuggestionPage = () => {
         method: SummaryApi.deletePriceEntry.method
       })
 
+
       const { data: responseData } = response
+
 
       if (responseData.success) {
         toast.success(responseData.message)
@@ -102,6 +113,7 @@ const PriceSuggestionPage = () => {
     }
   }
 
+
   // Move handleSyncProducts here - at component level
   const handleSyncProducts = async () => {
     try {
@@ -109,6 +121,7 @@ const PriceSuggestionPage = () => {
       const response = await Axios({
         ...SummaryApi.syncProductsToPriceAI
       })
+
 
       if (response.data.success) {
         toast.success(response.data.message)
@@ -120,6 +133,7 @@ const PriceSuggestionPage = () => {
       setSyncing(false)
     }
   }
+
 
   // Add/Edit Modal
   const AddEditModal = ({ isEdit = false }) => {
@@ -138,6 +152,7 @@ const PriceSuggestionPage = () => {
     )
     const [saving, setSaving] = useState(false)
 
+
     const handleSubmit = async (e) => {
       e.preventDefault()
       try {
@@ -152,6 +167,7 @@ const PriceSuggestionPage = () => {
           data: formData
         })
 
+
         if (response.data.success) {
           toast.success(response.data.message)
           fetchPriceData(currentPage)
@@ -164,6 +180,9 @@ const PriceSuggestionPage = () => {
         setSaving(false)
       }
     }
+
+
+
 
 
 
@@ -185,6 +204,7 @@ const PriceSuggestionPage = () => {
             </button>
           </div>
 
+
           <form onSubmit={handleSubmit} className='p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-140px)]'>
             <div className='grid grid-cols-2 gap-4'>
               <div>
@@ -199,6 +219,7 @@ const PriceSuggestionPage = () => {
                   className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
                 />
               </div>
+
 
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Month *</label>
@@ -224,6 +245,7 @@ const PriceSuggestionPage = () => {
               </div>
             </div>
 
+
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>Commodity *</label>
               <select
@@ -242,6 +264,7 @@ const PriceSuggestionPage = () => {
               </select>
             </div>
 
+
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>Item *</label>
               <input
@@ -253,6 +276,7 @@ const PriceSuggestionPage = () => {
                 className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
               />
             </div>
+
 
             <div className='grid grid-cols-2 gap-4'>
               <div>
@@ -271,6 +295,7 @@ const PriceSuggestionPage = () => {
                 </select>
               </div>
 
+
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Price (₱) *</label>
                 <input
@@ -286,6 +311,7 @@ const PriceSuggestionPage = () => {
               </div>
             </div>
 
+
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>Source</label>
               <select
@@ -299,6 +325,7 @@ const PriceSuggestionPage = () => {
                 <option value='prediction'>Prediction</option>
               </select>
             </div>
+
 
             <div className='flex justify-end gap-3 pt-4'>
               <button
@@ -325,6 +352,7 @@ const PriceSuggestionPage = () => {
     )
   }
 
+
   // CSV Upload Modal
   const CSVUploadModal = () => {
     const [file, setFile] = useState(null)
@@ -332,6 +360,7 @@ const PriceSuggestionPage = () => {
     const [preview, setPreview] = useState([])
     const [uploadProgress, setUploadProgress] = useState(0)
     const [isDragging, setIsDragging] = useState(false)
+
 
     const handleFileChange = (e) => {
       const selectedFile = e.target.files[0]
@@ -343,12 +372,14 @@ const PriceSuggestionPage = () => {
       }
     }
 
+
     // Handle drag over
     const handleDragOver = (e) => {
       e.preventDefault()
       e.stopPropagation()
       setIsDragging(true)
     }
+
 
     // Handle drag leave
     const handleDragLeave = (e) => {
@@ -357,13 +388,16 @@ const PriceSuggestionPage = () => {
       setIsDragging(false)
     }
 
+
     // Handle drop
     const handleDrop = (e) => {
       e.preventDefault()
       e.stopPropagation()
       setIsDragging(false)
 
+
       if (uploading) return
+
 
       const droppedFile = e.dataTransfer.files[0]
       if (droppedFile && droppedFile.type === 'text/csv') {
@@ -373,6 +407,7 @@ const PriceSuggestionPage = () => {
         toast.error('Please drop a valid CSV file')
       }
     }
+
 
     const previewCSV = (file) => {
       const reader = new FileReader()
@@ -400,6 +435,7 @@ const PriceSuggestionPage = () => {
       reader.readAsText(file)
     }
 
+
     const chunkArray = (array, size) => {
       const chunks = []
       for (let i = 0; i < array.length; i += size) {
@@ -408,21 +444,24 @@ const PriceSuggestionPage = () => {
       return chunks
     }
 
+
     const handleUpload = async () => {
       if (!file) {
         toast.error('Please select a file')
         return
       }
 
+
       try {
         setUploading(true)
         setUploadProgress(0)
+
 
         const reader = new FileReader()
         reader.onload = async (e) => {
           const text = e.target.result
           const rows = text.split('\n').slice(1)
-          
+         
           const allData = rows
             .map((row) => {
               const cols = row.split(',').map((col) => col.trim())
@@ -441,14 +480,17 @@ const PriceSuggestionPage = () => {
             })
             .filter(Boolean)
 
+
           if (allData.length === 0) {
             toast.error('No valid data found in CSV')
             setUploading(false)
             return
           }
 
+
           const chunks = chunkArray(allData, 100)
           let successCount = 0
+
 
           for (let i = 0; i < chunks.length; i++) {
             try {
@@ -457,17 +499,21 @@ const PriceSuggestionPage = () => {
                 data: { data: chunks[i] }
               })
 
+
               if (response.data.success) {
                 successCount += chunks[i].length
               }
+
 
               setUploadProgress(Math.round(((i + 1) / chunks.length) * 100))
             } catch (error) {
               console.error(`Chunk ${i + 1} failed:`, error)
             }
 
+
             await new Promise(resolve => setTimeout(resolve, 100))
           }
+
 
           if (successCount > 0) {
             toast.success(`Successfully imported ${successCount} entries`)
@@ -487,6 +533,7 @@ const PriceSuggestionPage = () => {
         setUploadProgress(0)
       }
     }
+
 
     return (
     <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
@@ -508,6 +555,7 @@ const PriceSuggestionPage = () => {
           </button>
         </div>
 
+
         <div className='p-6 space-y-4'>
           {/* Drag and Drop Area */}
           <div
@@ -520,11 +568,11 @@ const PriceSuggestionPage = () => {
                 : 'border-gray-300 hover:border-blue-500'
             } ${uploading ? 'pointer-events-none opacity-50' : ''}`}
           >
-            <MdUploadFile 
+            <MdUploadFile
               className={`mx-auto mb-4 transition-colors ${
                 isDragging ? 'text-blue-500' : 'text-gray-400'
-              }`} 
-              size={48} 
+              }`}
+              size={48}
             />
             <label className={`cursor-pointer ${uploading ? 'pointer-events-none' : ''}`}>
               <span className='text-blue-600 hover:text-blue-700 font-medium'>
@@ -547,6 +595,7 @@ const PriceSuggestionPage = () => {
             )}
           </div>
 
+
           {file && (
             <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
               <p className='text-sm text-green-800 font-medium'>
@@ -554,6 +603,7 @@ const PriceSuggestionPage = () => {
               </p>
             </div>
           )}
+
 
           {uploading && (
             <div>
@@ -569,6 +619,7 @@ const PriceSuggestionPage = () => {
               </div>
             </div>
           )}
+
 
           {preview.length > 0 && !uploading && (
             <div>
@@ -602,6 +653,7 @@ const PriceSuggestionPage = () => {
             </div>
           )}
 
+
           <div className='flex justify-end gap-3 pt-4'>
             <button
               type='button'
@@ -629,13 +681,14 @@ const PriceSuggestionPage = () => {
   )
 }
 
+
   const columns = [
     columnHelper.display({
       id: 'serialNumber',
       header: 'No.',
       cell: ({ row }) => (
         <div className='text-gray-700 font-medium'>
-          {(currentPage - 1) * rowsPerPage + row.index + 1}
+          {(currentPage - 1) * pageSize + row.index + 1}
         </div>
       )
     }),
@@ -710,6 +763,7 @@ const PriceSuggestionPage = () => {
     })
   ]
 
+
   const handleAISuggestPrice = async () => {
     if (!suggestName.trim()) {
       toast.error('Enter a product name')
@@ -729,6 +783,7 @@ const PriceSuggestionPage = () => {
         return
       }
 
+
       // Python returns:
       // payload.suggestedPrice (already includes 5% markup)
       // payload.bestModel
@@ -739,6 +794,7 @@ const PriceSuggestionPage = () => {
       const finalWithMarkup = full.suggestedPrice            // already has 5% markup
       const markupAmount = basePred != null ? (finalWithMarkup - basePred) : null
       const metrics = full.metrics || {}
+
 
       // Build reason
       let reason = 'Chosen due to lowest RMSE among available models.'
@@ -752,6 +808,7 @@ const PriceSuggestionPage = () => {
             reason = `Selected because it has the lowest RMSE (${metrics[best].RMSE.toFixed(2)}). RMSE comparison -> ${ordered}.`
         }
       }
+
 
       setSuggestResult({
         item: full.item,
@@ -773,14 +830,16 @@ const PriceSuggestionPage = () => {
     }
   }
 
-  return (
-    <section className='max-w-full p-6'>
 
-      {/* New AI Suggestion Panel */}
+  return (
+    <section className="max-w-full p-6 overflow-x-hidden">
+      {/* AI Suggestion Panel */}
       <div className='bg-white border border-gray-200 rounded-lg p-5 mb-6'>
         <h2 className='text-lg font-semibold text-gray-900 mb-3'>AI Price Suggestion</h2>
-        <div className='flex flex-col md:flex-row gap-3 items-start md:items-end'>
-          <div className='flex-1'>
+
+
+        <div className='flex flex-col md:flex-row gap-3 items-start md:items-end w-full'>
+          <div className='flex-1 w-full'>
             <label className='text-sm font-medium text-gray-700 mb-1 block'>Product Name</label>
             <input
               type='text'
@@ -790,16 +849,19 @@ const PriceSuggestionPage = () => {
               className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
             />
           </div>
+
+
           <button
             onClick={handleAISuggestPrice}
             disabled={suggestLoading}
-            className='px-4 py-2 h-10 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400'
+            className='px-4 py-2 h-10 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 w-full md:w-auto'
           >
             {suggestLoading ? 'Suggesting...' : 'Get AI Price Suggestion'}
           </button>
         </div>
 
-        {/* Result / Error */}
+
+        {/* RESULT BOX */}
         <div className='mt-4'>
           {suggestError && (
             <div className='p-3 text-sm bg-red-50 border border-red-200 text-red-700 rounded'>
@@ -807,158 +869,145 @@ const PriceSuggestionPage = () => {
             </div>
           )}
 
-            {suggestResult && (
-              <div className='space-y-4'>
-                <div className='p-3 bg-green-50 border border-green-200 rounded text-sm'>
-                  <p><span className='font-medium'>Item:</span> {suggestResult.item}</p>
-                  <p><span className='font-medium'>Data Points:</span> {suggestResult.dataPoints}</p>
-                  <p>
-                    <span className='font-medium'>Chosen Model:</span> {suggestResult.bestModel}
-                  </p>
-                  <p className='text-gray-700'>
-                    <span className='font-medium'>Reason:</span> {suggestResult.reason}
-                  </p>
+
+          {suggestResult && (
+            <div className='space-y-4'>
+              <div className='p-3 bg-green-50 border border-green-200 rounded text-sm'>
+                <p><span className='font-medium'>Item:</span> {suggestResult.item}</p>
+                <p><span className='font-medium'>Data Points:</span> {suggestResult.dataPoints}</p>
+                <p><span className='font-medium'>Chosen Model:</span> {suggestResult.bestModel}</p>
+                <p className='text-gray-700'>
+                  <span className='font-medium'>Reason:</span> {suggestResult.reason}
+                </p>
+              </div>
+
+
+              <div className='grid md:grid-cols-2 gap-4'>
+                <div className='p-3 border rounded'>
+                  <h3 className='font-medium text-gray-900 mb-2 text-sm'>Predictions (Next Month)</h3>
+                  <ul className='text-sm space-y-1'>
+                    {Object.entries(suggestResult.nextPredsAll || {}).map(([m, v]) => (
+                      <li key={m}>
+                        <span className='font-medium'>{m}:</span> ₱{Number(v).toFixed(2)}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <div className='grid md:grid-cols-2 gap-4'>
-                  <div className='p-3 border rounded'>
-                    <h3 className='font-medium text-gray-900 mb-2 text-sm'>Predictions (Next Month)</h3>
-                    <ul className='text-sm space-y-1'>
-                      {Object.entries(suggestResult.nextPredsAll || {}).map(([m, v]) => (
-                        <li key={m}>
-                          <span className='font-medium'>{m}:</span> ₱{Number(v).toFixed(2)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className='p-3 border rounded'>
-                    <h3 className='font-medium text-gray-900 mb-2 text-sm'>Recommended (5% Markup)</h3>
-                    <ul className='text-sm space-y-1'>
-                      {Object.entries(suggestResult.recommendedAll || {}).map(([m, v]) => (
-                        <li key={m}>
-                          <span className='font-medium'>{m}:</span> ₱{Number(v).toFixed(2)}
-                          {m === suggestResult.bestModel && <span className='ml-1 text-xs text-green-600'>(chosen)</span>}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
 
                 <div className='p-3 border rounded'>
-                  <h3 className='font-medium text-gray-900 mb-2 text-sm'>Model Accuracy</h3>
-                  <table className='w-full text-sm'>
-                    <thead>
-                      <tr className='text-left border-b'>
-                        <th className='py-1'>Model</th>
-                        <th className='py-1'>MAE</th>
-                        <th className='py-1'>RMSE</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(suggestResult.metrics || {}).map(([m, vals]) => (
-                        <tr key={m} className='border-b last:border-b-0'>
-                          <td className='py-1'>
-                            {m}
-                            {m === suggestResult.bestModel && <span className='ml-1 text-green-600 font-semibold'>(Best)</span>}
-                          </td>
-                          <td className='py-1'>{vals.MAE != null ? vals.MAE.toFixed(2) : '—'}</td>
-                          <td className='py-1'>{vals.RMSE != null ? vals.RMSE.toFixed(2) : '—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className='p-3 bg-blue-50 border border-blue-200 rounded text-sm'>
-                  <p>
-                    <span className='font-medium'>Base Prediction ({suggestResult.bestModel}):</span>{' '}
-                    {suggestResult.basePrediction != null ? `₱${suggestResult.basePrediction.toFixed(2)}` : 'N/A'}
-                  </p>
-                  <p>
-                    <span className='font-medium'>Markup (5%):</span>{' '}
-                    {suggestResult.markupAmount != null ? `₱${suggestResult.markupAmount.toFixed(2)}` : 'N/A'}
-                  </p>
-                  <p className='text-blue-800 font-semibold'>
-                    Final Suggested Price (with 5% markup): ₱{suggestResult.finalSuggestedPrice.toFixed(2)}
-                  </p>
+                  <h3 className='font-medium text-gray-900 mb-2 text-sm'>Recommended (5% Markup)</h3>
+                  <ul className='text-sm space-y-1'>
+                    {Object.entries(suggestResult.recommendedAll || {}).map(([m, v]) => (
+                      <li key={m}>
+                        <span className='font-medium'>{m}:</span> ₱{Number(v).toFixed(2)}
+                        {m === suggestResult.bestModel && <span className='ml-1 text-xs text-green-600'>(chosen)</span>}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
-            )}
+
+
+              <div className='p-3 border rounded'>
+                <h3 className='font-medium text-gray-900 mb-2 text-sm'>Model Accuracy</h3>
+                <table className='w-full text-sm'>
+                  <thead>
+                    <tr className='text-left border-b'>
+                      <th>Model</th>
+                      <th>MAE</th>
+                      <th>RMSE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(suggestResult.metrics || {}).map(([m, vals]) => (
+                      <tr key={m} className='border-b last:border-b-0'>
+                        <td className='py-1'>
+                          {m}
+                          {m === suggestResult.bestModel && <span className='ml-1 text-green-600 font-semibold'>(Best)</span>}
+                        </td>
+                        <td>{vals.MAE?.toFixed(2) || '—'}</td>
+                        <td>{vals.RMSE?.toFixed(2) || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+
+              <div className='p-3 bg-blue-50 border border-blue-200 rounded text-sm'>
+                <p><span className='font-medium'>Base Prediction:</span> ₱{suggestResult.basePrediction?.toFixed(2)}</p>
+                <p><span className='font-medium'>Markup (5%):</span> ₱{suggestResult.markupAmount?.toFixed(2)}</p>
+                <p className='text-blue-800 font-semibold'>
+                  Final Suggested Price: ₱{suggestResult.finalSuggestedPrice.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Page Header */}
+
+      {/* PAGE HEADER */}
       <div className='mb-6'>
         <h1 className='text-2xl font-semibold text-gray-900 mb-1'>Price Suggestion Data</h1>
-        <p className='text-sm text-gray-500'>
-          Manage historical price data for AI predictions ({total} total entries)
-        </p>
+        <p className='text-sm text-gray-500'>{total} total entries</p>
       </div>
 
-      {/* Search and Actions Bar */}
-      <div className='bg-white p-4 mb-6 flex items-center justify-between gap-4'>
-        <div className='relative flex-1 max-w-xs'>
+
+      {/* SEARCH + ACTION BAR */}
+      <div className='bg-white p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
+        <div className='relative flex-1 max-w-xs w-full'>
           <IoSearch className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400' size={20} />
           <input
             type='text'
             placeholder='Search commodity, item, month, year...'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+            className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
           />
         </div>
 
-        <div className='flex items-center gap-3'>
+
+        <div className='flex flex-wrap gap-3 w-full sm:w-auto'>
           <button
             onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')}
-            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2'
+            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50'
           >
-            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4'
-              />
-            </svg>
             {sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}
           </button>
+
 
           <button
             onClick={handleSyncProducts}
             disabled={syncing}
-            className='px-4 py-2 text-sm font-medium text-purple-700 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
-            title='Sync all products to Price AI dataset'
+            className='px-4 py-2 text-sm font-medium text-purple-700 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 disabled:opacity-50'
           >
-            <svg className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
-            </svg>
             {syncing ? 'Syncing...' : 'Sync Products'}
           </button>
 
+
           <button
             onClick={() => setOpenUploadCSV(true)}
-            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2'
+            className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50'
           >
-            <MdUploadFile size={18} />
             Upload CSV
           </button>
 
+
           <button
             onClick={() => setOpenAddModal(true)}
-            className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2'
+            className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700'
           >
-            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
-            </svg>
             Add Entry
           </button>
         </div>
       </div>
 
-      {/* Table Container */}
+
+      {/* TABLE */}
       <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-        <div className='overflow-x-auto'>
+        <div className='overflow-x-auto sm:overflow-visible'>
           {loading ? (
             <div className='p-8 text-center text-gray-500'>Loading...</div>
           ) : filteredData.length === 0 ? (
@@ -969,56 +1018,55 @@ const PriceSuggestionPage = () => {
         </div>
       </div>
 
-      {/* Pagination */}
+
+      {/* PAGINATION */}
       {totalPages > 1 && (
-        <div className='mt-4 flex items-center justify-between'>
+        <div className='mt-4 mb-24 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3'>
+
+
           <div className='text-sm text-gray-600'>
-            Showing {(currentPage - 1) * rowsPerPage + 1} to{' '}
-            {Math.min(currentPage * rowsPerPage, total)} of {total} entries
+            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, total)} of {total}
           </div>
-          <div className='flex items-center gap-2'>
+
+
+          <div className='flex items-center gap-2 overflow-x-auto sm:overflow-visible w-full sm:w-auto py-1'>
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
-              className='px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+              className='px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg disabled:opacity-50'
             >
               Previous
             </button>
 
-            {[...Array(totalPages)].map((_, idx) => {
-              const pageNum = idx + 1
-              if (
-                pageNum === 1 ||
-                pageNum === totalPages ||
-                (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-              ) {
+
+            {[...Array(totalPages)].map((_, i) => {
+              const page = i + 1
+              if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
                 return (
                   <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
-                      currentPage === pageNum
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 text-sm rounded-lg ${
+                      currentPage === page
                         ? 'bg-blue-600 text-white'
-                        : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                        : 'bg-white border border-gray-300'
                     }`}
                   >
-                    {pageNum}
+                    {page}
                   </button>
                 )
-              } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                return (
-                  <span key={pageNum} className='px-2 text-gray-500'>
-                    ...
-                  </span>
-                )
+              }
+              if (page === currentPage - 2 || page === currentPage + 2) {
+                return <span key={page} className='px-2 text-gray-500'>...</span>
               }
               return null
             })}
 
+
             <button
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className='px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+              className='px-3 py-1 text-sm bg-white border border-gray-300 rounded-lg disabled:opacity-50'
             >
               Next
             </button>
@@ -1026,21 +1074,12 @@ const PriceSuggestionPage = () => {
         </div>
       )}
 
-      {/* Results Info */}
-      {searchTerm && (
-        <div className='mt-4 text-sm text-gray-600'>
-          Showing {filteredData.length} results for "{searchTerm}"
-        </div>
+
+      {/* MODALS */}
+      {openDeleteConfirmBox && (
+        <ConfirmBox cancel={() => setOpenDeleteConfirmBox(false)} close={() => setOpenDeleteConfirmBox(false)} confirm={handleDeleteEntry} />
       )}
 
-      {/* Modals */}
-      {openDeleteConfirmBox && (
-        <ConfirmBox
-          cancel={() => setOpenDeleteConfirmBox(false)}
-          close={() => setOpenDeleteConfirmBox(false)}
-          confirm={handleDeleteEntry}
-        />
-      )}
 
       {openAddModal && <AddEditModal isEdit={false} />}
       {openEditModal && <AddEditModal isEdit={true} />}
@@ -1049,4 +1088,6 @@ const PriceSuggestionPage = () => {
   )
 }
 
+
 export default PriceSuggestionPage
+

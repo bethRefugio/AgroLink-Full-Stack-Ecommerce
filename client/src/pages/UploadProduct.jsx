@@ -12,6 +12,7 @@ import Loading from '../components/Loading';
 import ViewImage from '../components/ViewImage';
 import AddFieldComponent from '../components/AddFieldComponent';
 
+
 const UploadProduct = () => {
   const [data, setData] = useState({
     name: "",
@@ -26,6 +27,7 @@ const UploadProduct = () => {
     more_details: {},
   });
 
+
   const [openSubDropdown, setOpenSubDropdown] = useState(false);
   const [openCatDropdown, setOpenCatDropdown] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
@@ -37,11 +39,14 @@ const UploadProduct = () => {
   const [fieldName, setFieldName] = useState("");
   const [hoveredSubCategory, setHoveredSubCategory] = useState(null);
 
+
   const allCategory = useSelector(state => state.product.allCategory);
   const allSubCategory = useSelector(state => state.product.allSubCategory);
   const user = useSelector(state => state.user);
 
+
   const [filteredSubCategories, setFilteredSubCategories] = useState([]);
+
 
   const [isSuggestingPrice, setIsSuggestingPrice] = useState(false);
   const [suggestedPrice, setSuggestedPrice] = useState(null);
@@ -50,9 +55,11 @@ const UploadProduct = () => {
   const [suggestionError, setSuggestionError] = useState("");
   const [showSuggestionErrorModal, setShowSuggestionErrorModal] = useState(false);
 
+
   const [descriptionLanguage, setDescriptionLanguage] = useState('en');
   const [translatedDescriptions, setTranslatedDescriptions] = useState({});
   const [translating, setTranslating] = useState(false);
+
 
   useEffect(() => {
     const fetchFilteredSubCategories = async () => {
@@ -61,11 +68,13 @@ const UploadProduct = () => {
         return;
       }
 
+
       try {
         const res = await Axios({
           ...SummaryApi.getSubCategory,
           data: { _id: selectCategory._id }
         });
+
 
         if (res.data.success) {
           setFilteredSubCategories(res.data.data || []);
@@ -76,11 +85,14 @@ const UploadProduct = () => {
       }
     };
 
+
     fetchFilteredSubCategories();
   }, [selectCategory]);
 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
 
     if (name === 'discount') {
       const discountValue = value.trim() === '' ? '0' : value;
@@ -96,15 +108,18 @@ const UploadProduct = () => {
     }
   };
 
+
   const handleUploadImage = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
 
     setImageLoading(true);
     try {
       const response = await uploadImage(file);
       const { data: ImageResponse } = response;
       const imageUrl = ImageResponse.data.url;
+
 
       setData(prev => ({
         ...prev,
@@ -117,6 +132,7 @@ const UploadProduct = () => {
     }
   };
 
+
   const handleDeleteImage = (index) => {
     const updatedImages = [...data.image];
     updatedImages.splice(index, 1);
@@ -126,6 +142,7 @@ const UploadProduct = () => {
     }));
   };
 
+
   const handleRemoveCategory = (index) => {
     const updatedCategories = [...data.category];
     updatedCategories.splice(index, 1);
@@ -134,11 +151,13 @@ const UploadProduct = () => {
       category: updatedCategories
     }));
 
+
     if (selectCategory && updatedCategories.length === 0) {
       setSelectCategory("");
       setFilteredSubCategories([]);
     }
   };
+
 
   const handleRemoveSubCategory = (index) => {
     const updatedSubCategories = [...data.subCategory];
@@ -149,8 +168,10 @@ const UploadProduct = () => {
     }));
   };
 
+
   const handleAddField = () => {
     if (!fieldName.trim()) return;
+
 
     setData(prev => ({
       ...prev,
@@ -163,8 +184,10 @@ const UploadProduct = () => {
     setOpenAddField(false);
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
 
     try {
       const response = await Axios({
@@ -175,7 +198,9 @@ const UploadProduct = () => {
         }
       });
 
+
       const { data: responseData } = response;
+
 
       if (responseData.success) {
         successAlert(responseData.message);
@@ -200,11 +225,13 @@ const UploadProduct = () => {
     }
   };
 
+
   const handleSuggestPrice = async () => {
     if (!data.name || data.name.trim() === "") {
       AxiosToastError({ message: "Please enter a product name first." });
       return;
     }
+
 
     setIsSuggestingPrice(true);
     setSuggestedPrice(null);
@@ -212,13 +239,16 @@ const UploadProduct = () => {
     setSuggestionError("");
     setShowSuggestionErrorModal(false);
 
+
     try {
       const res = await Axios({
         ...SummaryApi.suggestPrice,
         data: { item_name: data.name.trim() }
       });
 
+
       const { data: resData } = res;
+
 
       if (resData?.suggestedPrice != null) {
         setSuggestedPrice(Number(resData.suggestedPrice));
@@ -246,21 +276,25 @@ const UploadProduct = () => {
     }
   };
 
+
     const getTranslatedDescription = async (subcat) => {
     if (!subcat?.description || descriptionLanguage === 'en') {
       return subcat?.description || '';
     }
+
 
     const cacheKey = `${subcat._id}-${descriptionLanguage}`;
     if (translatedDescriptions[cacheKey]) {
       return translatedDescriptions[cacheKey];
     }
 
+
     try {
       console.log('Requesting translation:', {
         text: subcat.description,
         targetLanguage: descriptionLanguage
       });
+
 
       const res = await Axios({
         ...SummaryApi.translateText,
@@ -270,7 +304,9 @@ const UploadProduct = () => {
         }
       });
 
+
       console.log('Translation response:', res.data);
+
 
       if (res.data.success) {
         const translated = res.data.translatedText;
@@ -288,12 +324,14 @@ const UploadProduct = () => {
     }
   };
 
+
   return (
-    <section className='max-w-6xl mx-auto p-6'>
+    <section className='max-w-6xl mx-auto p-6 overflow-x-hidden'>
       {/* Header */}
       <div className='mb-6'>
         <h1 className='text-2xl font-semibold text-gray-900'>Add New Product</h1>
       </div>
+
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
         {/* Left Column - Description & Details */}
@@ -301,7 +339,7 @@ const UploadProduct = () => {
           {/* Description Section */}
           <div className='bg-white rounded-lg border border-gray-200 p-6'>
             <h2 className='font-semibold text-gray-900 mb-4'>Description</h2>
-            
+           
             <div className='space-y-4'>
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Product Name</label>
@@ -315,6 +353,7 @@ const UploadProduct = () => {
                   className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                 />
               </div>
+
 
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Business Description</label>
@@ -331,11 +370,12 @@ const UploadProduct = () => {
             </div>
           </div>
 
+
           {/* Category Section */}
           <div className='bg-white rounded-lg border border-gray-200 p-6'>
             <div className='flex items-center justify-between mb-4'>
               <h2 className='font-semibold text-gray-900'>Category</h2>
-              
+             
               {/* Language Selector */}
               <div className='flex items-center gap-2'>
                 <span className='text-xs text-gray-500'>Description:</span>
@@ -354,6 +394,7 @@ const UploadProduct = () => {
               </div>
             </div>
 
+
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
               {/* Left Side - Dropdowns */}
               <div className='space-y-4'>
@@ -370,6 +411,7 @@ const UploadProduct = () => {
                     >
                       {selectCategory ? selectCategory.name : "Select Category"}
                     </button>
+
 
                     {openCatDropdown && (
                       <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
@@ -397,6 +439,7 @@ const UploadProduct = () => {
                   </div>
                 </div>
 
+
                 <div>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>Product Sub Category</label>
                   <div className='relative'>
@@ -411,6 +454,7 @@ const UploadProduct = () => {
                     >
                       {selectSubCategory ? selectSubCategory.name : selectCategory ? "Select Subcategory" : "Select Category First"}
                     </button>
+
 
                     {openSubDropdown && selectCategory && (
                       <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
@@ -450,6 +494,7 @@ const UploadProduct = () => {
                     )}
                   </div>
 
+
                   <div className='flex flex-wrap gap-2 mt-3'>
                     {data.subCategory.map((c, index) => (
                       <span
@@ -468,6 +513,7 @@ const UploadProduct = () => {
                   </div>
                 </div>
               </div>
+
 
               {/* Right Side - Description Panel */}
               <div className='bg-gray-50 rounded-lg p-4 border border-gray-200'>
@@ -500,10 +546,11 @@ const UploadProduct = () => {
             </div>
           </div>
 
+
           {/* Inventory Section */}
           <div className='bg-white rounded-lg border border-gray-200 p-6'>
             <h2 className='font-semibold text-gray-900 mb-4'>Inventory</h2>
-            
+           
             <div className='grid grid-cols-2 gap-4'>
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Quantity</label>
@@ -518,6 +565,7 @@ const UploadProduct = () => {
                 />
               </div>
 
+
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Unit</label>
                 <div className='relative'>
@@ -528,6 +576,7 @@ const UploadProduct = () => {
                   >
                     {data.unit || "Select Unit"}
                   </button>
+
 
                   {openUnitDropdown && (
                     <div className='absolute left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto'>
@@ -553,10 +602,11 @@ const UploadProduct = () => {
             </div>
           </div>
 
+
           {/* Pricing Section */}
           <div className='bg-white rounded-lg border border-gray-200 p-6'>
             <h2 className='font-semibold text-gray-900 mb-4'>Pricing</h2>
-            
+           
             <div className='grid grid-cols-2 gap-4'>
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Price</label>
@@ -582,6 +632,7 @@ const UploadProduct = () => {
                 </button>
               </div>
 
+
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Discount (%)</label>
                 <input
@@ -596,6 +647,7 @@ const UploadProduct = () => {
               </div>
             </div>
           </div>
+
 
           {/* Additional Fields */}
           {Object.keys(data?.more_details).length > 0 && (
@@ -628,6 +680,7 @@ const UploadProduct = () => {
           )}
         </div>
 
+
         {/* Right Column - Images */}
         <div className='space-y-6'>
           <div className='bg-white rounded-lg border border-gray-200 p-6'>
@@ -639,6 +692,7 @@ const UploadProduct = () => {
                 </svg>
               </button>
             </div>
+
 
             <label htmlFor='productImage' className='block border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors'>
               <div className='flex flex-col items-center'>
@@ -662,6 +716,7 @@ const UploadProduct = () => {
                 onChange={handleUploadImage}
               />
             </label>
+
 
             {/* Image Gallery */}
             <div className='grid grid-cols-2 gap-3 mt-4'>
@@ -694,8 +749,9 @@ const UploadProduct = () => {
         </div>
       </div>
 
+
       {/* Action Buttons */}
-      <div className='mt-6 flex justify-end gap-3 sticky bottom-0 bg-gray-50 p-4 border-t border-gray-200 -mx-6'>
+      <div className='mt-6 flex justify-end gap-3 bg-gray-50 p-4 border-t border-gray-200 -mx-6 mb-24 sm:mb-0'>
         <button
           type="button"
           onClick={() => setOpenAddField(true)}
@@ -703,12 +759,16 @@ const UploadProduct = () => {
         >
           Add Custom Field
         </button>
+
+
         <button
           type="button"
           className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
         >
           Discard
         </button>
+
+
         <button
           onClick={handleSubmit}
           className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors'
@@ -717,10 +777,12 @@ const UploadProduct = () => {
         </button>
       </div>
 
+
       {/* Modals */}
       {ViewImageURL && (
         <ViewImage url={ViewImageURL} close={() => setViewImageURL("")} />
       )}
+
 
       {openAddField && (
         <AddFieldComponent
@@ -730,6 +792,7 @@ const UploadProduct = () => {
           close={() => setOpenAddField(false)}
         />
       )}
+
 
       {showSuggestionModal && suggestedPrice != null && (
         <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
@@ -773,6 +836,7 @@ const UploadProduct = () => {
         </div>
       )}
 
+
       {showSuggestionErrorModal && suggestionError && (
         <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
           <div className='bg-white rounded-xl shadow-2xl w-full max-w-md p-6'>
@@ -793,4 +857,6 @@ const UploadProduct = () => {
   );
 };
 
+
 export default UploadProduct;
+

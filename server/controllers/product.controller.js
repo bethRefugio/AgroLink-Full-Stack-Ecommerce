@@ -374,7 +374,7 @@ export const suggestPriceController = async (req, res) => {
       });
     }
 
-    const aiServiceUrl = process.env.AI_SERVICE_URL || "https://agrolink-full-stack-ecommerce-ai-price.onrender.com";
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:10000";
 
     const aiResponse = await axios.post(
       `${aiServiceUrl}/suggest-price`,

@@ -5,56 +5,108 @@ import { useSelector } from 'react-redux'
 import { IoArrowBack } from 'react-icons/io5'
 
 
-
-
 const Dashboard = () => {
   const user = useSelector(state => state.user)
   const navigate = useNavigate()
 
 
-
-
-  // Sidebar collapsed state
+  // Desktop collapse
   const [collapsed, setCollapsed] = useState(false)
 
 
+  // Mobile drawer
+  const [mobileOpen, setMobileOpen] = useState(false)
 
 
   return (
-    <section className='bg-white'>
-      <div className='container mx-auto p-3 grid lg:grid-cols-[auto,1fr]'>
-       
-        {/** Left sidebar */}
+    <section className="bg-white">
+      <div className="container mx-auto p-3 grid lg:grid-cols-[auto,1fr] h-screen overflow-hidden">
+
+
+        {/* ======================= */}
+        {/* DESKTOP SIDEBAR */}
+        {/* ======================= */}
         <div
-          className={`py-4 sticky top-24 max-h-[calc(100vh-96px)] overflow-y-auto border-r transition-all duration-300 ${
-            collapsed ? 'w-20' : 'w-80'
-          }`}
+          className={`
+            hidden md:block
+            py-4 sticky top-24 max-h-[calc(100vh-96px)] overflow-y-auto border-r
+            transition-all duration-300
+            ${collapsed ? 'w-20' : 'w-80'}
+          `}
         >
           <UserMenu collapsed={collapsed} setCollapsed={setCollapsed} />
         </div>
 
 
+        {/* ======================= */}
+        {/* MOBILE MENU BUTTON */}
+        {/* ======================= */}
+        <div className="md:hidden px-4 py-2">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="text-gray-700 text-lg font-medium"
+          >
+            ☰ Menu
+          </button>
+        </div>
 
 
-        {/** Right content */}
+        {/* ======================= */}
+        {/* MOBILE MENU OVERLAY */}
+        {/* ======================= */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 z-40 md:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+
+
+        {/* ======================= */}
+        {/* MOBILE SLIDE-IN MENU */}
+        {/* ======================= */}
         <div
-          className={`bg-white min-h-[75vh] transition-all duration-300 ${
-            collapsed ? 'lg:ml-30' : 'lg:ml-50'
-          }`}
+          className={`
+            fixed top-0 left-0 h-full w-64 bg-white z-50 shadow-lg
+            transform transition-transform duration-300 md:hidden
+            ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+          `}
         >
-          {/* Back Button */}
-          <div className='mb-4 px-4 py-2'>
+          <div className="p-3 flex justify-end">
             <button
-              onClick={() => navigate(-1)}
-              className='flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors group'
-              title='Go back'
+              onClick={() => setMobileOpen(false)}
+              className="text-gray-600 text-xl"
             >
-              <IoArrowBack size={20} className='group-hover:-translate-x-1 transition-transform' />
-              <span className='font-medium'>Back</span>
+              ✕
             </button>
           </div>
 
 
+          <div className="px-3 overflow-y-auto h-full pb-10">
+            <UserMenu /> {/* MOBILE MENU VERSION */}
+          </div>
+        </div>
+
+
+        {/* ======================= */}
+        {/* RIGHT CONTENT */}
+        {/* ======================= */}
+        <div
+          className={`bg-white h-screen overflow-y-auto transition-all duration-300
+            ${collapsed ? 'lg:ml-30' : 'lg:ml-50'}
+          `}
+        >
+          {/* Back Button */}
+          <div className="mb-4 px-4 py-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors group"
+              title="Go back"
+            >
+              <IoArrowBack size={20} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="font-medium">Back</span>
+            </button>
+          </div>
 
 
           <Outlet />
@@ -65,17 +117,5 @@ const Dashboard = () => {
 }
 
 
-
-
 export default Dashboard
-
-
-
-
-
-
-
-
-
-
 
