@@ -19,7 +19,6 @@ userRouter.put('/verify-forgot-password-otp',verifyForgotPasswordOtp)
 userRouter.put('/reset-password',resetpassword)
 userRouter.post('/refresh-token',refreshToken)
 userRouter.get('/user-details',auth,userDetails)
-userRouter.post('/verify-email', verifyEmailController)
 userRouter.put('/add-preference', auth, addPreferences)
 userRouter.get('/preferences', auth, getPreferences);
 userRouter.delete('/delete-preference', auth, deletePreference);

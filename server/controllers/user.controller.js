@@ -86,33 +86,61 @@ export async function registerUserController(request,response){
 
 export async function verifyEmailController(request,response){
     try {
-        const { code } = request.body
+        const { code } = request.body;
 
-        const user = await UserModel.findOne({ _id : code})
-
-        if(!user){
+        if (!code) {
             return response.status(400).json({
-                message : "Invalid code",
-                error : true,
-                success : false
-            })
+                message: "Verification code is required",
+                error: true,
+                success: false
+            });
         }
 
-        const updateUser = await UserModel.updateOne({ _id : code },{
-            verify_email : true
-        })
+        // Ensure the user exists
+        const user = await UserModel.findById(code).select('_id email verify_email');
+        if (!user) {
+            return response.status(404).json({
+                message: "Invalid verification code",
+                error: true,
+                success: false
+            });
+        }
+
+        if (user.verify_email) {
+            return response.json({
+                message: "Email already verified",
+                success: true,
+                error: false
+            });
+        }
+
+        // Update and return the new document
+        const updated = await UserModel.findByIdAndUpdate(
+            user._id,
+            { $set: { verify_email: true } },
+            { new: true }
+        ).select('_id email verify_email');
+
+        if (!updated || updated.verify_email !== true) {
+            return response.status(500).json({
+                message: "Failed to update verification status",
+                error: true,
+                success: false
+            });
+        }
 
         return response.json({
-            message : "Verify email done",
-            success : true,
-            error : false  // ✅ FIXED: was 'success: true' in the catch block
-        })
+            message: "Verify email done",
+            success: true,
+            error: false,
+            data: { _id: updated._id, email: updated.email, verify_email: updated.verify_email }
+        });
     } catch (error) {
         return response.status(500).json({
-            message : error.message || error,
-            error : true,
-            success : false  // ✅ FIXED: was 'success: true' (typo)
-        })
+            message: error.message || error,
+            error: true,
+            success: false
+        });
     }
 }
 
