@@ -22,7 +22,6 @@ const Profile = () => {
   const seller = isSeller(user.role)
 
 
-  // ...existing state declarations...
   const [openProfileAvatarEdit, setProfileAvatarEdit] = useState(false)
   const [openAddAddress, setOpenAddAddress] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -30,23 +29,22 @@ const Profile = () => {
   const [prefLoading, setPrefLoading] = useState(false)
 
 
-  // Preferences data
   const [userPreferences, setUserPreferences] = useState([])
   const [categories, setCategories] = useState([])
   const [subCategories, setSubCategories] = useState([])
   const [allSubCategories, setAllSubCategories] = useState([])
+
+
   const [preferences, setPreferences] = useState({
     categoryId: '',
     subCategoryId: ''
   })
 
 
-  // Addresses
   const [addresses, setAddresses] = useState([])
   const [addressLoading, setAddressLoading] = useState(false)
 
 
-  // Personal info
   const [userData, setUserData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -54,7 +52,6 @@ const Profile = () => {
   })
 
 
-  // Password change
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
@@ -78,10 +75,10 @@ const Profile = () => {
   }, [user])
 
 
-  // Fetch categories on mount - only if not seller
   useEffect(() => {
     if (seller) return
-   
+
+
     const fetchCategories = async () => {
       try {
         const res = await Axios({ ...SummaryApi.getCategory })
@@ -94,10 +91,10 @@ const Profile = () => {
   }, [seller])
 
 
-  // Fetch ALL subcategories for display mapping - only if not seller
   useEffect(() => {
     if (seller) return
-   
+
+
     const fetchAllSubCat = async () => {
       try {
         const res = await Axios({
@@ -113,10 +110,10 @@ const Profile = () => {
   }, [seller])
 
 
-  // Fetch subcategories when category changes - only if not seller
   useEffect(() => {
     if (seller) return
-   
+
+
     const fetchSubCat = async () => {
       if (!preferences.categoryId) {
         setSubCategories([])
@@ -137,7 +134,6 @@ const Profile = () => {
   }, [seller, preferences.categoryId])
 
 
-  // ...existing handlers...
   const handleOnChange = (e) => {
     const { name, value } = e.target
     setUserData(prev => ({ ...prev, [name]: value }))
@@ -195,7 +191,6 @@ const Profile = () => {
   }
 
 
-  // Preferences handlers
   const handlePrefChange = (e) => {
     const { name, value } = e.target
     setPreferences(prev => ({ ...prev, [name]: value }))
@@ -204,7 +199,8 @@ const Profile = () => {
 
   const fetchPreferences = async () => {
     if (seller) return
-   
+
+
     try {
       const response = await Axios({ ...SummaryApi.getPreferences })
       if (response.data.success) {
@@ -216,12 +212,13 @@ const Profile = () => {
   }
 
 
-  const handleAddPreference = async (e) => {
-    e.preventDefault()
+  const handleAddPreference = async () => {
     if (!preferences.categoryId || !preferences.subCategoryId) {
       toast.error("Select category and subcategory")
       return
     }
+
+
     const categoryObj = categories.find(c => c._id === preferences.categoryId)
     const subCatObj = subCategories.find(sc => sc._id === preferences.subCategoryId)
 
@@ -270,7 +267,6 @@ const Profile = () => {
   }
 
 
-  // Address CRUD
   const fetchAddresses = async () => {
     try {
       setAddressLoading(true)
@@ -308,12 +304,14 @@ const Profile = () => {
   }, [seller])
 
 
-  // Helpers for displaying preference groups
+
+
   const categoryMap = categories.reduce((acc, c) => {
     acc[c._id] = c.name
     return acc
   }, {})
- 
+
+
   const subCategoryMap = allSubCategories.reduce((acc, s) => {
     acc[s._id] = s.name
     return acc
@@ -329,7 +327,7 @@ const Profile = () => {
 
 
   return (
-    <div className='max-w-5xl mx-auto overflow-x-hidden'>
+    <div className='max-w-5xl mx-auto overflow-x-hidden py-8 px-4 lg:px-0'>
       <div className='mb-8'>
         <h1 className='text-2xl font-semibold text-gray-900 mb-1'>Account</h1>
       </div>
@@ -362,6 +360,8 @@ const Profile = () => {
       {/* Personal Information */}
       <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
         <h3 className='font-semibold text-gray-900 mb-6'>Personal Information</h3>
+
+
         <div className='grid grid-cols-2 gap-4 mb-4'>
           <div>
             <label className='block text-sm text-gray-600 mb-2'>Name</label>
@@ -373,6 +373,8 @@ const Profile = () => {
               onChange={handleOnChange}
             />
           </div>
+
+
           <div>
             <label className='block text-sm text-gray-600 mb-2'>Mobile</label>
             <input
@@ -384,6 +386,8 @@ const Profile = () => {
             />
           </div>
         </div>
+
+
         <div className='mb-4'>
           <label className='block text-sm text-gray-600 mb-2'>Email</label>
           <input
@@ -394,6 +398,8 @@ const Profile = () => {
             onChange={handleOnChange}
           />
         </div>
+
+
         <button
           onClick={handleSubmit}
           disabled={loading}
@@ -408,6 +414,8 @@ const Profile = () => {
       <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
         <h3 className='font-semibold text-gray-900 mb-1'>Password</h3>
         <p className='text-sm text-gray-500 mb-4'>Modify your current password.</p>
+
+
         <div className='grid grid-cols-2 gap-4 mb-4'>
           <div>
             <label className='block text-sm text-gray-600 mb-2'>Current password</label>
@@ -427,6 +435,8 @@ const Profile = () => {
               </button>
             </div>
           </div>
+
+
           <div>
             <label className='block text-sm text-gray-600 mb-2'>New password</label>
             <div className='relative'>
@@ -446,6 +456,8 @@ const Profile = () => {
             </div>
           </div>
         </div>
+
+
         <div className='mb-4'>
           <label className='block text-sm text-gray-600 mb-2'>Confirm new password</label>
           <div className='relative'>
@@ -464,6 +476,8 @@ const Profile = () => {
             </button>
           </div>
         </div>
+
+
         <button
           onClick={handlePasswordChange}
           disabled={passwordLoading}
@@ -485,10 +499,14 @@ const Profile = () => {
             Add Address
           </button>
         </h3>
+
+
         {addressLoading && <p className='text-sm text-gray-500'>Loading...</p>}
         {!addressLoading && addresses.length === 0 && (
           <p className='text-sm text-gray-500'>No address saved.</p>
         )}
+
+
         <div className='space-y-4'>
           {addresses.map(addr => (
             <div key={addr._id} className='border rounded-lg p-4 text-sm flex flex-col gap-2'>
@@ -515,10 +533,12 @@ const Profile = () => {
       </div>
 
 
-      {/* Preferences - Hide for sellers */}
+      {/* Preferences */}
       {!seller && (
-        <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
+        <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6 gap-3'>
           <h3 className='font-semibold text-gray-900 mb-4'>Preferences</h3>
+
+
           <div className='grid grid-cols-2 gap-4 mb-4'>
             <div>
               <label className='block text-sm text-gray-600 mb-2'>Category</label>
@@ -534,14 +554,16 @@ const Profile = () => {
                 ))}
               </select>
             </div>
+
+
             <div>
               <label className='block text-sm text-gray-600 mb-2'>SubCategory</label>
               <select
                 name="subCategoryId"
                 value={preferences.subCategoryId}
                 onChange={handlePrefChange}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 disabled={!preferences.categoryId}
+                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
               >
                 <option value="">Select SubCategory</option>
                 {subCategories.map(sc => (
@@ -550,6 +572,8 @@ const Profile = () => {
               </select>
             </div>
           </div>
+
+
           <button
             onClick={handleAddPreference}
             disabled={prefLoading}
@@ -562,12 +586,16 @@ const Profile = () => {
           {Object.keys(grouped).length > 0 && (
             <div className='mt-6'>
               <h4 className='font-medium text-gray-900 mb-3'>Saved Preferences</h4>
+
+
               {Object.entries(grouped).map(([categoryName, prefs]) => (
                 <div key={categoryName} className='mb-4'>
                   <h5 className='text-sm font-semibold text-gray-700 mb-2'>{categoryName}</h5>
+
+
                   <div className='flex flex-wrap gap-2'>
                     {prefs.map((pref, idx) => {
-                      const subName = subCategoryMap[pref.subCategoryId] || pref.subCategory || pref.subCategoryId
+                      const subName = subCategoryMap[pref.subCategoryId] || pref.subCategory
                       return (
                         <span
                           key={pref._id || idx}
@@ -592,6 +620,10 @@ const Profile = () => {
           )}
         </div>
       )}
+
+
+      {/* EXTRA SPACE BELOW — mobile only */}
+      <div className="block md:hidden h-8"></div>
 
 
       {openProfileAvatarEdit && (

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { IoCheckmarkCircle, IoCloseCircle, IoWarning } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import Axios from '../utils/Axios';
+import SummaryApi from '../common/SummaryApi';
 
 function VerifyEmail() {
   const [status, setStatus] = useState("loading");
@@ -15,15 +16,18 @@ function VerifyEmail() {
       return;
     }
 
-    axios.post("/api/user/verify-email", { code })
+    Axios({
+      ...SummaryApi.verify_email,
+      data: { code }
+    })
       .then(() => setStatus("success"))
       .catch(() => setStatus("error"));
   }, []);
 
   return (
-    <section className='min-h-screen flex items-center justify-center bg-gray-50 p-4'>
+    <section className='min-h-screen flex items-center justify-center bg-gray-50 p-4 overflow-x-hidden'>
       <div className='max-w-md w-full'>
-        {/* Loading State */}
+        {/* ...existing loading, invalid, error, success states... */}
         {status === "loading" && (
           <div className='bg-white rounded-lg border border-gray-200 p-8 shadow-sm'>
             <div className='text-center'>
@@ -34,7 +38,6 @@ function VerifyEmail() {
           </div>
         )}
 
-        {/* Invalid Link */}
         {status === "invalid" && (
           <div className='bg-white rounded-lg border border-gray-200 p-8 shadow-sm'>
             <div className='text-center'>
@@ -55,7 +58,6 @@ function VerifyEmail() {
           </div>
         )}
 
-        {/* Error State */}
         {status === "error" && (
           <div className='bg-white rounded-lg border border-gray-200 p-8 shadow-sm'>
             <div className='text-center'>
@@ -84,7 +86,6 @@ function VerifyEmail() {
           </div>
         )}
 
-        {/* Success State */}
         {status === "success" && (
           <div className='bg-white rounded-lg border border-gray-200 p-8 shadow-sm'>
             <div className='text-center'>

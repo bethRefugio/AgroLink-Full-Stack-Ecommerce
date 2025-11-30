@@ -121,13 +121,9 @@ export async function verifyEmailController(request,response){
 }
 
 
-//login controller
 export async function loginController(request,response){
     try {
         const { email , password } = request.body
-
-
-
 
         if(!email || !password){
             return response.status(400).json({
@@ -137,9 +133,7 @@ export async function loginController(request,response){
             })
         }
 
-
         const user = await UserModel.findOne({ email })
-
 
         if(!user){
             return response.status(400).json({
@@ -149,6 +143,15 @@ export async function loginController(request,response){
             })
         }
 
+        // ✅ CHECK EMAIL VERIFICATION
+        if(!user.verify_email){
+            return response.status(403).json({
+                message : "Please verify your email before logging in. Check your inbox for the verification link.",
+                error : true,
+                success : false,
+                needsVerification: true
+            })
+        }
 
         if(user.status !== "Active"){
             return response.status(400).json({
@@ -158,9 +161,7 @@ export async function loginController(request,response){
             })
         }
 
-
         const checkPassword = await bcryptjs.compare(password,user.password)
-
 
         if(!checkPassword){
             return response.status(400).json({
@@ -170,15 +171,12 @@ export async function loginController(request,response){
             })
         }
 
-
         const accesstoken = await generatedAccessToken(user._id)
         const refreshToken = await genertedRefreshToken(user._id)
-
 
         const updateUser = await UserModel.findByIdAndUpdate(user?._id,{
             last_login_date : new Date()
         })
-
 
         const cookiesOption = {
             httpOnly : true,
@@ -187,7 +185,6 @@ export async function loginController(request,response){
         }
         response.cookie('accessToken',accesstoken,cookiesOption)
         response.cookie('refreshToken',refreshToken,cookiesOption)
-
 
         return response.json({
             message : "Login successfully",
@@ -199,7 +196,6 @@ export async function loginController(request,response){
             }
         })
 
-
     } catch (error) {
         return response.status(500).json({
             message : error.message || error,
@@ -207,7 +203,8 @@ export async function loginController(request,response){
             success : false
         })
     }
-}
+  }
+
 
 
 //logout controller
@@ -812,4 +809,60 @@ export async function deleteUserController(request, response) {
   } catch (error) {
     return response.status(500).json({ message: error.message || error, success: false, error: true });
   }
+}
+
+export async function resendVerificationEmail(request, response) {
+    try {
+        const { email } = request.body;
+
+        if (!email) {
+            return response.status(400).json({
+                message: "Email is required",
+                error: true,
+                success: false
+            });
+        }
+
+        const user = await UserModel.findOne({ email });
+
+        if (!user) {
+            return response.status(404).json({
+                message: "User not found",
+                error: true,
+                success: false
+            });
+        }
+
+        if (user.verify_email) {
+            return response.status(400).json({
+                message: "Email already verified",
+                error: true,
+                success: false
+            });
+        }
+
+        const VerifyEmailUrl = `${process.env.FRONTEND_URL}/verify-email?code=${user._id}`;
+
+        await sendEmail({
+            sendTo: email,
+            subject: "Verify email from AgroLink",
+            html: verifyEmailTemplate({
+                name: user.name,
+                url: VerifyEmailUrl
+            })
+        });
+
+        return response.json({
+            message: "Verification email sent successfully",
+            error: false,
+            success: true
+        });
+
+    } catch (error) {
+        return response.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        });
+    }
 }

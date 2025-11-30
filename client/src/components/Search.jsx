@@ -6,6 +6,8 @@ import { FaArrowLeft } from "react-icons/fa";
 import useMobile from '../hooks/useMobile';
 
 
+
+
 const Search = () => {
     const navigate = useNavigate()
     const location = useLocation()
@@ -14,15 +16,19 @@ const Search = () => {
     const params = useLocation()
     const searchText = params.search.slice(3)
 
+
     useEffect(()=>{
         const isSearch = location.pathname === "/search"
         setIsSearchPage(isSearch)
     },[location])
 
 
+
+
     const redirectToSearchPage = ()=>{
         navigate("/search")
     }
+
 
     const handleOnChange = (e)=>{
         const value = e.target.value
@@ -30,8 +36,9 @@ const Search = () => {
         navigate(url)
     }
 
+
   return (
-    <div className='w-full  min-w-[300px] lg:min-w-[420px] h-11 lg:h-12 rounded-lg border overflow-hidden flex items-center text-neutral-500 bg-slate-50 group focus-within:border-primary-200 '>
+    <div className='w-full h-10 md:h-12 rounded-lg border overflow-hidden flex items-center text-neutral-500 bg-slate-50 group focus-within:border-primary-200px-2 md:px-3'>
         <div>
             {
                 (isMobile && isSearchPage ) ? (
@@ -61,7 +68,7 @@ const Search = () => {
                                     1000,
                                     'Search "eggplant"',
                                     1000,
-                                    'Search "mango"',
+                                    'Search "chocolate"',
                                     1000,
                                     'Search "ampalaya"',
                                     1000,
@@ -78,7 +85,7 @@ const Search = () => {
                      </div>
                 ) : (
                     //when i was search page
-                    <div className='w-full h-full'>
+                    <div className='w-full h-full flex items-center'>
                         <input
                             type='text'
                             placeholder='Search for vegetables, fruits, etc.'
@@ -91,9 +98,12 @@ const Search = () => {
                 )
             }
         </div>
-        
     </div>
   )
 }
 
+
 export default Search
+
+
+

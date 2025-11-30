@@ -302,6 +302,10 @@ const SummaryApi = {
     translateText: {
         url: '/api/translate',
         method: 'post'
+    },
+    resendVerification: {
+        url : '/api/user/resend-verification',
+        method : 'post'
     }
 }
 
