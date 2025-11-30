@@ -96,7 +96,6 @@ export async function verifyEmailController(request,response){
             });
         }
 
-        // Ensure the user exists
         const user = await UserModel.findById(code).select('_id email verify_email');
         if (!user) {
             return response.status(404).json({
@@ -114,14 +113,13 @@ export async function verifyEmailController(request,response){
             });
         }
 
-        // Update and return the new document
         const updated = await UserModel.findByIdAndUpdate(
             user._id,
             { $set: { verify_email: true } },
             { new: true }
         ).select('_id email verify_email');
 
-        if (!updated || updated.verify_email !== true) {
+        if (!updated?.verify_email) {
             return response.status(500).json({
                 message: "Failed to update verification status",
                 error: true,
@@ -144,37 +142,35 @@ export async function verifyEmailController(request,response){
     }
 }
 
-
 export async function loginController(request,response){
     try {
-        const { email , password } = request.body
+        const { email , password } = request.body;
 
         if(!email || !password){
             return response.status(400).json({
                 message : "provide email, password",
                 error : true,
                 success : false
-            })
+            });
         }
 
-        const user = await UserModel.findOne({ email })
+        const user = await UserModel.findOne({ email }).select('+password verify_email status role');
 
         if(!user){
             return response.status(400).json({
                 message : "User not register",
                 error : true,
                 success : false
-            })
+            });
         }
 
-        // ✅ CHECK EMAIL VERIFICATION
         if(!user.verify_email){
             return response.status(403).json({
                 message : "Please verify your email before logging in. Check your inbox for the verification link.",
                 error : true,
                 success : false,
                 needsVerification: true
-            })
+            });
         }
 
         if(user.status !== "Active"){

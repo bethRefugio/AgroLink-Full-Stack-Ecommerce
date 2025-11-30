@@ -10,17 +10,16 @@ function VerifyEmail() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
-
-    if (!code) {
-      setStatus("invalid");
-      return;
-    }
+    if (!code) return setStatus("invalid");
 
     Axios({
-      ...SummaryApi.verify_email,
+      ...SummaryApi.verify_email, // ensure this is { url:'/api/user/verify-email', method:'post' }
       data: { code }
     })
-      .then(() => setStatus("success"))
+      .then(res => {
+        if (res.data?.success) setStatus("success");
+        else setStatus("error");
+      })
       .catch(() => setStatus("error"));
   }, []);
 
