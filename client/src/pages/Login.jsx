@@ -61,12 +61,15 @@ const Login = () => {
                 ...SummaryApi.login,
                 data: data
             });
-           
+        
+            // Check for verification requirement FIRST, before showing error toast
+            if(response.data.error && response.data.needsVerification) {
+                setShowResendVerification(true);
+                toast.error(response.data.message);
+                return;
+            }
+
             if(response.data.error) {
-                // Check if email verification is needed
-                if(response.data.needsVerification) {
-                    setShowResendVerification(true);
-                }
                 toast.error(response.data.message);
                 return;
             }
@@ -86,6 +89,10 @@ const Login = () => {
                 navigate("/home");
             }
         } catch (error) {
+            // Also check error response for needsVerification
+            if(error?.response?.data?.needsVerification) {
+                setShowResendVerification(true);
+            }
             AxiosToastError(error);
         }
     };
