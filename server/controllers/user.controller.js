@@ -154,7 +154,10 @@ export async function loginController(request,response){
             });
         }
 
-        const user = await UserModel.findOne({ email }).select('+password verify_email status role');
+        // Ensure password hash is selected
+        const user = await UserModel
+            .findOne({ email })
+            .select('+password verify_email status role refresh_token');
 
         if(!user){
             return response.status(400).json({
@@ -164,6 +167,7 @@ export async function loginController(request,response){
             });
         }
 
+        // Block if not verified
         if(!user.verify_email){
             return response.status(403).json({
                 message : "Please verify your email before logging in. Check your inbox for the verification link.",
@@ -173,38 +177,49 @@ export async function loginController(request,response){
             });
         }
 
+        // Block if not active
         if(user.status !== "Active"){
             return response.status(400).json({
                 message : "Contact to Admin",
                 error : true,
                 success : false
-            })
+            });
         }
 
-        const checkPassword = await bcryptjs.compare(password,user.password)
+        // Guard: missing hash (shouldn't happen, but handle gracefully)
+        if (!user.password) {
+            return response.status(500).json({
+                message: "Account has no password hash. Please reset your password.",
+                error: true,
+                success: false
+            });
+        }
+
+        const checkPassword = await bcryptjs.compare(password, user.password);
 
         if(!checkPassword){
             return response.status(400).json({
                 message : "Check your password",
                 error : true,
                 success : false
-            })
+            });
         }
 
-        const accesstoken = await generatedAccessToken(user._id)
-        const refreshToken = await genertedRefreshToken(user._id)
+        const accesstoken = await generatedAccessToken(user._id);
+        const refreshToken = await genertedRefreshToken(user._id);
 
-        const updateUser = await UserModel.findByIdAndUpdate(user?._id,{
-            last_login_date : new Date()
-        })
+        await UserModel.findByIdAndUpdate(user?._id, {
+            last_login_date : new Date(),
+            refresh_token: refreshToken
+        });
 
         const cookiesOption = {
             httpOnly : true,
             secure : true,
             sameSite : "None"
-        }
-        response.cookie('accessToken',accesstoken,cookiesOption)
-        response.cookie('refreshToken',refreshToken,cookiesOption)
+        };
+        response.cookie('accessToken',accesstoken,cookiesOption);
+        response.cookie('refreshToken',refreshToken,cookiesOption);
 
         return response.json({
             message : "Login successfully",
@@ -214,16 +229,16 @@ export async function loginController(request,response){
                 accesstoken,
                 refreshToken
             }
-        })
+        });
 
     } catch (error) {
         return response.status(500).json({
             message : error.message || error,
             error : true,
             success : false
-        })
+        });
     }
-  }
+}
 
 
 
