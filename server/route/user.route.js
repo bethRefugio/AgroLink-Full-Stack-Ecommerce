@@ -25,7 +25,7 @@ userRouter.get('/preferences', auth, getPreferences);
 userRouter.delete('/delete-preference', auth, deletePreference);
 userRouter.put('/admin-update-user', auth, adminUpdateUserController);
 userRouter.delete('/delete-user', auth, deleteUserController);
-userRouter.post('/resend-verification-email', resendVerificationEmail);
+userRouter.post('/resend-verification', resendVerificationEmail);
 
 userRouter.get('/users-table', auth, async (req, res) => {
   try {
