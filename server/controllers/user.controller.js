@@ -88,9 +88,7 @@ export async function verifyEmailController(request,response){
     try {
         const { code } = request.body
 
-
         const user = await UserModel.findOne({ _id : code})
-
 
         if(!user){
             return response.status(400).json({
@@ -100,22 +98,20 @@ export async function verifyEmailController(request,response){
             })
         }
 
-
         const updateUser = await UserModel.updateOne({ _id : code },{
             verify_email : true
         })
 
-
         return response.json({
             message : "Verify email done",
             success : true,
-            error : false
+            error : false  // ✅ FIXED: was 'success: true' in the catch block
         })
     } catch (error) {
         return response.status(500).json({
             message : error.message || error,
             error : true,
-            success : true
+            success : false  // ✅ FIXED: was 'success: true' (typo)
         })
     }
 }
