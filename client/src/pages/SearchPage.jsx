@@ -6,17 +6,12 @@ import AxiosToastError from '../utils/AxiosToastError'
 import CardProduct from '../components/CardProduct'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { useLocation, useNavigate } from 'react-router-dom'
-
-
 import noDataImage from '../assets/nothing here yet.webp'
 import banner from '../assets/agrolink-banner4.svg'
 import agrolinkLogo from '../assets/agrolink-logo2.svg'
-
-
 import useMobile from '../hooks/useMobile'
 import { IoSearch } from "react-icons/io5"
 import { FaArrowLeft } from "react-icons/fa"
-
 
 const SearchPage = () => {
   const [data, setData] = useState([])
@@ -24,32 +19,29 @@ const SearchPage = () => {
   const [page, setPage] = useState(1)
   const [totalPage, setTotalPage] = useState(1)
 
-
   const loadingArrayCard = new Array(10).fill(null)
-
 
   const params = useLocation()
   const navigate = useNavigate()
   const [isMobile] = useMobile()
 
-
-  const searchText = params?.search?.slice(3) || ''
-
+  const searchParams = new URLSearchParams(params.search)
+  const searchText = searchParams.get('q') || ''
 
   // Fetch search results
   const fetchData = async () => {
     try {
       setLoading(true)
 
-
       const response = await Axios({
         ...SummaryApi.searchProduct,
-        data: { search: searchText, page }
+        data: { 
+          search: searchText, 
+          page
+        }
       })
 
-
       const { data: responseData } = response
-
 
       if (responseData.success) {
         if (responseData.page === 1) {
@@ -66,17 +58,14 @@ const SearchPage = () => {
     }
   }
 
-
   useEffect(() => {
     setPage(1)
     setData([])
   }, [searchText])
 
-
   useEffect(() => {
     fetchData()
   }, [page, searchText])
-
 
   const handleFetchMore = () => {
     if (page < totalPage && !loading) {
@@ -84,15 +73,12 @@ const SearchPage = () => {
     }
   }
 
-
   return (
     <section className="w-full bg-white overflow-x-hidden">
-
 
       {/* ---- MOBILE HEADER ---- */}
       <div className="lg:hidden">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-
 
           {/* Back button + Logo */}
           <div className="flex items-center gap-3">
@@ -105,8 +91,6 @@ const SearchPage = () => {
               </button>
             )}
 
-
-            {/* Logo now performs the SAME action as the back button */}
             <img
               src={agrolinkLogo}
               alt="AgroLink"
@@ -114,12 +98,7 @@ const SearchPage = () => {
               onClick={() => navigate(-1)}
             />
           </div>
-
-
-          {/* Right side is empty */}
-          <div></div>
         </div>
-
 
         {/* Mobile Search Bar */}
         <div className="container mx-auto px-4 pb-4">
@@ -137,7 +116,6 @@ const SearchPage = () => {
         </div>
       </div>
 
-
       {/* ---- BANNER ---- */}
       <div className="w-full relative" style={{ aspectRatio: '4 / 1' }}>
         <img
@@ -147,11 +125,11 @@ const SearchPage = () => {
         />
       </div>
 
-
       {/* ---- RESULTS ---- */}
       <div className="container mx-auto p-4">
-        <p className="font-semibold">Search Results: {data.length}</p>
-
+        <div className="flex items-center justify-between mb-4">
+          <p className="font-semibold">Search Results: {data.length}</p>
+        </div>
 
         <InfiniteScroll
           dataLength={data.length}
@@ -167,14 +145,12 @@ const SearchPage = () => {
               />
             ))}
 
-
             {loading &&
               loadingArrayCard.map((_, index) => (
                 <CardLoading key={"loadingsearchpage" + index} />
               ))}
           </div>
         </InfiniteScroll>
-
 
         {/* No data */}
         {!data[0] && !loading && (
@@ -184,7 +160,12 @@ const SearchPage = () => {
               alt="No data"
               className="w-full h-full max-w-xs max-h-xs block"
             />
-            <p className="font-semibold my-2">No Data found</p>
+            <p className="font-semibold my-2">
+              No results found for "{searchText}"
+            </p>
+            <p className="text-sm text-gray-500">
+              Try searching with different keywords
+            </p>
           </div>
         )}
       </div>
@@ -192,8 +173,4 @@ const SearchPage = () => {
   )
 }
 
-
 export default SearchPage
-
-
-

@@ -5,30 +5,23 @@ import { TypeAnimation } from 'react-type-animation';
 import { FaArrowLeft } from "react-icons/fa";
 import useMobile from '../hooks/useMobile';
 
-
-
-
 const Search = () => {
     const navigate = useNavigate()
     const location = useLocation()
     const [isSearchPage,setIsSearchPage] = useState(false)
     const [ isMobile ] = useMobile()
     const params = useLocation()
-    const searchText = params.search.slice(3)
-
+    const searchParams = new URLSearchParams(params.search)
+    const searchText = searchParams.get('q') || ''
 
     useEffect(()=>{
         const isSearch = location.pathname === "/search"
         setIsSearchPage(isSearch)
     },[location])
 
-
-
-
     const redirectToSearchPage = ()=>{
         navigate("/search")
     }
-
 
     const handleOnChange = (e)=>{
         const value = e.target.value
@@ -36,9 +29,8 @@ const Search = () => {
         navigate(url)
     }
 
-
   return (
-    <div className='w-full h-10 md:h-12 rounded-lg border overflow-hidden flex items-center text-neutral-500 bg-slate-50 group focus-within:border-primary-200px-2 md:px-3'>
+    <div className='w-full h-10 md:h-12 rounded-lg border overflow-hidden flex items-center text-neutral-500 bg-slate-50 group focus-within:border-primary-200'>
         <div>
             {
                 (isMobile && isSearchPage ) ? (
@@ -59,16 +51,15 @@ const Search = () => {
                      <div onClick={redirectToSearchPage} className='w-full h-full flex items-center'>
                         <TypeAnimation
                                 sequence={[
-                                    // Same substring at the start will only be typed out once, initially
                                     'Search "banana"',
-                                    1000, // wait 1s before replacing "Mice" with "Hamsters"
+                                    1000,
                                     'Search "apple"',
                                     1000,
                                     'Search "cabbage"',
                                     1000,
                                     'Search "eggplant"',
                                     1000,
-                                    'Search "chocolate"',
+                                    'Search "mango"',
                                     1000,
                                     'Search "ampalaya"',
                                     1000,
@@ -84,7 +75,7 @@ const Search = () => {
                             />
                      </div>
                 ) : (
-                    //when i was search page
+                    //when on search page
                     <div className='w-full h-full flex items-center'>
                         <input
                             type='text'
@@ -102,8 +93,4 @@ const Search = () => {
   )
 }
 
-
 export default Search
-
-
-
