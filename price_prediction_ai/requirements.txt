@@ -10,3 +10,4 @@ xgboost==2.0.3
 tensorflow==2.16.1
 pymongo==4.6.1
 gunicorn==21.2.0
+python-dotenv==1.0.0

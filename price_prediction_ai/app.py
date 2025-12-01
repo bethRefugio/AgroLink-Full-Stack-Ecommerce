@@ -1,6 +1,5 @@
 import os
 import sys
-import json
 import traceback
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -62,7 +61,7 @@ def suggest_price():
         if df.empty:
             return jsonify({
                 "success": False,
-                "message": f"No historical data found"
+                "message": f"No historical data found in database"
             }), 404
 
         # Run prediction
