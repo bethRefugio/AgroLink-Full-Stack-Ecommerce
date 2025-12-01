@@ -7,20 +7,26 @@ import { useSelector } from 'react-redux'
 import AddToCartButton from './AddToCartButton'
 
 
+
+
 const CardProduct = ({ data }) => {
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`
   const user = useSelector((state) => state?.user)
+
+
 
 
   const originalPrice = data.price
   const discountedPrice = pricewithDiscount(data.price, data.discount)
 
 
+
+
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       <Link
         to={url}
-        className="block bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col"
+        className="block bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col h-full"
       >
         {/* Image Container */}
         <div className="relative bg-gray-50 w-full h-28 sm:h-32 md:h-40 overflow-hidden flex items-center justify-center">
@@ -31,6 +37,8 @@ const CardProduct = ({ data }) => {
           />
 
 
+
+
           {/* Discount Badge */}
           {Boolean(data.discount) && (
             <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-0.5 rounded-md text-[10px] font-bold shadow-md">
@@ -38,6 +46,8 @@ const CardProduct = ({ data }) => {
             </div>
           )}
         </div>
+
+
 
 
         {/* Content */}
@@ -54,22 +64,30 @@ const CardProduct = ({ data }) => {
           </div>
 
 
+
+
           {/* Product Name */}
           <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2rem]">
             {data.name}
           </h3>
 
 
+
+
           {/* Unit */}
           <p className="text-gray-600 text-[11px]">{data.unit}</p>
 
 
+
+
           {/* Price + Button */}
-          <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center justify-between pt-1 mt-auto">
             <div>
               <div className="text-sm sm:text-base font-bold text-gray-900">
                 {DisplayPriceInRupees(discountedPrice)}
               </div>
+
+
 
 
               {Boolean(data.discount) && (
@@ -78,6 +96,8 @@ const CardProduct = ({ data }) => {
                 </div>
               )}
             </div>
+
+
 
 
             <div>
@@ -98,4 +118,8 @@ const CardProduct = ({ data }) => {
 
 
 export default CardProduct
+
+
+
+
 
