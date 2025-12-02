@@ -176,7 +176,7 @@ export default function ContactUs() {
               <a href="/about" className="hover:text-green-300 transition-all hover:scale-105">ABOUT US</a>
               <a href="/services" className="hover:text-green-300 transition-all hover:scale-105">SERVICES</a>
               <a href="/contact" className="hover:text-green-300 transition-all hover:scale-105">CONTACT US</a>
-              <a href="/blog" className="hover:text-green-300 transition-all hover:scale-105">BLOG</a>
+              {/*<a href="/blog" className="hover:text-green-300 transition-all hover:scale-105">BLOG</a>*/}
             </div>
 
 
@@ -201,7 +201,7 @@ export default function ContactUs() {
                 <a href="/about" className="text-white hover:text-green-300">ABOUT US</a>
                 <a href="/services" className="text-white hover:text-green-300">SERVICES</a>
                 <a href="/contact" className="text-white hover:text-green-300">CONTACT US</a>
-                <a href="/blog" className="text-white hover:text-green-300">BLOG</a>
+                {/*<a href="/blog" className="text-white hover:text-green-300">BLOG</a>*/}
               </div>
             </div>
           )}
