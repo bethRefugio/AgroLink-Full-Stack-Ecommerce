@@ -36,8 +36,8 @@ const Dashboard = () => {
         {/* MAIN CONTENT */}
         {/* ======================= */}
         <div className="bg-white min-h-screen">
-          {/* Mobile Menu Button + Back Button */}
-          <div className="sticky top-0 bg-white z-10 border-b mb-4 px-4 py-3 flex items-center justify-between">
+          {/* Top Bar: Menu Button (mobile) + Back Button */}
+          <div className="sticky top-0 bg-white z-10 border-b mb-4 px-4 py-3 flex items-center gap-4">
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileOpen(true)}
@@ -46,10 +46,10 @@ const Dashboard = () => {
               ☰ Menu
             </button>
 
-            {/* Back Button */}
+            {/* Back Button - Always on left after menu button */}
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors group ml-auto"
+              className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors group"
               title="Go back"
             >
               <IoArrowBack size={20} className="group-hover:-translate-x-1 transition-transform" />
