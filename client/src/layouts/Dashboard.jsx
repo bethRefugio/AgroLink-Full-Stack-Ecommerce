@@ -29,7 +29,7 @@ const Dashboard = () => {
         <div
           className={`
             hidden md:block
-            py-4 sticky top-24 max-h-[calc(100vh-96px)] overflow-y-auto border-r
+            py-4 sticky top-6 max-h-[calc(100vh-48px)] overflow-y-auto border-r
             transition-all duration-300
             ${collapsed ? 'w-20' : 'w-80'}
           `}
@@ -110,8 +110,17 @@ const Dashboard = () => {
             ${collapsed ? 'lg:ml-30' : 'lg:ml-50'}
           `}
         >
-          {/* Spacer for top controls on desktop */}
-          <div className="mb-4 px-4 py-2 hidden md:block" />
+          {/* Back Button (desktop only) */}
+          <div className="mb-4 px-4 py-2 hidden md:block">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors group"
+              title="Go back"
+            >
+              <IoArrowBack size={20} className="group-hover:-translate-x-1 transition-transform" />
+              <span className="font-medium">Back</span>
+            </button>
+          </div>
 
 
           <Outlet />
@@ -123,4 +132,8 @@ const Dashboard = () => {
 
 
 export default Dashboard
+
+
+
+
 
