@@ -39,15 +39,29 @@ const Dashboard = () => {
 
 
         {/* ======================= */}
-        {/* MOBILE MENU BUTTON */}
+        {/* MOBILE MENU + BACK BUTTON */}
         {/* ======================= */}
-        <div className="md:hidden px-4 py-2">
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="text-gray-700 text-lg font-medium"
-          >
-            ☰ Menu
-          </button>
+        <div className="md:hidden px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="text-gray-700 text-lg font-medium"
+              aria-label="Open menu"
+            >
+              ☰ Menu
+            </button>
+
+
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-gray-700 text-sm font-medium"
+              title="Go back"
+              aria-label="Go back"
+            >
+              <IoArrowBack size={18} />
+              <span>Back</span>
+            </button>
+          </div>
         </div>
 
 
@@ -96,17 +110,8 @@ const Dashboard = () => {
             ${collapsed ? 'lg:ml-30' : 'lg:ml-50'}
           `}
         >
-          {/* Back Button */}
-          <div className="mb-4 px-4 py-2">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors group"
-              title="Go back"
-            >
-              <IoArrowBack size={20} className="group-hover:-translate-x-1 transition-transform" />
-              <span className="font-medium">Back</span>
-            </button>
-          </div>
+          {/* Spacer for top controls on desktop */}
+          <div className="mb-4 px-4 py-2 hidden md:block" />
 
 
           <Outlet />
