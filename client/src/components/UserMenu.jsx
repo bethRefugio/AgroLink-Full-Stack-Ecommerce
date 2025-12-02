@@ -7,14 +7,11 @@ import { logout } from '../store/userSlice'
 import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
 import { HiOutlineExternalLink } from "react-icons/hi"
-import { FiSettings, FiPackage, FiShoppingBag, FiMapPin, FiUsers, FiLogOut } from "react-icons/fi"
+import { FiSettings, FiPackage, FiShoppingBag, FiUsers, FiLogOut } from "react-icons/fi"
 import { MdCategory, MdOutlineCategory, MdEmail, MdAttachMoney } from "react-icons/md"
 import isAdmin from '../utils/isAdmin'
 import isSeller from '../utils/isSeller'
 import isBuyer from '../utils/isBuyer'
-
-
-
 
 const UserMenu = ({ close, collapsed, setCollapsed }) => {
   const user = useSelector((state) => state.user)
@@ -22,13 +19,12 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
   const navigate = useNavigate()
   const [avatarError, setAvatarError] = useState(false)
 
-
-
-
-  const toggleSidebar = () => setCollapsed(!collapsed)
-
-
-
+  const toggleSidebar = () => {
+    // Only toggle on desktop
+    if (setCollapsed) {
+      setCollapsed(!collapsed)
+    }
+  }
 
   const handleLogout = async () => {
     try {
@@ -45,15 +41,9 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
     }
   }
 
-
-
-
   const handleClose = () => {
     if (close) close()
   }
-
-
-
 
   const MenuItem = ({ to, icon: Icon, children, onClick }) => {
     const content = (
@@ -62,9 +52,6 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
         {!collapsed && <span className="flex-1 text-left">{children}</span>}
       </>
     )
-
-
-
 
     if (to) {
       return (
@@ -78,9 +65,6 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
       )
     }
 
-
-
-
     return (
       <button
         onClick={onClick}
@@ -91,13 +75,13 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
     )
   }
 
-
-
-
   return (
-    <div className={`bg-white h-full transition-all duration-300 ${collapsed ? "w-20" : "w-64 md:w-80"}`}>
-      {/* User Info / Avatar Toggle */}
-      <div className={`px-4 py-3 mb-2 flex items-center gap-3 cursor-pointer`} onClick={toggleSidebar}>
+    <div className={`bg-white h-full flex flex-col transition-all duration-300 ${collapsed ? "w-20" : "w-full"}`}>
+      {/* User Info / Avatar - Fixed at top */}
+      <div 
+        className={`px-4 py-3 mb-2 flex items-center gap-3 flex-shrink-0 ${setCollapsed ? 'cursor-pointer' : ''}`} 
+        onClick={setCollapsed ? toggleSidebar : undefined}
+      >
         <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
           {user?.avatar && !avatarError ? (
             <img
@@ -113,18 +97,12 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
           )}
         </div>
 
-
-
-
         {!collapsed && (
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 truncate">{user?.name || user?.mobile}</h3>
             <p className="text-sm text-gray-500 truncate">{user?.email || user?.mobile}</p>
           </div>
         )}
-
-
-
 
         {!collapsed && (
           <Link
@@ -137,12 +115,9 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
         )}
       </div>
 
-
-
-
-      {/* Role Badge */}
+      {/* Role Badge - Fixed */}
       {!collapsed && user?.role && (
-        <div className="px-4 mb-2">
+        <div className="px-4 mb-2 flex-shrink-0">
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
             user.role === "ADMIN" ? "bg-red-100 text-red-700" :
             user.role === "SELLER" ? "bg-blue-100 text-blue-700" :
@@ -157,20 +132,11 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
         </div>
       )}
 
+      <div className="h-px bg-gray-200 my-2 flex-shrink-0" />
 
-
-
-      <div className="h-px bg-gray-200 my-2" />
-
-
-
-
-      {/* Menu Items */}
-      <div className="px-2">
+      {/* Scrollable Menu Items - Remove flex-1 to prevent taking all space */}
+      <div className="overflow-y-auto px-2 max-h-[calc(100vh-280px)]">
         <MenuItem to="/dashboard/profile" icon={FiSettings}>Account Settings</MenuItem>
-
-
-
 
         {isAdmin(user?.role) && (
           <>
@@ -180,9 +146,6 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
           </>
         )}
 
-
-
-
         {(isAdmin(user?.role) || isSeller(user?.role)) && (
           <>
             <MenuItem to="/dashboard/upload-product" icon={FiPackage}>Upload Product</MenuItem>
@@ -190,30 +153,20 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
           </>
         )}
        
-
-
-
-
         {isBuyer(user?.role) && <MenuItem to="/dashboard/myorders" icon={FiShoppingBag}>My Orders</MenuItem>}
-        {/*(isBuyer(user?.role) || isSeller(user?.role)) && <MenuItem to="/dashboard/address" icon={FiMapPin}>Saved Addresses</MenuItem>}*/}
         {isSeller(user?.role) && <MenuItem to="/dashboard/seller-orders" icon={FiShoppingBag}>Orders Received</MenuItem>}
         {isAdmin(user?.role) && <MenuItem to="/dashboard/allorders" icon={FiShoppingBag}>All Orders</MenuItem>}
         {isAdmin(user?.role) && <MenuItem to="/dashboard/messages" icon={MdEmail}>Messages</MenuItem>}
-        {isAdmin(user?.role) && (<MenuItem to="/dashboard/price-suggestion" icon={MdAttachMoney}>Price Suggestion</MenuItem>)}</div>
+        {isAdmin(user?.role) && (<MenuItem to="/dashboard/price-suggestion" icon={MdAttachMoney}>Price Suggestion</MenuItem>)}
+      </div>
 
+      <div className="h-px bg-gray-200 my-2 flex-shrink-0" />
 
-
-
-      <div className="h-px bg-gray-200 my-2" />
-
-
-
-
-      {/* Logout */}
-      <div className="px-2">
+      {/* Logout - Fixed at bottom */}
+      <div className="px-2 pb-4 flex-shrink-0">
         <button
           onClick={handleLogout}
-          className="w-50 flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white font-semibold shadow-md transition-colors"
+          className="w-full flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:from-red-600 hover:via-red-700 hover:to-red-800 text-white font-semibold shadow-md transition-colors"
         >
           <FiLogOut size={20} className="text-white flex-shrink-0" />
           {!collapsed && <span className="flex-1 text-left">Log Out</span>}
@@ -223,18 +176,4 @@ const UserMenu = ({ close, collapsed, setCollapsed }) => {
   )
 }
 
-
-
-
 export default UserMenu
-
-
-
-
-
-
-
-
-
-
-
