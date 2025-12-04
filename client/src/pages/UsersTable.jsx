@@ -12,9 +12,13 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6"
 import { IoSearch } from "react-icons/io5"
 
 
+
+
 const UsersTable = () => {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(false)
+
+
 
 
   const [openCreate, setOpenCreate] = useState(false)
@@ -22,19 +26,32 @@ const UsersTable = () => {
   const [editUser, setEditUser] = useState(null)
 
 
+
+
   const [deleteUser, setDeleteUser] = useState(null)
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false)
+
+
 
 
   const [openViewDetails, setOpenViewDetails] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
 
 
+
+
   const [search, setSearch] = useState("")
   const [selectedRole, setSelectedRole] = useState("") // ⭐ NEW ROLE FILTER
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 20
+
+
 
 
   const columnHelper = createColumnHelper()
+
+
 
 
   const fetchUsers = async () => {
@@ -52,9 +69,13 @@ const UsersTable = () => {
   }
 
 
+
+
   useEffect(() => {
     fetchUsers()
   }, [])
+
+
 
 
   // ⭐ ROLE LIST (unique roles)
@@ -63,6 +84,8 @@ const UsersTable = () => {
     users.forEach((u) => u.role && set.add(u.role))
     return Array.from(set)
   }, [users])
+
+
 
 
   // ⭐ FILTERING USERS
@@ -75,12 +98,33 @@ const UsersTable = () => {
         u.role.toLowerCase().includes(q)
 
 
+
+
       const matchesRole = selectedRole ? u.role === selectedRole : true
+
+
 
 
       return matchesSearch && matchesRole
     })
   }, [users, search, selectedRole])
+
+
+  // reset page when filters or users change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search, selectedRole, users])
+
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize))
+
+
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredUsers.slice(start, start + pageSize)
+  }, [filteredUsers, currentPage])
+
+
 
 
   // DELETE
@@ -102,6 +146,8 @@ const UsersTable = () => {
       AxiosToastError(err)
     }
   }
+
+
 
 
   // COLUMNS
@@ -158,6 +204,8 @@ const UsersTable = () => {
           </button>
 
 
+
+
           <button
             onClick={() => {
               setEditUser(row.original)
@@ -168,6 +216,8 @@ const UsersTable = () => {
           >
             <HiPencil size={22} />
           </button>
+
+
 
 
           <button
@@ -186,6 +236,8 @@ const UsersTable = () => {
   ]
 
 
+
+
   // USER FORM COMPONENT
   const UserForm = ({ user, onClose, onSaved }) => {
     const [form, setForm] = useState({
@@ -198,8 +250,12 @@ const UsersTable = () => {
     const [showPassword, setShowPassword] = useState(false)
 
 
+
+
     const handleChange = (e) =>
       setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+
+
 
 
     const handleSubmit = async (e) => {
@@ -224,12 +280,16 @@ const UsersTable = () => {
     }
 
 
+
+
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-x-hidden">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
           <div className="p-6 border-b">
             <h3 className="font-semibold text-lg">{user ? "Edit User" : "Add New User"}</h3>
           </div>
+
+
 
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -246,6 +306,8 @@ const UsersTable = () => {
             </div>
 
 
+
+
             {/* EMAIL */}
             <div>
               <label className="block text-sm text-gray-700 mb-1">Email</label>
@@ -258,6 +320,8 @@ const UsersTable = () => {
                 required
               />
             </div>
+
+
 
 
             {/* PASSWORD */}
@@ -284,6 +348,8 @@ const UsersTable = () => {
             </div>
 
 
+
+
             {/* ROLE */}
             <div>
               <label className="block text-sm text-gray-700 mb-1">Role</label>
@@ -299,6 +365,8 @@ const UsersTable = () => {
                 <option value="COOPERATIVE">COOPERATIVE</option>
               </select>
             </div>
+
+
 
 
             {/* ACTIONS */}
@@ -321,9 +389,13 @@ const UsersTable = () => {
   }
 
 
+
+
   // VIEW DETAILS MODAL
   const ViewDetailsModal = ({ user, onClose }) => {
     if (!user) return null
+
+
 
 
     return (
@@ -333,6 +405,8 @@ const UsersTable = () => {
             <h3 className="font-semibold text-lg">User Details</h3>
             <button onClick={onClose} className="text-gray-500">✕</button>
           </div>
+
+
 
 
           <div className="p-6 space-y-3">
@@ -346,6 +420,8 @@ const UsersTable = () => {
           </div>
 
 
+
+
           <div className="p-6 border-t flex justify-end">
             <button onClick={onClose} className="px-4 py-2 border rounded-lg">Close</button>
           </div>
@@ -355,8 +431,12 @@ const UsersTable = () => {
   }
 
 
+
+
   return (
     <section className="max-w-full p-6">
+
+
 
 
       {/* PAGE HEADER */}
@@ -366,9 +446,13 @@ const UsersTable = () => {
       </div>
 
 
+
+
       {/* ⭐ STICKY SEARCH / ROLE FILTER / ADD BUTTON (updated structure) */}
       <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b mb-6">
         <div className="py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+
 
 
           {/* SEARCH FIELD */}
@@ -389,8 +473,12 @@ const UsersTable = () => {
           </div>
 
 
+
+
           {/* ROLE FILTER + ADD USER BUTTON — one row in mobile */}
           <div className="flex w-full sm:w-auto items-center gap-2">
+
+
 
 
             {/* Role Dropdown */}
@@ -408,6 +496,8 @@ const UsersTable = () => {
             </select>
 
 
+
+
             {/* Add User Button */}
             <button
               onClick={() => setOpenCreate(true)}
@@ -422,23 +512,64 @@ const UsersTable = () => {
             </button>
 
 
+
+
           </div>
         </div>
       </div>
 
 
+
+
       {/* TABLE */}
-      <div className="bg-white rounded-lg border overflow-hidden mb-24 sm:mb-10">
+      <div className="bg-white rounded-lg border overflow-hidden mb-6 sm:mb-6">
         <div className="overflow-x-auto">
           {loading ? (
             <div className="p-8 text-center text-gray-500">Loading...</div>
           ) : filteredUsers.length === 0 ? (
             <div className="p-8 text-center text-gray-500">No users found.</div>
           ) : (
-            <DisplayTable data={filteredUsers} column={columns} />
+            <DisplayTable data={paginatedUsers} column={columns} />
           )}
         </div>
       </div>
+
+
+      {/* Pagination controls (rendered outside the table container) */}
+      {filteredUsers.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-3 mb-6 text-sm">
+          <span>
+            Showing{" "}
+            <strong>
+              {filteredUsers.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}
+              {" - "}
+              {Math.min(currentPage * pageSize, filteredUsers.length)}
+            </strong>{" "}
+            of {filteredUsers.length}
+          </span>
+
+
+          <div className="flex items-center gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              className="px-3 py-1.5 border rounded disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <span>Page {currentPage} of {totalPages}</span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              className="px-3 py-1.5 border rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+
 
 
       {/* RESULTS COUNT */}
@@ -447,6 +578,12 @@ const UsersTable = () => {
           Showing {filteredUsers.length} of {users.length} results
         </p>
       )}
+
+
+      {/* Small spacer after pagination/results to keep footer off-screen */}
+      {filteredUsers.length > 0 && <div className="h-6" />}
+
+
 
 
       {/* MODALS */}
@@ -477,6 +614,8 @@ const UsersTable = () => {
     </section>
   )
 }
+
+
 
 
 export default UsersTable

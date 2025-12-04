@@ -370,18 +370,12 @@ export async function paymentController(request,response){
         const userId = request.userId
         const { list_items, totalAmt, addressId,subTotalAmt } = request.body
 
-
-
-
         const user = await UserModel.findById(userId)
-
-
-
 
         const line_items  = list_items.map(item =>{
             return{
                price_data : {
-                    currency : 'inr',
+                    currency : 'php',
                     product_data : {
                         name : item.productId.name,
                         images : item.productId.image,

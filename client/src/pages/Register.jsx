@@ -186,7 +186,6 @@ const Register = () => {
                                         <option value="" disabled>Select your role</option>
                                         <option className="bg-white text-gray-800 hover:bg-green-50" value="BUYER">Buyer</option>
                                         <option className="bg-white text-gray-800 hover:bg-green-50" value="SELLER">Seller</option>
-                                        <option className="bg-white text-gray-800 hover:bg-green-50" value="COOPERATIVE">Cooperative</option>
                                     </select>
                                 </div>
 

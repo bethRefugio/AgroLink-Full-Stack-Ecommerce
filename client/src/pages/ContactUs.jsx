@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Phone, ShoppingCart, Mail, MapPin, Send, Github, Linkedin, User, Check } from 'lucide-react';
+import { Menu, X, Phone, ShoppingCart, Mail, MapPin, Send, Github, Facebook, User, Check } from 'lucide-react';
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import toast from 'react-hot-toast'
@@ -52,10 +52,10 @@ export default function ContactUs() {
       name: "Elizabeth R. Refugio",
       role: "Project Leader",
       email: "elizabeth.refugio@g.msuiit.edu.ph",
-      specialization: "Full-Stack Development & AI Integration",
+      specialization: "Full-Stack Developer & AI Integration",
       color: "from-purple-500 to-purple-600",
       github: "https://github.com/elizabeth-refugio",
-      linkedin: "https://linkedin.com/in/elizabeth-refugio"
+      facebook: "https://www.facebook.com/elizabeth.refugio.52"
     },
     {
       name: "Kimberly D. Baganao",
@@ -64,7 +64,7 @@ export default function ContactUs() {
       specialization: "Frontend Development & UI/UX Design",
       color: "from-pink-500 to-pink-600",
       github: "https://github.com/mik-baganao",
-      linkedin: "https://linkedin.com/in/kimberly-baganao"
+      facebook: "https://www.facebook.com/kimberlyannedawn.baganao"
     },
     {
       name: "Daphne Lavina B. Belecario",
@@ -73,7 +73,7 @@ export default function ContactUs() {
       specialization: "Database Architecture & API Development",
       color: "from-blue-500 to-blue-600",
       github: "https://github.com/what-dafff",
-      linkedin: "https://linkedin.com/in/daphne-belecario"
+      facebook: "https://www.facebook.com/dphn.lvn"
     },
     {
       name: "Elaine Joy A. Fajardo",
@@ -82,7 +82,7 @@ export default function ContactUs() {
       specialization: "Machine Learning & Data Analytics",
       color: "from-teal-500 to-teal-600",
       github: "https://github.com/ejoy1020",
-      linkedin: "https://linkedin.com/in/elaine-fajardo"
+      facebook: "https://www.facebook.com/elaine.joy.atamosa.fajardo"
     },
     {
       name: "Carlos Troy R. Inao",
@@ -91,7 +91,7 @@ export default function ContactUs() {
       specialization: "System Design & Quality Assurance",
       color: "from-orange-500 to-orange-600",
       github: "https://github.com/carlostroyinao",
-      linkedin: "https://linkedin.com/in/carlos-inao"
+      facebook: "https://www.facebook.com/carlosinao12315"
     }
   ];
 
@@ -434,12 +434,12 @@ export default function ContactUs() {
                       <Github size={18} className="text-gray-600 group-hover:text-white" />
                     </a>
                     <a
-                      href={dev.linkedin}
+                      href={dev.facebook}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-10 h-10 bg-gray-100 hover:bg-green-800 rounded-full flex items-center justify-center transition-colors group"
                     >
-                      <Linkedin size={18} className="text-gray-600 group-hover:text-white" />
+                      <Facebook size={18} className="text-gray-600 group-hover:text-white" />
                     </a>
                   </div>
                 </div>
