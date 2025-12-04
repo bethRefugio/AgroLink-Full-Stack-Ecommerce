@@ -33,6 +33,12 @@ const PriceSuggestionPage = () => {
   const [suggestLoading, setSuggestLoading] = useState(false)
   const [suggestResult, setSuggestResult] = useState(null)
   const [suggestError, setSuggestError] = useState('')
+  const [suggestionRequested, setSuggestionRequested] = useState(false)
+
+  const [trainingItem, setTrainingItem] = useState('')
+  const [trainingIterations, setTrainingIterations] = useState(10)
+  const [isTraining, setIsTraining] = useState(false)
+  const [trainingProgress, setTrainingProgress] = useState(null)
 
 
   const columnHelper = createColumnHelper()
@@ -772,6 +778,7 @@ const PriceSuggestionPage = () => {
     setSuggestLoading(true)
     setSuggestResult(null)
     setSuggestError('')
+    setSuggestionRequested(true)
     try {
       const res = await Axios({
         ...SummaryApi.suggestPrice,
@@ -830,123 +837,372 @@ const PriceSuggestionPage = () => {
     }
   }
 
+  const handleTrainModels = async () => {
+  if (!trainingItem.trim()) {
+    toast.error('Enter item name to train')
+    return
+  }
+
+  setIsTraining(true)
+  setTrainingProgress({ current: 0, total: trainingIterations })
+  setSuggestionRequested(false) // ✅ Clear previous results
+  setSuggestResult(null)
+  setSuggestError('')
+
+  try {
+    const res = await Axios({
+      ...SummaryApi.trainModels,
+      data: {
+        item: trainingItem.trim(),
+        iterations: trainingIterations,
+        testSize: 2
+      }
+    })
+
+    if (res.data.success) {
+      const modelSummary = Object.entries(res.data.bestModels)
+        .filter(([_, model]) => model)
+        .map(([name, model]) => `${name} (RMSE: ${model.rmse.toFixed(2)})`)
+        .join(', ')
+      
+      toast.success(`✅ Training complete!\n${modelSummary}`)
+      
+      // Show results
+      setSuggestResult({
+        item: trainingItem,
+        metrics: {
+          Prophet: res.data.bestModels.Prophet?.accuracy || {},
+          XGBoost: res.data.bestModels.XGBoost?.accuracy || {},
+          LSTM: res.data.bestModels.LSTM?.accuracy || {}
+        },
+        bestModel: 'Training complete - best models saved',
+        finalSuggestedPrice: 0,
+        reason: 'Models trained and saved to database. Use "Get AI Price Suggestion" to see predictions.',
+        dataPoints: 'N/A'
+      })
+    }
+  } catch (error) {
+    AxiosToastError(error)
+  } finally {
+    setIsTraining(false)
+    setTrainingProgress(null)
+  }
+}
+
+// In the return JSX, add this BEFORE the AI Suggestion Panel:
+
+{/* MODEL TRAINING PANEL */}
+<div className='bg-white border border-purple-200 rounded-lg p-5 mb-6 bg-purple-50'>
+  <h2 className='text-lg font-semibold text-gray-900 mb-3'>Model Training</h2>
+  <p className='text-sm text-gray-600 mb-4'>Train Prophet, XGBoost, and LSTM models to find the best one for price prediction</p>
+  
+  <div className='grid grid-cols-1 md:grid-cols-2 gap-3 mb-4'>
+    <div>
+      <label className='text-sm font-medium text-gray-700 mb-1 block'>Item Name</label>
+      <input
+        type='text'
+        value={trainingItem}
+        onChange={(e) => setTrainingItem(e.target.value)}
+        placeholder='e.g., Squash'
+        className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500'
+      />
+    </div>
+
+    <div>
+      <label className='text-sm font-medium text-gray-700 mb-1 block'>Iterations</label>
+      <input
+        type='number'
+        value={trainingIterations}
+        onChange={(e) => setTrainingIterations(Math.max(1, parseInt(e.target.value) || 1))}
+        min='1'
+        max='50'
+        className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500'
+      />
+    </div>
+  </div>
+
+  <button
+    onClick={handleTrainModels}
+    disabled={isTraining}
+    className='w-full px-4 py-3 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2'
+  >
+    {isTraining ? (
+      <>
+        <span className='animate-spin'>⏳</span>
+        Training ({trainingProgress?.current || 0}/{trainingProgress?.total || trainingIterations})
+      </>
+    ) : (
+      <>
+        🎯 Start Training
+      </>
+    )}
+  </button>
+</div>
 
   return (
     <section className="max-w-full p-6 overflow-x-hidden">
-      {/* AI Suggestion Panel */}
-      <div className='bg-white border border-gray-200 rounded-lg p-5 mb-6'>
-        <h2 className='text-lg font-semibold text-gray-900 mb-3'>AI Price Suggestion</h2>
+      {/* PAGE HEADER */}
+      <div className='mb-6'>
+        <h1 className='text-2xl font-semibold text-gray-900 mb-1'>AI Price Prediction System</h1>
+        <p className='text-sm text-gray-500'>Train models first, then get price predictions</p>
+      </div>
 
+       {/* ==================== STEP 1: MODEL TRAINING PANEL ==================== */}
+    <div className='bg-white border border-gray-200 rounded-lg p-6 mb-6'>
+      <div className='flex items-center gap-3 mb-5'>
+        <div className='w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center'>
+          <span className='text-lg'>🤖</span>
+        </div>
+        <div>
+          <h2 className='text-lg font-semibold text-gray-900'>Step 1: Train AI Models</h2>
+          <p className='text-xs text-gray-600'>Train Prophet, XGBoost, and LSTM models to find the best predictor</p>
+        </div>
+      </div>
+      
+      <div className='space-y-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div>
+            <label className='text-sm font-medium text-gray-700 mb-2 block'>
+              Item Name <span className='text-red-500'>*</span>
+            </label>
+            <input
+              type='text'
+              value={trainingItem}
+              onChange={(e) => setTrainingItem(e.target.value)}
+              placeholder='e.g., Squash, Tomato, Cabbage'
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent'
+            />
+            <p className='text-xs text-gray-500 mt-1'>Enter the exact product name from your database</p>
+          </div>
 
-        <div className='flex flex-col md:flex-row gap-3 items-start md:items-end w-full'>
+          <div>
+            <label className='text-sm font-medium text-gray-700 mb-2 block'>
+              Training Iterations
+            </label>
+            <input
+              type='number'
+              value={trainingIterations}
+              onChange={(e) => setTrainingIterations(Math.max(1, Math.min(50, parseInt(e.target.value) || 10)))}
+              min='1'
+              max='50'
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent'
+            />
+            <p className='text-xs text-gray-500 mt-1'>Recommended: 10-20 iterations</p>
+          </div>
+        </div>
+
+        <button
+          onClick={handleTrainModels}
+          disabled={isTraining || !trainingItem.trim()}
+          className='w-full px-4 py-2.5 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2'
+        >
+          {isTraining ? (
+            <>
+              <span className='animate-spin'>⏳</span>
+              <span>Training... ({trainingProgress?.current || 0}/{trainingProgress?.total || trainingIterations})</span>
+            </>
+          ) : (
+            <>
+              <span>🎯</span>
+              <span>Start Training Models</span>
+            </>
+          )}
+        </button>
+
+        {isTraining && (
+          <div className='space-y-2'>
+            <div className='flex justify-between text-xs text-gray-600'>
+              <span>Progress</span>
+              <span>{Math.round(((trainingProgress?.current || 0) / (trainingProgress?.total || trainingIterations)) * 100)}%</span>
+            </div>
+            <div className='w-full bg-gray-200 rounded-full h-2 overflow-hidden'>
+              <div
+                className='bg-purple-600 h-2 rounded-full transition-all duration-300'
+                style={{ width: `${((trainingProgress?.current || 0) / (trainingProgress?.total || trainingIterations)) * 100}%` }}
+              />
+            </div>
+            <p className='text-xs text-gray-500 text-center'>⏱️ This may take 5-10 minutes...</p>
+          </div>
+        )}
+
+        <div className='bg-blue-50 border border-blue-200 rounded-lg p-3'>
+          <p className='text-xs text-blue-800'>
+            <strong>ℹ️ How it works:</strong> System trains 3 AI models ({trainingIterations}x each) and saves the best performer for faster predictions.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {/* ==================== STEP 2: AI PRICE SUGGESTION PANEL ==================== */}
+    <div className='bg-white border border-gray-200 rounded-lg p-6 mb-6'>
+      <div className='flex items-center gap-3 mb-5'>
+        <div className='w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center'>
+          <span className='text-lg'>💰</span>
+        </div>
+        <div>
+          <h2 className='text-lg font-semibold text-gray-900'>Step 2: Get AI Price Suggestion</h2>
+          <p className='text-xs text-gray-600'>Get instant price predictions using trained models</p>
+        </div>
+      </div>
+
+      <div className='space-y-4'>
+        <div className='flex flex-col sm:flex-row gap-3 items-start sm:items-end w-full'>
           <div className='flex-1 w-full'>
-            <label className='text-sm font-medium text-gray-700 mb-1 block'>Product Name</label>
+            <label className='text-sm font-medium text-gray-700 mb-2 block'>
+              Product Name <span className='text-red-500'>*</span>
+            </label>
             <input
               type='text'
               value={suggestName}
               onChange={(e) => setSuggestName(e.target.value)}
-              placeholder='e.g. Squash'
-              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+              placeholder='e.g., Squash'
+              className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
             />
           </div>
 
-
           <button
             onClick={handleAISuggestPrice}
-            disabled={suggestLoading}
-            className='px-4 py-2 h-10 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 w-full md:w-auto'
+            disabled={suggestLoading || !suggestName.trim()}
+            className='px-4 py-2 h-[38px] text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed w-full sm:w-auto transition-colors flex items-center justify-center gap-2'
           >
-            {suggestLoading ? 'Suggesting...' : 'Get AI Price Suggestion'}
+            {suggestLoading ? (
+              <>
+                <span className='animate-spin'>🔄</span>
+                <span>Predicting...</span>
+              </>
+            ) : (
+              <>
+                <span>🔮</span>
+                <span>Suggest Price</span>
+              </>
+            )}
           </button>
         </div>
 
+        {/* ERROR STATE */}
+        {suggestError && (
+          <div className='p-4 text-sm bg-red-50 border border-red-200 text-red-700 rounded-lg'>
+            ❌ {suggestError}
+          </div>
+        )}
 
-        {/* RESULT BOX */}
-        <div className='mt-4'>
-          {suggestError && (
-            <div className='p-3 text-sm bg-red-50 border border-red-200 text-red-700 rounded'>
-              {suggestError}
+        {/* RESULT STATE */}
+        {suggestionRequested && suggestResult && (
+          <div className='space-y-4 mt-4'>
+            {/* Summary Box */}
+            <div className='p-4 bg-gray-50 border border-gray-200 rounded-lg'>
+              <div className='grid grid-cols-2 md:grid-cols-4 gap-3 text-sm'>
+                <div>
+                  <p className='text-gray-600 text-xs'>Item</p>
+                  <p className='font-semibold text-gray-900 truncate'>{suggestResult.item}</p>
+                </div>
+                <div>
+                  <p className='text-gray-600 text-xs'>Best Model</p>
+                  <p className='font-semibold text-gray-900'>{suggestResult.bestModel}</p>
+                </div>
+                <div>
+                  <p className='text-gray-600 text-xs'>Data Points</p>
+                  <p className='font-semibold text-gray-900'>{suggestResult.dataPoints}</p>
+                </div>
+                <div>
+                  <p className='text-gray-600 text-xs'>Final Price</p>
+                  <p className='font-semibold text-green-600'>₱{suggestResult.finalSuggestedPrice?.toFixed(2)}</p>
+                </div>
+              </div>
             </div>
-          )}
 
-
-          {suggestResult && (
-            <div className='space-y-4'>
-              <div className='p-3 bg-green-50 border border-green-200 rounded text-sm'>
-                <p><span className='font-medium'>Item:</span> {suggestResult.item}</p>
-                <p><span className='font-medium'>Data Points:</span> {suggestResult.dataPoints}</p>
-                <p><span className='font-medium'>Chosen Model:</span> {suggestResult.bestModel}</p>
-                <p className='text-gray-700'>
-                  <span className='font-medium'>Reason:</span> {suggestResult.reason}
-                </p>
-              </div>
-
-
-              <div className='grid md:grid-cols-2 gap-4'>
-                <div className='p-3 border rounded'>
-                  <h3 className='font-medium text-gray-900 mb-2 text-sm'>Predictions (Next Month)</h3>
-                  <ul className='text-sm space-y-1'>
-                    {Object.entries(suggestResult.nextPredsAll || {}).map(([m, v]) => (
-                      <li key={m}>
-                        <span className='font-medium'>{m}:</span> ₱{Number(v).toFixed(2)}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-
-                <div className='p-3 border rounded'>
-                  <h3 className='font-medium text-gray-900 mb-2 text-sm'>Recommended (5% Markup)</h3>
-                  <ul className='text-sm space-y-1'>
-                    {Object.entries(suggestResult.recommendedAll || {}).map(([m, v]) => (
-                      <li key={m}>
-                        <span className='font-medium'>{m}:</span> ₱{Number(v).toFixed(2)}
-                        {m === suggestResult.bestModel && <span className='ml-1 text-xs text-green-600'>(chosen)</span>}
-                      </li>
-                    ))}
-                  </ul>
+            {/* Predictions Grid */}
+            <div className='grid md:grid-cols-2 gap-4'>
+              <div className='p-4 border border-gray-200 rounded-lg'>
+                <h4 className='font-semibold text-gray-900 mb-3 text-sm'>📈 Predictions (Next)</h4>
+                <div className='space-y-2 text-sm'>
+                  {Object.entries(suggestResult.nextPredsAll || {}).map(([m, v]) => (
+                    <div key={m} className='flex justify-between items-center'>
+                      <span className='text-gray-600'>{m}</span>
+                      <span className='font-medium text-gray-900'>₱{Number(v).toFixed(2)}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
+              <div className='p-4 border border-gray-200 rounded-lg'>
+                <h4 className='font-semibold text-gray-900 mb-3 text-sm'>💵 Recommended (5% Markup)</h4>
+                <div className='space-y-2 text-sm'>
+                  {Object.entries(suggestResult.recommendedAll || {}).map(([m, v]) => (
+                    <div key={m} className='flex justify-between items-center'>
+                      <span className='text-gray-600'>{m}</span>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-medium text-gray-900'>₱{Number(v).toFixed(2)}</span>
+                        {m === suggestResult.bestModel && (
+                          <span className='px-2 py-0.5 text-xs font-semibold text-green-700 bg-green-100 rounded'>
+                            ✓ Chosen
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-              <div className='p-3 border rounded'>
-                <h3 className='font-medium text-gray-900 mb-2 text-sm'>Model Accuracy</h3>
+            {/* Model Accuracy Table */}
+            <div className='p-4 border border-gray-200 rounded-lg'>
+              <h4 className='font-semibold text-gray-900 mb-3 text-sm'>🎯 Model Accuracy</h4>
+              <div className='overflow-x-auto'>
                 <table className='w-full text-sm'>
                   <thead>
-                    <tr className='text-left border-b'>
-                      <th>Model</th>
-                      <th>MAE</th>
-                      <th>RMSE</th>
+                    <tr className='border-b border-gray-200'>
+                      <th className='text-left py-2 px-2 font-medium text-gray-700'>Model</th>
+                      <th className='text-right py-2 px-2 font-medium text-gray-700'>MAE</th>
+                      <th className='text-right py-2 px-2 font-medium text-gray-700'>RMSE</th>
                     </tr>
                   </thead>
                   <tbody>
                     {Object.entries(suggestResult.metrics || {}).map(([m, vals]) => (
-                      <tr key={m} className='border-b last:border-b-0'>
-                        <td className='py-1'>
-                          {m}
-                          {m === suggestResult.bestModel && <span className='ml-1 text-green-600 font-semibold'>(Best)</span>}
+                      <tr key={m} className='border-b border-gray-100 hover:bg-gray-50'>
+                        <td className='py-2 px-2'>
+                          <div className='flex items-center gap-2'>
+                            <span className='text-gray-900'>{m}</span>
+                            {m === suggestResult.bestModel && (
+                              <span className='text-xs text-green-600 font-semibold'>⭐ BEST</span>
+                            )}
+                          </div>
                         </td>
-                        <td>{vals.MAE?.toFixed(2) || '—'}</td>
-                        <td>{vals.RMSE?.toFixed(2) || '—'}</td>
+                        <td className='py-2 px-2 text-right text-gray-900'>{vals.MAE?.toFixed(2) || '—'}</td>
+                        <td className='py-2 px-2 text-right font-semibold text-gray-900'>{vals.RMSE?.toFixed(2) || '—'}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+            </div>
 
-
-              <div className='p-3 bg-blue-50 border border-blue-200 rounded text-sm'>
-                <p><span className='font-medium'>Base Prediction:</span> ₱{suggestResult.basePrediction?.toFixed(2)}</p>
-                <p><span className='font-medium'>Markup (5%):</span> ₱{suggestResult.markupAmount?.toFixed(2)}</p>
-                <p className='text-blue-800 font-semibold'>
-                  Final Suggested Price: ₱{suggestResult.finalSuggestedPrice.toFixed(2)}
-                </p>
+            {/* Final Price Box */}
+            <div className='p-4 bg-green-50 border border-green-200 rounded-lg'>
+              <div className='space-y-2 text-sm'>
+                <div className='flex justify-between'>
+                  <span className='text-gray-600'>Base Prediction</span>
+                  <span className='font-medium text-gray-900'>₱{suggestResult.basePrediction?.toFixed(2)}</span>
+                </div>
+                <div className='flex justify-between'>
+                  <span className='text-gray-600'>Markup (5%)</span>
+                  <span className='font-medium text-gray-900'>₱{suggestResult.markupAmount?.toFixed(2)}</span>
+                </div>
+                <div className='pt-2 border-t border-green-200 flex justify-between'>
+                  <span className='font-semibold text-gray-900'>Final Suggested Price</span>
+                  <span className='font-bold text-lg text-green-700'>₱{suggestResult.finalSuggestedPrice?.toFixed(2)}</span>
+                </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
+            {/* Reason */}
+            <div className='p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800'>
+              <p><strong>💡 Why this model?</strong> {suggestResult.reason}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
 
       {/* PAGE HEADER */}
       <div className='mb-6'>

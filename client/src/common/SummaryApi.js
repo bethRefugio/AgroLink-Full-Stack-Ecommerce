@@ -310,6 +310,14 @@ const SummaryApi = {
     resendVerification: {
         url : '/api/user/resend-verification',
         method : 'post'
+    },
+    trainModels: {
+        url: "/api/model-training/train",
+        method: "post",
+    },
+    getBestModels: {
+        url: "/api/model-training/best-models",
+        method: "get",
     }
 }
 

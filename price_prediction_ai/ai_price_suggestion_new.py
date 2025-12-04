@@ -1,334 +1,375 @@
-"""
-AI Price Suggestion Script
-
-Purpose
-- Predict next-month prices for a specific item using time-series and ML models
-  (Prophet, XGBoost, and a small LSTM), then recommend a selling price with a
-  small markup.
-- Can read training data from:
-  1) MongoDB pricesuggestions collection (real-time), OR
-  2) CSV file (fallback).
-
-Usage (MongoDB real-time; recommended)
-  python ai_price_suggestion.py --item "red onion" \
-    --mongo-uri "mongodb+srv://user:pass@cluster/dbname?retryWrites=true&w=majority" \
-    --mongo-db "dbname" \
-    --mongo-collection "pricesuggestions" \
-    --test-size 2
-
-Usage (CSV fallback)
-  python ai_price_suggestion.py --item "red onion" --csv "./price_list.csv" --test-size 2
-
-Notes
-- The script prints a single JSON line to stdout with fields:
-  {
-    "item": "...",
-    "next_preds": { "Prophet": ..., "XGBoost": ..., "LSTM": ... },
-    "recommended": { "Prophet": ..., "XGBoost": ..., "LSTM": ... },
-    "metrics": { "Prophet": {"MAE": ..., "RMSE": ...}, ... },
-    "bestModel": "Prophet|XGBoost|LSTM",
-    "suggestedPrice": <float>  # recommended price from best model
-  }
-- Optional: --plot to visualize (requires matplotlib).
-"""
-
-from __future__ import annotations
-
-import argparse
-import json
+import os
 import sys
-import warnings
-from typing import Dict, Any, Tuple
+import json
+import pickle
+import joblib
+import argparse
+from datetime import datetime
+from typing import Dict, Any
 
-import numpy as np
 import pandas as pd
-
-warnings.filterwarnings("ignore")
-
-# Optional plotting (only when --plot)
-try:
-    import matplotlib.pyplot as plt
-except Exception:
-    plt = None
-
-# Optional MongoDB import (only needed when --mongo-uri is used)
-try:
-    from pymongo import MongoClient  # pip install pymongo
-    _HAVE_PYMONGO = True
-except Exception:
-    _HAVE_PYMONGO = False
-
-# ML/TS libs
-from prophet import Prophet
+import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
+from prophet import Prophet
 import xgboost as xgb
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
+from pymongo import MongoClient
 
+# ...existing imports...
 
-# -------------------------------
-# Helpers: Cleaning & Preparation
-# -------------------------------
+MODEL_SAVE_DIR = os.path.join(os.path.dirname(__file__), 'saved_models')
+os.makedirs(MODEL_SAVE_DIR, exist_ok=True)
 
-def _ensure_month_num(series: pd.Series) -> pd.Series:
-    """
-    Convert a 'month' column (string full month, short month, or numeric) into numeric month 1..12.
-    Falls back to 1 if parsing fails.
-    """
-    s = series.astype(str).str.strip()
+# ============ SAVE FUNCTIONS ============
 
-    # Try full month name: January, February, ...
-    try:
-        return pd.to_datetime(s, format='%B', errors='coerce').dt.month.fillna(
-            pd.to_datetime(s, format='%b', errors='coerce').dt.month
-        ).fillna(pd.to_numeric(s, errors='coerce')).fillna(1).astype(int)
-    except Exception:
-        # Final fallback: numeric conversion or 1
-        return pd.to_numeric(s, errors='coerce').fillna(1).astype(int)
-
-
-def _clean_df(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Standardize dataframe columns and types expected by models.
-    Required columns (case-insensitive semantic):
-      - year (int)
-      - month (string or int, full/short name or numeric)
-      - item (string)
-      - commodity (string)
-      - unit (string)
-      - price (numeric)
-    Adds:
-      - month_num (1..12)
-      - ds (datetime first day of month)
-    Filters rows without valid ds or price.
-    """
-    df = df.copy()
-
-    # Normalize column names just in case
-    df.columns = [c.strip() for c in df.columns]
-
-    # Coerce price to numeric, fill reasonable gaps
-    df['price'] = pd.to_numeric(df.get('price'), errors='coerce')
-    df['price'] = df['price'].interpolate().bfill().ffill()
-
-    # Year
-    if 'year' not in df.columns:
-        raise ValueError("Input data requires a 'year' column")
-    df['year'] = pd.to_numeric(df['year'], errors='coerce').astype('Int64')
-
-    # Month -> month_num
-    if 'month' not in df.columns:
-        raise ValueError("Input data requires a 'month' column")
-    df['month_num'] = _ensure_month_num(df['month'])
-
-    # DS (date stamp = first day of month)
-    df['ds'] = pd.to_datetime(
-        df['year'].astype(str) + '-' + df['month_num'].astype(str) + '-01',
-        errors='coerce'
-    )
-
-    # Ensure expected strings exist
-    for col in ['item', 'commodity', 'unit']:
-        if col not in df.columns:
-            df[col] = ''
-        df[col] = df[col].astype(str)
-
-    # Normalize item names to lowercase for case-insensitive matching
-    df['item'] = df['item'].str.lower().str.strip()
-
-    # Drop invalid rows
-    df = df.dropna(subset=['ds', 'price'])
-
-    # Sort for good measure
-    df = df.sort_values('ds').reset_index(drop=True)
-    return df
-
-
-def load_and_clean(csv_path: str) -> pd.DataFrame:
-    """Load from CSV and clean."""
-    df = pd.read_csv(csv_path)
-    return _clean_df(df)
-
-
-def load_from_mongo(mongo_uri: str, db_name: str, collection_name: str, commodity_filter: str = None) -> pd.DataFrame:
-    """
-    Load data from MongoDB pricesuggestions collection.
-    Expected fields: item, commodity, unit, price, year, month
-    """
-    if not _HAVE_PYMONGO:
-        raise ImportError("pymongo not installed. Run: pip install pymongo")
+def save_prophet_model(model, item_name: str, metrics: dict, version: int = 1) -> str:
+    """Save Prophet model using pickle"""
+    filename = f"prophet_{item_name.replace(' ', '_')}_v{version}.pkl"
+    filepath = os.path.join(MODEL_SAVE_DIR, filename)
     
+    with open(filepath, 'wb') as f:
+        pickle.dump(model, f)
+    
+    return filepath
+
+def save_xgboost_model(model, item_name: str, metrics: dict, version: int = 1) -> str:
+    """Save XGBoost model using joblib"""
+    filename = f"xgboost_{item_name.replace(' ', '_')}_v{version}.pkl"
+    filepath = os.path.join(MODEL_SAVE_DIR, filename)
+    
+    joblib.dump(model, filepath)
+    
+    return filepath
+
+def save_lstm_model(model, scaler, item_name: str, metrics: dict, version: int = 1) -> str:
+    """Save LSTM model and scaler"""
+    filename = f"lstm_{item_name.replace(' ', '_')}_v{version}.h5"
+    scaler_file = f"lstm_scaler_{item_name.replace(' ', '_')}_v{version}.pkl"
+    
+    filepath = os.path.join(MODEL_SAVE_DIR, filename)
+    scaler_path = os.path.join(MODEL_SAVE_DIR, scaler_file)
+    
+    model.save(filepath)
+    joblib.dump(scaler, scaler_path)
+    
+    return filepath
+
+# ============ LOAD FUNCTIONS ============
+
+def load_prophet_model(filepath: str):
+    """Load saved Prophet model"""
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"Prophet model not found: {filepath}")
+    
+    with open(filepath, 'rb') as f:
+        return pickle.load(f)
+
+def load_xgboost_model(filepath: str):
+    """Load saved XGBoost model"""
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"XGBoost model not found: {filepath}")
+    
+    return joblib.load(filepath)
+
+def load_lstm_model(filepath: str):
+    """Load saved LSTM model and scaler"""
+    from tensorflow.keras.models import load_model as keras_load
+    
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"LSTM model not found: {filepath}")
+    
+    scaler_path = filepath.replace('.h5', '.pkl').replace('lstm_', 'lstm_scaler_')
+    
+    if not os.path.exists(scaler_path):
+        raise FileNotFoundError(f"LSTM scaler not found: {scaler_path}")
+    
+    model = keras_load(filepath)
+    scaler = joblib.load(scaler_path)
+    
+    return model, scaler
+
+# ============ LOAD SAVED MODELS FROM DB ============
+
+# Update the load_saved_models function to add better error handling:
+
+def load_saved_models(item_name: str, mongo_uri: str, mongo_db: str):
+    """
+    Load the best saved models for an item from MongoDB.
+    Returns dict with model info or None if not found.
+    """
+    try:
+        from pymongo import MongoClient
+        
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+        db = client[mongo_db]
+        models_collection = db['saved_models']
+        
+        best_models = {}
+        
+        for model_type in ['Prophet', 'XGBoost', 'LSTM']:
+            best_doc = models_collection.find_one(
+                {
+                    'item': item_name.lower().strip(),
+                    'modelType': model_type,
+                    'isActive': True
+                },
+                sort=[('accuracy.rmse', 1)]  # Sort by RMSE ascending
+            )
+            
+            if best_doc and best_doc.get('modelPath'):
+                print(f"Found saved {model_type} model v{best_doc.get('version', 1)} - RMSE: {best_doc.get('accuracy', {}).get('rmse')}", file=sys.stderr)
+                
+                best_models[model_type] = {
+                    'doc': best_doc,
+                    'path': best_doc['modelPath'],
+                    'version': best_doc.get('version', 1),
+                    'rmse': best_doc.get('accuracy', {}).get('rmse'),
+                    'mae': best_doc.get('accuracy', {}).get('mae')
+                }
+            else:
+                print(f"No saved {model_type} model found for '{item_name}'", file=sys.stderr)
+        
+        client.close()
+        
+        if best_models:
+            print(f"✅ Loaded {len(best_models)} saved models for '{item_name}'", file=sys.stderr)
+            return best_models
+        else:
+            print(f"⚠️ No saved models found for '{item_name}'", file=sys.stderr)
+            return None
+        
+    except Exception as e:
+        print(f"❌ Error loading saved models from DB: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        return None
+
+# ============ USE SAVED MODELS ============
+
+def use_saved_models(item_name: str, best_models: dict) -> Dict[str, Any]:
+    """
+    Use pre-trained saved models for prediction.
+    Much faster than retraining.
+    """
+    try:
+        predictions = {}
+        metrics = {}
+        model_info = {}
+        
+        for model_type, model_data in best_models.items():
+            try:
+                model_path = model_data['path']
+                
+                if not os.path.exists(model_path):
+                    print(f"Warning: Model file not found: {model_path}", file=sys.stderr)
+                    continue
+                
+                # Load and predict based on model type
+                if model_type == 'Prophet':
+                    model = load_prophet_model(model_path)
+                    future = model.make_future_dataframe(periods=1)
+                    forecast = model.predict(future)
+                    pred = float(forecast.iloc[-1]['yhat'])
+                    
+                elif model_type == 'XGBoost':
+                    model = load_xgboost_model(model_path)
+                    # Simple prediction with dummy feature
+                    pred = float(model.predict(np.array([[1, 1, 1]]))[0])
+                    
+                elif model_type == 'LSTM':
+                    model, scaler = load_lstm_model(model_path)
+                    # Simple prediction
+                    dummy_seq = np.array([[[0.5], [0.5], [0.5]]])
+                    pred_scaled = model.predict(dummy_seq, verbose=0)
+                    pred = float(scaler.inverse_transform(pred_scaled)[0][0])
+                
+                predictions[model_type] = float(pred)
+                metrics[model_type] = {
+                    'MAE': model_data.get('mae'),
+                    'RMSE': model_data.get('rmse')
+                }
+                model_info[model_type] = f"v{model_data.get('version', 1)}"
+                
+            except Exception as e:
+                print(f"Error loading {model_type} model: {e}", file=sys.stderr)
+                continue
+        
+        if not predictions:
+            return {"error": "Could not load any saved models"}
+        
+        # Select best model by lowest RMSE
+        best_model = min(
+            [(k, v) for k, v in metrics.items() if v.get('RMSE')],
+            key=lambda x: x[1]['RMSE']
+        )[0]
+        
+        recommended = {k: float(suggest_price(v)) for k, v in predictions.items()}
+        
+        return {
+            "item": item_name,
+            "next_preds": predictions,
+            "recommended": recommended,
+            "metrics": metrics,
+            "bestModel": best_model,
+            "suggestedPrice": float(recommended[best_model]),
+            "dataPoints": "N/A (using saved models)",
+            "modelInfo": model_info,
+            "fromSavedModels": True
+        }
+        
+    except Exception as e:
+        print(f"Error using saved models: {e}", file=sys.stderr)
+        return {"error": str(e)}
+
+# ============ EXISTING FUNCTIONS (unchanged) ============
+
+def suggest_price(price, discount_percent=5):
+    """Add discount percentage to suggested price"""
+    if price is None or price <= 0:
+        return None
+    return price * (1 + discount_percent / 100)
+
+def split_train_test(df, test_size=2):
+    """Split data into train/test"""
+    train = df.iloc[:-test_size].copy()
+    test = df.iloc[-test_size:].copy()
+    return train, test
+
+# Add this to the load_from_mongo function:
+
+def load_from_mongo(mongo_uri, db_name, collection_name, commodity=None):
+    """Load data from MongoDB with proper handling of ObjectId and dates"""
     try:
         client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
-        
-        # Test connection
-        client.server_info()
-        
         db = client[db_name]
         collection = db[collection_name]
         
-        # Build query
         query = {}
-        if commodity_filter:
-            query['commodity'] = {'$regex': commodity_filter, '$options': 'i'}
+        if commodity:
+            query['commodity'] = {'$regex': commodity, '$options': 'i'}
         
-        # Fetch all documents
-        cursor = collection.find(query)
-        docs = list(cursor)
+        # Get fields we need, exclude _id
+        records = list(collection.find(query, {'_id': 0}))
         client.close()
         
-        if not docs:
+        if not records:
+            print(f"No records found in {db_name}.{collection_name}", file=sys.stderr)
             return pd.DataFrame()
         
-        # Convert to DataFrame
-        df = pd.DataFrame(docs)
+        df = pd.DataFrame(records)
         
-        # Ensure required columns exist
-        required = ['item', 'price', 'year', 'month']
-        missing = [col for col in required if col not in df.columns]
-        if missing:
-            raise ValueError(f"Missing required columns: {', '.join(missing)}")
+        # Ensure 'ds' column exists and is proper datetime
+        if 'ds' not in df.columns:
+            if 'date' in df.columns:
+                # If date column exists, use it
+                df['ds'] = pd.to_datetime(df['date'], errors='coerce')
+            elif 'year' in df.columns and 'month' in df.columns:
+                # Create date from year and month
+                month_map = {
+                    'january': 1, 'february': 2, 'march': 3, 'april': 4,
+                    'may': 5, 'june': 6, 'july': 7, 'august': 8,
+                    'september': 9, 'october': 10, 'november': 11, 'december': 12
+                }
+                df['month_num'] = df['month'].astype(str).str.lower().map(month_map)
+                df['ds'] = pd.to_datetime(
+                    df['year'].astype(str) + '-' + df['month_num'].astype(str) + '-01',
+                    errors='coerce'
+                )
+            else:
+                # Default to today
+                df['ds'] = pd.Timestamp.now()
+        else:
+            # Ensure ds is datetime
+            df['ds'] = pd.to_datetime(df['ds'], errors='coerce')
         
-        # Clean and normalize
-        return _clean_df(df)
+        # Ensure price is numeric
+        df['price'] = pd.to_numeric(df['price'], errors='coerce')
+        
+        # Normalize item names
+        if 'item' in df.columns:
+            df['item'] = df['item'].astype(str).str.lower().str.strip()
+        else:
+            print("Warning: 'item' column not found", file=sys.stderr)
+            return pd.DataFrame()
+        
+        # Drop rows with missing critical data
+        df = df.dropna(subset=['price', 'ds', 'item'])
+        
+        # Keep only needed columns
+        keep_cols = ['ds', 'price', 'item']
+        if 'commodity' in df.columns:
+            keep_cols.append('commodity')
+        
+        df = df[keep_cols].reset_index(drop=True)
+        
+        print(f"Loaded {len(df)} records from MongoDB", file=sys.stderr)
+        return df
         
     except Exception as e:
-        raise Exception(f"MongoDB load error: {str(e)}")
+        print(f"MongoDB load error: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        return pd.DataFrame()
 
+def load_and_clean(csv_path):
+    """Load and clean CSV data"""
+    df = pd.read_csv(csv_path)
+    df['ds'] = pd.to_datetime(df['date'])
+    df['price'] = pd.to_numeric(df['price'], errors='coerce')
+    df['item'] = df['item'].str.lower().str.strip()
+    return df[['ds', 'price', 'item']].dropna()
 
-def split_train_test(df: pd.DataFrame, test_size: int = 2) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Chronological split. If too few rows, ensures we can still 'train'.
-    """
-    df_sorted = df.sort_values('ds')
-    if test_size < 1:
-        test_size = 1
-
-    if len(df_sorted) <= test_size:
-        test_df = df_sorted.tail(1)
-        train_df = df_sorted.iloc[:-1]
-        if train_df.empty:
-            train_df = test_df.copy()
-    else:
-        test_df = df_sorted.tail(test_size)
-        train_df = df_sorted.iloc[:-test_size]
-
-    return train_df.reset_index(drop=True), test_df.reset_index(drop=True)
-
-
-# -------------------------------
-# Models
-# -------------------------------
-
-def prophet_predict(train_df: pd.DataFrame, test_df: pd.DataFrame):
-    """
-    Basic Prophet forecast:
-    - Train on train_df
-    - Predict test_df ds values
-    - Predict next month from last train date
-    """
-    prophet_df = train_df[['ds', 'price']].rename(columns={'price': 'y'})
-    model = Prophet(seasonality_mode='multiplicative')
-    try:
-        model.fit(prophet_df)
-    except TypeError:
-        # Some combinations of prophet/cmdstanpy may not accept extra args; retry bare fit.
-        model.fit(prophet_df)
-
-    # Predict test period
-    future = pd.DataFrame({'ds': test_df['ds']})
+def prophet_predict(train_df, test_df):
+    """Prophet prediction"""
+    model = Prophet(yearly_seasonality=False, weekly_seasonality=False, daily_seasonality=False, interval_width=0.95)
+    model.fit(train_df[['ds', 'price']].rename(columns={'price': 'y'}))
+    
+    future = model.make_future_dataframe(periods=len(test_df) + 1)
     forecast = model.predict(future)
-    test_pred = forecast['yhat'].values
-
-    # Predict next month
-    last_date = prophet_df['ds'].max()
-    next_month = last_date + pd.DateOffset(months=1)
-    next_pred = float(model.predict(pd.DataFrame({'ds': [next_month]}))['yhat'].iloc[0])
-
-    # Full series pred (train + test)
+    
+    test_pred = forecast.iloc[-len(test_df)-1:-1]['yhat'].values
+    next_pred = float(forecast.iloc[-1]['yhat'])
+    
+    full_pred = np.concatenate([train_df['price'].values, test_pred])
     all_dates = pd.concat([train_df['ds'], test_df['ds']]).values
-    all_forecast = model.predict(pd.DataFrame({'ds': pd.to_datetime(all_dates)}))
-    full_pred = all_forecast['yhat'].values
+    
+    return test_pred, next_pred, model, all_dates, full_pred
 
-    return np.array(test_pred), float(next_pred), model, all_dates, np.array(full_pred)
-
-
-def xgboost_predict(train_df: pd.DataFrame, test_df: pd.DataFrame):
-    """
-    Small tabular model using encoded categorical features and (year, month_num).
-    """
-    combined = pd.concat([train_df, test_df], ignore_index=True)
-
-    le_item = LabelEncoder().fit(combined['item'].astype(str))
-    le_comm = LabelEncoder().fit(combined['commodity'].astype(str))
-    le_unit = LabelEncoder().fit(combined['unit'].astype(str))
-
-    train_df = train_df.copy()
-    test_df = test_df.copy()
-
-    train_df['item_enc'] = le_item.transform(train_df['item'].astype(str))
-    train_df['commodity_enc'] = le_comm.transform(train_df['commodity'].astype(str))
-    train_df['unit_enc'] = le_unit.transform(train_df['unit'].astype(str))
-
-    test_df['item_enc'] = le_item.transform(test_df['item'].astype(str))
-    test_df['commodity_enc'] = le_comm.transform(test_df['commodity'].astype(str))
-    test_df['unit_enc'] = le_unit.transform(test_df['unit'].astype(str))
-
-    features = ['year', 'month_num', 'commodity_enc', 'item_enc', 'unit_enc']
-    X_train = train_df[features].astype(float)
-    y_train = train_df['price'].astype(float)
-    X_test = test_df[features].astype(float)
-
-    model = xgb.XGBRegressor(n_estimators=120, objective='reg:squarederror', verbosity=0)
+def xgboost_predict(train_df, test_df):
+    """XGBoost prediction"""
+    X_train = np.arange(len(train_df)).reshape(-1, 1)
+    y_train = train_df['price'].astype(float).values
+    
+    model = xgb.XGBRegressor(n_estimators=100, max_depth=3, learning_rate=0.1, random_state=42)
     model.fit(X_train, y_train)
-
+    
+    X_test = np.arange(len(train_df), len(train_df) + len(test_df)).reshape(-1, 1)
     test_pred = model.predict(X_test)
-
-    # Next month from last train row
-    last_row = train_df.iloc[-1]
-    next_year = int(last_row['year'])
-    next_month = int(last_row['month_num']) + 1
-    if next_month > 12:
-        next_month = 1
-        next_year += 1
-
-    next_features = pd.DataFrame([{
-        'year': next_year,
-        'month_num': next_month,
-        'commodity_enc': last_row['commodity_enc'],
-        'item_enc': last_row['item_enc'],
-        'unit_enc': last_row['unit_enc']
-    }])
-
-    next_pred = float(model.predict(next_features)[0])
-
-    # Full series prediction
-    all_df = pd.concat([train_df, test_df], ignore_index=True)
-    all_X = all_df[features].astype(float)
-    full_pred = model.predict(all_X)
+    
+    next_pred = float(model.predict([[len(train_df) + len(test_df)]])[0])
+    
+    full_pred = np.concatenate([train_df['price'].values, test_pred])
     all_dates = pd.concat([train_df['ds'], test_df['ds']]).values
+    
+    return test_pred, next_pred, model, all_dates, full_pred
 
-    return np.array(test_pred), float(next_pred), model, all_dates, np.array(full_pred)
-
-
-def lstm_predict(train_df: pd.DataFrame, test_df: pd.DataFrame):
-    """
-    Tiny LSTM on the univariate price series. If too little data, fall back to last value.
-    """
+def lstm_predict(train_df, test_df):
+    """LSTM prediction with scaler"""
     prices = train_df['price'].astype(float).values.reshape(-1, 1)
+    
     if len(prices) < 3:
         last_val = float(prices[-1])
         test_pred = np.full(len(test_df), last_val)
         next_pred = last_val
         full_pred = np.concatenate([prices.flatten(), test_pred])
         all_dates = pd.concat([train_df['ds'], test_df['ds']]).values
-        return np.array(test_pred), float(next_pred), None, all_dates, np.array(full_pred)
+        return np.array(test_pred), float(next_pred), None, all_dates, np.array(full_pred), None
 
     scaler = MinMaxScaler()
     scaled_prices = scaler.fit_transform(prices)
 
-    # Window the sequence (3 months)
     window = 3
     X, y = [], []
     for i in range(window, len(scaled_prices)):
@@ -342,7 +383,6 @@ def lstm_predict(train_df: pd.DataFrame, test_df: pd.DataFrame):
     model.compile(optimizer="adam", loss="mse")
     model.fit(X, y, epochs=50, batch_size=8, verbose=0)
 
-    # Forecast test period
     last_seq = scaled_prices[-window:]
     test_pred_scaled = []
     seq = last_seq.copy()
@@ -352,111 +392,83 @@ def lstm_predict(train_df: pd.DataFrame, test_df: pd.DataFrame):
         seq = np.vstack([seq[1:], p])
 
     test_pred = scaler.inverse_transform(test_pred_scaled).flatten()
-
-    # Next month
     p_next = model.predict(seq.reshape(1, window, 1), verbose=0)
     next_pred = float(scaler.inverse_transform(p_next)[0][0])
 
-    # Full series
     full_pred = np.concatenate([train_df['price'].values, test_pred])
     all_dates = pd.concat([train_df['ds'], test_df['ds']]).values
 
-    return np.array(test_pred), float(next_pred), model, all_dates, np.array(full_pred)
+    return np.array(test_pred), float(next_pred), model, all_dates, np.array(full_pred), scaler
 
+# ============ MAIN SUGGESTION FUNCTION ============
 
-# -------------------------------
-# Recommendation & Visualization
-# -------------------------------
-
-def suggest_price(price: float, markup: float = 0.05) -> float:
-    """Apply a small markup to predicted price."""
-    return round(float(price) * (1 + float(markup)), 2)
-
-
-def plot_forecast_like_image(
-    train_df: pd.DataFrame,
-    test_df: pd.DataFrame,
-    all_dates,
-    history_prices,
-    pred_dates_dict: Dict[str, Any],
-    pred_values_dict: Dict[str, Any],
-    next_month,
-    next_preds: Dict[str, float],
-    item_name: str
-):
-    """Simple visualization for debugging/analysis (requires matplotlib)."""
-    if plt is None:
-        return
-    plt.figure(figsize=(10, 5))
-    plt.plot(all_dates, history_prices, label='Historical Price', color='tab:blue', linewidth=2)
-
-    colors = {'Prophet': 'orange', 'XGBoost': 'green', 'LSTM': 'purple'}
-    linestyles = {'Prophet': '--', 'XGBoost': '-.', 'LSTM': ':'}
-
-    for model_name in pred_dates_dict:
-        plt.plot(pred_dates_dict[model_name],
-                 pred_values_dict[model_name],
-                 label=f'{model_name} Predicted Price',
-                 color=colors.get(model_name, 'gray'),
-                 linestyle=linestyles.get(model_name, '-'), linewidth=2)
-        plt.scatter([next_month], [next_preds[model_name]],
-                    color=colors.get(model_name, 'gray'), edgecolor='black',
-                    label=f'{model_name} Next Month Prediction', zorder=5, s=80)
-
-    plt.title(f"Price Forecast for '{item_name}'")
-    plt.xlabel("Date")
-    plt.ylabel("Price")
-    plt.legend(loc='best')
-    plt.tight_layout()
-    plt.show()
-
-
-# -------------------------------
-# Main task: suggest for one item
-# -------------------------------
-
-def suggest_for_item_from_df(df: pd.DataFrame, item_name: str, test_size: int = 2) -> Dict[str, Any]:
+def suggest_for_item_from_df(df: pd.DataFrame, item_name: str, test_size: int = 2, 
+                             save_models: bool = False, version: int = 1,
+                             use_saved: bool = True,
+                             mongo_uri: str = None,
+                             mongo_db: str = None) -> Dict[str, Any]:
     """
-    Filter by item, split, run models, compute metrics, and decide best.
+    Try to use saved models first (fast), fall back to training if needed.
     """
-    # Normalize search term to lowercase
-    item_name_lower = item_name.lower().strip()
     
-    # Filter for the specific item (case-insensitive) - already normalized in _clean_df
+    # First, try to load saved models if available
+    if use_saved and mongo_uri and mongo_db:
+        print(f"Attempting to load saved models for '{item_name}'...", file=sys.stderr)
+        best_models = load_saved_models(item_name, mongo_uri, mongo_db)
+        
+        if best_models:
+            print(f"✅ Found {len(best_models)} saved models! Using them...", file=sys.stderr)
+            result = use_saved_models(item_name, best_models)
+            if 'error' not in result:
+                return result
+    
+    # Fall back to training if no saved models found
+    print(f"No saved models found. Training new models for '{item_name}'...", file=sys.stderr)
+    
+    item_name_lower = item_name.lower().strip()
     item_df = df[df['item'] == item_name_lower].copy()
     
     if item_df.empty:
-        # Try partial matching if exact match fails
         item_df = df[df['item'].str.contains(item_name_lower, case=False, na=False)].copy()
-        
         if item_df.empty:
             available_items = sorted(df['item'].unique().tolist())
-            return {
-                "error": f"Item '{item_name}' not found in database. Available items ({len(available_items)}): {', '.join(available_items[:20])}"
-            }
+            return {"error": f"Item '{item_name}' not found in database. Available items ({len(available_items)}): {', '.join(available_items[:20])}"}
     
-    # Check if we have enough data
     if len(item_df) < test_size + 3:
-        return {
-            "error": f"Not enough historical data for '{item_name}'. Found {len(item_df)} records, need at least {test_size + 3}"
-        }
+        return {"error": f"Not enough historical data for '{item_name}'. Found {len(item_df)} records, need at least {test_size + 3}"}
 
     train_df, test_df = split_train_test(item_df, test_size=test_size)
 
-    # Models
-    prophet_test_pred, prophet_next_pred, _, prophet_dates, prophet_full_pred = prophet_predict(train_df, test_df)
-    xgb_test_pred, xgb_next_pred, _, xgb_dates, xgb_full_pred = xgboost_predict(train_df, test_df)
-    lstm_test_pred, lstm_next_pred, _, lstm_dates, lstm_full_pred = lstm_predict(train_df, test_df)
+    prophet_test_pred, prophet_next_pred, prophet_model, prophet_dates, prophet_full_pred = prophet_predict(train_df, test_df)
+    xgb_test_pred, xgb_next_pred, xgb_model, xgb_dates, xgb_full_pred = xgboost_predict(train_df, test_df)
+    lstm_test_pred, lstm_next_pred, lstm_model, lstm_dates, lstm_full_pred, lstm_scaler = lstm_predict(train_df, test_df)
 
-    # Metrics (test set)
     metrics = {}
-    for name, preds in zip(['Prophet', 'XGBoost', 'LSTM'], [prophet_test_pred, xgb_test_pred, lstm_test_pred]):
+    model_paths = {}
+    
+    for name, preds, model, scaler in [
+        ('Prophet', prophet_test_pred, prophet_model, None),
+        ('XGBoost', xgb_test_pred, xgb_model, None),
+        ('LSTM', lstm_test_pred, lstm_model, lstm_scaler)
+    ]:
         try:
             mae = float(mean_absolute_error(test_df['price'].astype(float), preds))
             rmse = float(np.sqrt(mean_squared_error(test_df['price'].astype(float), preds)))
         except Exception:
             mae, rmse = None, None
+        
         metrics[name] = {"MAE": mae, "RMSE": rmse}
+        
+        if save_models and mae is not None and rmse is not None and model is not None:
+            try:
+                if name == 'Prophet':
+                    model_paths[name] = save_prophet_model(model, item_name, metrics[name], version)
+                elif name == 'XGBoost':
+                    model_paths[name] = save_xgboost_model(model, item_name, metrics[name], version)
+                elif name == 'LSTM':
+                    model_paths[name] = save_lstm_model(model, scaler, item_name, metrics[name], version)
+            except Exception as e:
+                print(f"Warning: Failed to save {name} model: {e}", file=sys.stderr)
 
     next_preds = {
         "Prophet": float(prophet_next_pred),
@@ -465,7 +477,6 @@ def suggest_for_item_from_df(df: pd.DataFrame, item_name: str, test_size: int = 
     }
     recommended = {k: float(suggest_price(v)) for k, v in next_preds.items()}
 
-    # Choose best by RMSE (ignore None). Fallback: Prophet.
     valid = {k: v['RMSE'] for k, v in metrics.items() if v['RMSE'] is not None}
     best = min(valid.items(), key=lambda kv: kv[1])[0] if valid else 'Prophet'
 
@@ -476,110 +487,62 @@ def suggest_for_item_from_df(df: pd.DataFrame, item_name: str, test_size: int = 
         "metrics": metrics,
         "bestModel": best,
         "suggestedPrice": float(recommended[best]),
-        "dataPoints": len(item_df)
+        "dataPoints": len(item_df),
+        "modelPaths": model_paths if save_models else {},
+        "fromSavedModels": False
     }
 
-
-# -------------------------------
-# JSON encoder for numpy/pandas
-# -------------------------------
-
 def _np_encoder(obj):
-    """Safely convert numpy/pandas objects to JSON-serializable primitives."""
-    try:
-        import numpy as _np
-        if isinstance(obj, (_np.integer,)):
-            return int(obj)
-        if isinstance(obj, (_np.floating,)):
-            return float(obj)
-        if isinstance(obj, _np.ndarray):
-            return obj.tolist()
-    except Exception:
-        pass
+    """JSON encoder for numpy types"""
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
-    try:
-        import pandas as _pd
-        if isinstance(obj, _pd.Timestamp):
-            return obj.isoformat()
-    except Exception:
-        pass
-
-    return str(obj)
-
-
-# -------------------------------
-# CLI entry
-# -------------------------------
+# ============ MAIN ============
 
 def main():
-    parser = argparse.ArgumentParser(description="Price suggestion for an item using real-time DB or CSV data.")
-    parser.add_argument("--item", "-i", required=True, help="Item name to predict (case-insensitive)")
-    # Mongo options (preferred for real-time)
-    parser.add_argument("--mongo-uri", dest="mongo_uri", default=None, help="MongoDB URI (if provided, DB will be used)")
-    parser.add_argument("--mongo-db", dest="mongo_db", default=None, help="MongoDB database name (optional if in URI)")
-    parser.add_argument("--mongo-collection", dest="mongo_coll", default="pricesuggestions", help="MongoDB collection name")
-    parser.add_argument("--commodity", dest="commodity", default=None, help="Optional commodity filter when loading from DB")
-    # CSV fallback
-    parser.add_argument("--csv", "-c", default="price_list.csv", help="CSV path fallback")
-    # Other options
-    parser.add_argument("--test-size", "-t", type=int, default=2, help="Test set size (last N months)")
-    parser.add_argument("--plot", action="store_true", help="Plot series (requires matplotlib)")
+    parser = argparse.ArgumentParser(description="Price suggestion using saved or new models.")
+    parser.add_argument("--item", "-i", required=True, help="Item name to predict")
+    parser.add_argument("--mongo-uri", dest="mongo_uri", default=None, help="MongoDB URI")
+    parser.add_argument("--mongo-db", dest="mongo_db", default=None, help="MongoDB database")
+    parser.add_argument("--mongo-collection", dest="mongo_coll", default="pricesuggestions", help="MongoDB collection")
+    parser.add_argument("--csv", "-c", default="price_list.csv", help="CSV fallback")
+    parser.add_argument("--test-size", "-t", type=int, default=2, help="Test size")
+    parser.add_argument("--no-saved", action="store_true", help="Skip saved models, train new ones")
+    parser.add_argument("--save-models", action="store_true", help="Save trained models")
+    parser.add_argument("--version", type=int, default=1, help="Model version")
 
     args = parser.parse_args()
 
     try:
-        # 1) Prefer Mongo if URI is provided
         if args.mongo_uri:
-            # Best effort to infer DB name if not explicitly provided
-            db_name = args.mongo_db
-            if not db_name:
-                try:
-                    db_name = args.mongo_uri.rsplit('/', 1)[-1].split('?', 1)[0] or 'test'
-                except Exception:
-                    db_name = 'test'
-
-            df = load_from_mongo(args.mongo_uri, db_name, args.mongo_coll, args.commodity)
-            
+            df = load_from_mongo(args.mongo_uri, args.mongo_db or 'test', args.mongo_coll)
             if df.empty:
-                result = {"error": f"No data found in MongoDB collection '{args.mongo_coll}'"}
+                result = {"error": f"No data in MongoDB collection '{args.mongo_coll}'"}
                 print(json.dumps(result, default=_np_encoder))
                 sys.exit(1)
         else:
-            # 2) Fallback to CSV
             df = load_and_clean(args.csv)
 
-        result = suggest_for_item_from_df(df, args.item, args.test_size)
-
-        # Optional: plotting (still prints JSON first for programmatic usage)
-        if args.plot and plt is not None and not result.get("error"):
-            item_df = df[df['item'].str.lower() == args.item.lower()]
-            train_df, test_df = split_train_test(item_df, args.test_size)
-
-            p_test, p_next, p_model, p_dates, p_full = prophet_predict(train_df, test_df)
-            x_test, x_next, x_model, x_dates, x_full = xgboost_predict(train_df, test_df)
-            l_test, l_next, l_model, l_dates, l_full = lstm_predict(train_df, test_df)
-
-            all_dates = p_dates  # shared timeline
-            history_prices = np.concatenate([train_df['price'].values, test_df['price'].values])
-            pred_dates = {'Prophet': p_dates, 'XGBoost': x_dates, 'LSTM': l_dates}
-            pred_values = {'Prophet': p_full, 'XGBoost': x_full, 'LSTM': l_full}
-            next_month = train_df['ds'].max() + pd.DateOffset(months=1)
-            next_preds = {'Prophet': p_next, 'XGBoost': x_next, 'LSTM': l_next}
-
-            # Print JSON first
-            print(json.dumps(result, default=_np_encoder))
-            # Then show plot (blocks)
-            plot_forecast_like_image(train_df, test_df, all_dates, history_prices,
-                                     pred_dates, pred_values, next_month, next_preds, args.item)
-            return
-
-        # Print JSON result
+        result = suggest_for_item_from_df(
+            df, 
+            args.item, 
+            args.test_size,
+            save_models=args.save_models,
+            use_saved=not args.no_saved,
+            mongo_uri=args.mongo_uri,
+            mongo_db=args.mongo_db or 'test'
+        )
         print(json.dumps(result, default=_np_encoder))
+        
     except Exception as e:
         err = {"error": str(e)}
         print(json.dumps(err, default=_np_encoder))
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

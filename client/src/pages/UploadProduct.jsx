@@ -54,6 +54,8 @@ const UploadProduct = () => {
   const [showSuggestionModal, setShowSuggestionModal] = useState(false);
   const [suggestionError, setSuggestionError] = useState("");
   const [showSuggestionErrorModal, setShowSuggestionErrorModal] = useState(false);
+  const [fromSavedModels, setFromSavedModels] = useState(false);
+  const [predictionTime, setPredictionTime] = useState(null);
 
 
   const [descriptionLanguage, setDescriptionLanguage] = useState('en');
@@ -227,54 +229,178 @@ const UploadProduct = () => {
 
 
   const handleSuggestPrice = async () => {
-    if (!data.name || data.name.trim() === "") {
-      AxiosToastError({ message: "Please enter a product name first." });
-      return;
-    }
+  if (!data.name || data.name.trim() === "") {
+    AxiosToastError({ message: "Please enter a product name first." });
+    return;
+  }
 
+  setIsSuggestingPrice(true);
+  setSuggestedPrice(null);
+  setBestModel("");
+  setSuggestionError("");
+  setShowSuggestionErrorModal(false);
+  setFromSavedModels(false);
+  setPredictionTime(null);
 
-    setIsSuggestingPrice(true);
-    setSuggestedPrice(null);
-    setBestModel("");
-    setSuggestionError("");
-    setShowSuggestionErrorModal(false);
+  const startTime = Date.now();
 
-
-    try {
-      const res = await Axios({
-        ...SummaryApi.suggestPrice,
-        data: { item_name: data.name.trim() }
-      });
-
-
-      const { data: resData } = res;
-
-
-      if (resData?.suggestedPrice != null) {
-        setSuggestedPrice(Number(resData.suggestedPrice));
-        setBestModel(resData.bestModel || "");
-        setShowSuggestionModal(true);
-      } else {
-        const msg = resData?.message || "Could not generate a price suggestion.";
-        if (/not found/i.test(msg) || /no historical data/i.test(msg)) {
-          setSuggestionError(`I cannot suggest a price for "${data.name}" because there is no historical data for this item.`);
-          setShowSuggestionErrorModal(true);
-        } else {
-          AxiosToastError({ message: msg });
-        }
+  try {
+    const res = await Axios({
+      ...SummaryApi.suggestPrice,
+      data: { 
+        item_name: data.name.trim(),
+        use_saved: true // ✅ Request saved models first
       }
-    } catch (err) {
-      const serverMsg = err?.response?.data?.message || err?.message || String(err);
-      if (err?.response?.status === 404 || /not found/i.test(serverMsg) || /no historical data/i.test(serverMsg)) {
+    });
+
+    const { data: resData } = res;
+    const endTime = Date.now();
+    const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+    setPredictionTime(timeTaken);
+
+    if (resData?.suggestedPrice != null) {
+      setSuggestedPrice(Number(resData.suggestedPrice));
+      setBestModel(resData.bestModel || "");
+      setFromSavedModels(resData.fromSavedModels || false);
+      setShowSuggestionModal(true);
+    } else {
+      const msg = resData?.message || "Could not generate a price suggestion.";
+      if (/not found/i.test(msg) || /no historical data/i.test(msg)) {
         setSuggestionError(`I cannot suggest a price for "${data.name}" because there is no historical data for this item.`);
         setShowSuggestionErrorModal(true);
       } else {
-        AxiosToastError(err);
+        AxiosToastError({ message: msg });
       }
-    } finally {
-      setIsSuggestingPrice(false);
     }
-  };
+  } catch (err) {
+    const serverMsg = err?.response?.data?.message || err?.message || String(err);
+    if (err?.response?.status === 404 || /not found/i.test(serverMsg) || /no historical data/i.test(serverMsg)) {
+      setSuggestionError(`I cannot suggest a price for "${data.name}" because there is no historical data for this item.`);
+      setShowSuggestionErrorModal(true);
+    } else {
+      AxiosToastError(err);
+    }
+  } finally {
+    setIsSuggestingPrice(false);
+  }
+};
+
+// Update the Suggest Price button UI (around line 380):
+<button
+  type="button"
+  onClick={handleSuggestPrice}
+  disabled={isSuggestingPrice || !data.name.trim()}
+  className='mt-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2'
+>
+  {isSuggestingPrice ? (
+    <>
+      <span className='animate-spin'>⏳</span>
+      <span>Getting Price Suggestion...</span>
+    </>
+  ) : (
+    <>
+      <span>💡</span>
+      <span>Suggest Price with AI</span>
+    </>
+  )}
+</button>
+
+// Update the Price Suggestion Modal (around line 500):
+{showSuggestionModal && suggestedPrice != null && (
+  <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+    <div className='bg-white rounded-xl shadow-2xl w-full max-w-md p-6'>
+      {/* Header with Speed Indicator */}
+      <div className='flex items-start justify-between mb-4'>
+        <div>
+          <h3 className='text-lg font-semibold text-gray-900'>AI Price Suggestion</h3>
+          {fromSavedModels && (
+            <span className='inline-flex items-center gap-1 mt-1 px-2 py-0.5 text-xs font-medium text-green-700 bg-green-100 rounded-full'>
+              <span>⚡</span>
+              <span>Fast Prediction</span>
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => setShowSuggestionModal(false)}
+          className='text-gray-400 hover:text-gray-600'
+        >
+          <IoClose size={20} />
+        </button>
+      </div>
+
+      {/* Prediction Info */}
+      <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4'>
+        <div className='space-y-2 text-sm'>
+          <p>
+            <span className='font-medium text-gray-700'>Product:</span>{' '}
+            <span className='text-gray-900'>{data.name}</span>
+          </p>
+          <p>
+            <span className='font-medium text-gray-700'>Best Model:</span>{' '}
+            <span className='text-gray-900'>{bestModel}</span>
+          </p>
+          {predictionTime && (
+            <p>
+              <span className='font-medium text-gray-700'>Response Time:</span>{' '}
+              <span className='text-gray-900'>{predictionTime}s</span>
+              {fromSavedModels && (
+                <span className='ml-2 text-green-600 font-medium'>(Using Saved Model)</span>
+              )}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Price Information */}
+      <div className='space-y-3 mb-6'>
+        <div className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'>
+          <span className='text-sm font-medium text-gray-700'>Base Prediction:</span>
+          <span className='text-lg font-semibold text-gray-900'>₱{suggestedPrice.toFixed(2)}</span>
+        </div>
+
+        <div className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'>
+          <span className='text-sm font-medium text-gray-700'>Markup (5%):</span>
+          <span className='text-lg font-semibold text-gray-900'>₱{(suggestedPrice * 0.05).toFixed(2)}</span>
+        </div>
+
+        <div className='flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg'>
+          <span className='text-sm font-semibold text-gray-900'>Final Suggested Price:</span>
+          <span className='text-xl font-bold text-green-700'>₱{(suggestedPrice * 1.05).toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* Info Message */}
+      <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4'>
+        <p className='text-xs text-yellow-800'>
+          💡 This price includes a 5% markup for profit margin. You can adjust it manually if needed.
+        </p>
+      </div>
+
+      {/* Actions */}
+      <div className='flex justify-end gap-3'>
+        <button
+          onClick={() => setShowSuggestionModal(false)}
+          className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => {
+            setData(prev => ({
+              ...prev,
+              price: (suggestedPrice * 1.05).toFixed(2)
+            }));
+            setShowSuggestionModal(false);
+            successAlert("✅ AI suggested price applied!");
+          }}
+          className='px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors'
+        >
+          Apply Price
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
 
     const getTranslatedDescription = async (subcat) => {
@@ -837,22 +963,53 @@ const UploadProduct = () => {
       )}
 
 
-      {showSuggestionErrorModal && suggestionError && (
-        <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
-          <div className='bg-white rounded-xl shadow-2xl w-full max-w-md p-6'>
-            <h3 className='text-lg font-semibold text-gray-900 mb-3'>Price Suggestion</h3>
-            <p className='text-gray-700 mb-6'>{suggestionError}</p>
-            <div className='flex justify-end'>
-              <button
-                onClick={() => setShowSuggestionErrorModal(false)}
-                className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700'
-              >
-                Close
-              </button>
-            </div>
-          </div>
+      // Update the error modal (around line 580):
+{showSuggestionErrorModal && suggestionError && (
+  <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+    <div className='bg-white rounded-xl shadow-2xl w-full max-w-md p-6'>
+      <div className='flex items-start gap-3 mb-4'>
+        <div className='w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0'>
+          <span className='text-xl'>⚠️</span>
         </div>
-      )}
+        <div className='flex-1'>
+          <h3 className='text-lg font-semibold text-gray-900 mb-2'>No Historical Data</h3>
+          <p className='text-gray-700 text-sm'>{suggestionError}</p>
+        </div>
+      </div>
+
+      {/* Training Suggestion */}
+      <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4'>
+        <p className='text-sm text-blue-800 mb-2'>
+          <strong>💡 Suggestion:</strong> Train AI models for this product first:
+        </p>
+        <ol className='text-xs text-blue-700 space-y-1 ml-4 list-decimal'>
+          <li>Go to <strong>Price Suggestion Page</strong></li>
+          <li>Use the <strong>Model Training</strong> section</li>
+          <li>Enter "<strong>{data.name}</strong>" and train models</li>
+          <li>Come back and try again</li>
+        </ol>
+      </div>
+
+      <div className='flex justify-end gap-3'>
+        <button
+          onClick={() => setShowSuggestionErrorModal(false)}
+          className='px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+        >
+          Close
+        </button>
+        <button
+          onClick={() => {
+            setShowSuggestionErrorModal(false);
+            window.location.href = '/dashboard/price-suggestion'; // Navigate to training page
+          }}
+          className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors'
+        >
+          Go to Training
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </section>
   );
 };

@@ -374,7 +374,7 @@ export const searchProduct = async(request,response)=>{
 
 export const suggestPriceController = async (req, res) => {
   try {
-    const { item_name, test_size = 2 } = req.body || {};
+    const { item_name, test_size = 2, use_saved = true } = req.body || {}; // ✅ Added use_saved
 
     if (!item_name || typeof item_name !== "string" || !item_name.trim()) {
       return res.status(400).json({
@@ -383,13 +383,17 @@ export const suggestPriceController = async (req, res) => {
       });
     }
 
-    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:10000";
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:5000";
 
     const aiResponse = await axios.post(
       `${aiServiceUrl}/suggest-price`,
-      { item_name: item_name.trim(), test_size },
       { 
-        timeout: 120000, // 2 minutes for first request
+        item_name: item_name.trim(), 
+        test_size,
+        use_saved // ✅ Pass to Flask
+      },
+      { 
+        timeout: 300000, // ✅ 5 minutes timeout
         headers: { 'Content-Type': 'application/json' }
       }
     );
@@ -405,10 +409,13 @@ export const suggestPriceController = async (req, res) => {
 
     return res.json({
       success: true,
-      message: "Price suggestion generated",
+      message: payload.data.fromSavedModels 
+        ? "⚡ Fast prediction from saved models" 
+        : "🤖 Generated new prediction",
       data: payload.data,
       suggestedPrice: payload.suggestedPrice,
-      bestModel: payload.bestModel
+      bestModel: payload.bestModel,
+      fromSavedModels: payload.fromSavedModels || false
     });
   } catch (error) {
     console.error('[suggestPrice] Error:', error.message);
@@ -418,7 +425,6 @@ export const suggestPriceController = async (req, res) => {
     });
   }
 };
-// ...existing code...
 
 export const getProductBySubCategory = async (request, response) => {
   try {

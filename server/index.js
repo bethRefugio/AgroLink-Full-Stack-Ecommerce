@@ -17,6 +17,7 @@ import orderRouter from './route/order.route.js'
 import emailRoute from "./route/email.route.js"
 import priceSuggestionRoute from "./route/price_suggestion_ai.route.js"
 import translateRouter from './route/translate.route.js'
+import modelTrainingRouter from './route/model_training.route.js'
 
 const app = express()
 
@@ -54,6 +55,7 @@ app.use('/api/order',orderRouter)
 app.use("/api/email", emailRoute)
 app.use("/api/price-ai", priceSuggestionRoute)
 app.use("/api", translateRouter)
+app.use("/api/model-training", modelTrainingRouter)
 
 connectDB().then(()=>{
     app.listen(PORT,()=>{
