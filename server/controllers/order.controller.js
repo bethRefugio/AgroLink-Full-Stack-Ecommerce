@@ -804,32 +804,39 @@ export async function getOrdersGroupedByBuyer(request, response) {
     if (!requester) return response.status(401).json({ message: 'Unauthorized', error: true, success: false })
     if (requester.role !== 'ADMIN') return response.status(403).json({ message: 'Forbidden', error: true, success: false })
 
-
     const pipeline = [
       // include buyer info
       { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'buyer' } },
       { $unwind: { path: '$buyer', preserveNullAndEmptyArrays: true } },
-
 
       // group orders by buyer
       {
         $group: {
           _id: '$userId',
           buyer: { $first: '$buyer' },
-          orders: { $push: '$$ROOT' },
+          orders: { 
+            $push: {
+              _id: '$$ROOT._id',
+              orderId: '$$ROOT.orderId',
+              product_details: '$$ROOT.product_details',
+              userId: '$$ROOT.userId',
+              totalAmt: '$$ROOT.totalAmt',
+              payment_status: '$$ROOT.payment_status',
+              status: '$$ROOT.order_status',
+              order_status: '$$ROOT.order_status',
+              createdAt: '$$ROOT.createdAt'
+            }
+          },
           totalOrders: { $sum: 1 },
           totalAmount: { $sum: { $ifNull: ['$totalAmt', 0] } }
         }
       },
 
-
       // sort (largest buyer first)
       { $sort: { totalAmount: -1, totalOrders: -1 } }
     ]
 
-
     const result = await OrderModel.aggregate(pipeline)
-
 
     return response.json({ message: 'Orders grouped by buyer', success: true, error: false, data: result })
   } catch (error) {
@@ -837,52 +844,82 @@ export async function getOrdersGroupedByBuyer(request, response) {
   }
 }
 
-
 // admin: get orders grouped by seller
 export async function getOrdersGroupedBySeller(request, response) {
   try {
     const requesterId = request.userId
-    const requester = await UserModel.findById(requesterId)
-    if (!requester) return response.status(401).json({ message: 'Unauthorized', error: true, success: false })
-    if (requester.role !== 'ADMIN') return response.status(403).json({ message: 'Forbidden', error: true, success: false })
+    
+    // Check if user is authenticated
+    if (!requesterId) {
+      return response.status(401).json({ 
+        message: 'User not authenticated', 
+        error: true, 
+        success: false 
+      })
+    }
 
+    const requester = await UserModel.findById(requesterId)
+    
+    if (!requester) {
+      return response.status(401).json({ 
+        message: 'User not found', 
+        error: true, 
+        success: false 
+      })
+    }
+    
+    if (requester.role !== 'ADMIN') {
+      return response.status(403).json({ 
+        message: 'Only admins can access this resource', 
+        error: true, 
+        success: false 
+      })
+    }
 
     const pipeline = [
-      // bring product into each order (so we can read product.userId)
       { $lookup: { from: 'products', localField: 'productId', foreignField: '_id', as: 'product' } },
       { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
-
-
-      // bring seller info from product.userId
       { $lookup: { from: 'users', localField: 'product.userId', foreignField: '_id', as: 'seller' } },
       { $unwind: { path: '$seller', preserveNullAndEmptyArrays: true } },
-
-
-      // group by seller
       {
         $group: {
           _id: '$seller._id',
           seller: { $first: '$seller' },
-          orders: { $push: '$$ROOT' },
+          orders: { 
+            $push: {
+              _id: '$$ROOT._id',
+              orderId: '$$ROOT.orderId',
+              product_details: '$$ROOT.product_details',
+              userId: '$$ROOT.userId',
+              totalAmt: '$$ROOT.totalAmt',
+              payment_status: '$$ROOT.payment_status',
+              status: '$$ROOT.order_status',
+              order_status: '$$ROOT.order_status',
+              createdAt: '$$ROOT.createdAt'
+            }
+          },
           productsSold: { $sum: 1 },
           totalRevenue: { $sum: { $ifNull: ['$totalAmt', 0] } }
         }
       },
-
-
-      // sort by revenue
       { $sort: { totalRevenue: -1, productsSold: -1 } }
     ]
 
-
     const result = await OrderModel.aggregate(pipeline)
 
-
-    return response.json({ message: 'Orders grouped by seller', success: true, error: false, data: result })
+    return response.json({ 
+      message: 'Orders grouped by seller', 
+      success: true, 
+      error: false, 
+      data: result 
+    })
   } catch (error) {
-    return response.status(500).json({ message: error.message || error, error: true, success: false })
+    console.error("❌ getOrdersGroupedBySeller error:", error)
+    return response.status(500).json({ 
+      message: error.message || error, 
+      error: true, 
+      success: false 
+    })
   }
 }
-
-
 

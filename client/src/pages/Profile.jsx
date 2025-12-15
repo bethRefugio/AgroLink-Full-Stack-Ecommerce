@@ -14,12 +14,18 @@ import fetchUserDetails from '../utils/fetchUserDetails'
 import isSeller from '../utils/isSeller'
 
 
+
+
 const Profile = () => {
   const user = useSelector(state => state.user)
   const dispatch = useDispatch()
 
 
+
+
   const seller = isSeller(user.role)
+
+
 
 
   const [openProfileAvatarEdit, setProfileAvatarEdit] = useState(false)
@@ -27,6 +33,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false)
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [prefLoading, setPrefLoading] = useState(false)
+  const [addressToDelete, setAddressToDelete] = useState(null)
 
 
   const [userPreferences, setUserPreferences] = useState([])
@@ -35,14 +42,20 @@ const Profile = () => {
   const [allSubCategories, setAllSubCategories] = useState([])
 
 
+
+
   const [preferences, setPreferences] = useState({
     categoryId: '',
     subCategoryId: ''
   })
 
 
+
+
   const [addresses, setAddresses] = useState([])
   const [addressLoading, setAddressLoading] = useState(false)
+
+
 
 
   const [userData, setUserData] = useState({
@@ -52,6 +65,8 @@ const Profile = () => {
   })
 
 
+
+
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
@@ -59,11 +74,15 @@ const Profile = () => {
   })
 
 
+
+
   const [showPassword, setShowPassword] = useState({
     old: false,
     new: false,
     confirm: false
   })
+
+
 
 
   useEffect(() => {
@@ -75,8 +94,12 @@ const Profile = () => {
   }, [user])
 
 
+
+
   useEffect(() => {
     if (seller) return
+
+
 
 
     const fetchCategories = async () => {
@@ -91,8 +114,12 @@ const Profile = () => {
   }, [seller])
 
 
+
+
   useEffect(() => {
     if (seller) return
+
+
 
 
     const fetchAllSubCat = async () => {
@@ -110,8 +137,12 @@ const Profile = () => {
   }, [seller])
 
 
+
+
   useEffect(() => {
     if (seller) return
+
+
 
 
     const fetchSubCat = async () => {
@@ -134,10 +165,14 @@ const Profile = () => {
   }, [seller, preferences.categoryId])
 
 
+
+
   const handleOnChange = (e) => {
     const { name, value } = e.target
     setUserData(prev => ({ ...prev, [name]: value }))
   }
+
+
 
 
   const handleSubmit = async (e) => {
@@ -159,6 +194,8 @@ const Profile = () => {
       setLoading(false)
     }
   }
+
+
 
 
   const handlePasswordChange = async (e) => {
@@ -191,14 +228,20 @@ const Profile = () => {
   }
 
 
+
+
   const handlePrefChange = (e) => {
     const { name, value } = e.target
     setPreferences(prev => ({ ...prev, [name]: value }))
   }
 
 
+
+
   const fetchPreferences = async () => {
     if (seller) return
+
+
 
 
     try {
@@ -212,6 +255,8 @@ const Profile = () => {
   }
 
 
+
+
   const handleAddPreference = async () => {
     if (!preferences.categoryId || !preferences.subCategoryId) {
       toast.error("Select category and subcategory")
@@ -219,8 +264,12 @@ const Profile = () => {
     }
 
 
+
+
     const categoryObj = categories.find(c => c._id === preferences.categoryId)
     const subCatObj = subCategories.find(sc => sc._id === preferences.subCategoryId)
+
+
 
 
     try {
@@ -249,6 +298,8 @@ const Profile = () => {
   }
 
 
+
+
   const handleDeletePreference = async (preferenceId) => {
     try {
       const res = await Axios({
@@ -267,6 +318,8 @@ const Profile = () => {
   }
 
 
+
+
   const fetchAddresses = async () => {
     try {
       setAddressLoading(true)
@@ -280,22 +333,41 @@ const Profile = () => {
   }
 
 
+
+
   const handleDeleteAddress = async (id) => {
-    try {
-      const res = await Axios({
-        ...SummaryApi.deleteAddress,
-        data: { _id: id }
-      })
-      if (res.data.success) {
-        toast.success("Address deleted")
-        setAddresses(prev => prev.filter(a => a._id !== id))
-      } else {
-        toast.error(res.data.message || "Delete failed")
-      }
-    } catch (e) {
-      AxiosToastError(e)
+  // Show confirmation modal
+  setAddressToDelete(id)
+}
+
+
+const confirmDeleteAddress = async () => {
+  if (!addressToDelete) return
+ 
+  try {
+    const res = await Axios({
+      ...SummaryApi.deleteAddress,
+      data: { _id: addressToDelete }
+    })
+    if (res.data.success) {
+      toast.success("Address deleted")
+      setAddresses(prev => prev.filter(a => a._id !== addressToDelete))
+    } else {
+      toast.error(res.data.message || "Delete failed")
     }
+  } catch (e) {
+    AxiosToastError(e)
+  } finally {
+    setAddressToDelete(null)
   }
+}
+
+
+const cancelDeleteAddress = () => {
+  setAddressToDelete(null)
+}
+
+
 
 
   useEffect(() => {
@@ -306,16 +378,24 @@ const Profile = () => {
 
 
 
+
+
+
+
   const categoryMap = categories.reduce((acc, c) => {
     acc[c._id] = c.name
     return acc
   }, {})
 
 
+
+
   const subCategoryMap = allSubCategories.reduce((acc, s) => {
     acc[s._id] = s.name
     return acc
   }, {})
+
+
 
 
   const grouped = userPreferences.reduce((acc, pref) => {
@@ -326,11 +406,15 @@ const Profile = () => {
   }, {})
 
 
+
+
   return (
     <div className='max-w-5xl mx-auto overflow-x-hidden py-8 px-4 lg:px-0'>
       <div className='mb-8'>
         <h1 className='text-2xl font-semibold text-gray-900 mb-1'>Account</h1>
       </div>
+
+
 
 
       {/* Header */}
@@ -357,9 +441,13 @@ const Profile = () => {
       </div>
 
 
+
+
       {/* Personal Information */}
       <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
         <h3 className='font-semibold text-gray-900 mb-6'>Personal Information</h3>
+
+
 
 
         <div className='grid grid-cols-2 gap-4 mb-4'>
@@ -375,6 +463,8 @@ const Profile = () => {
           </div>
 
 
+
+
           <div>
             <label className='block text-sm text-gray-600 mb-2'>Mobile</label>
             <input
@@ -386,6 +476,8 @@ const Profile = () => {
             />
           </div>
         </div>
+
+
 
 
         <div className='mb-4'>
@@ -400,6 +492,8 @@ const Profile = () => {
         </div>
 
 
+
+
         <button
           onClick={handleSubmit}
           disabled={loading}
@@ -410,10 +504,14 @@ const Profile = () => {
       </div>
 
 
+
+
       {/* Password */}
       <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6'>
         <h3 className='font-semibold text-gray-900 mb-1'>Password</h3>
         <p className='text-sm text-gray-500 mb-4'>Modify your current password.</p>
+
+
 
 
         <div className='grid grid-cols-2 gap-4 mb-4'>
@@ -437,6 +535,8 @@ const Profile = () => {
           </div>
 
 
+
+
           <div>
             <label className='block text-sm text-gray-600 mb-2'>New password</label>
             <div className='relative'>
@@ -456,6 +556,8 @@ const Profile = () => {
             </div>
           </div>
         </div>
+
+
 
 
         <div className='mb-4'>
@@ -478,6 +580,8 @@ const Profile = () => {
         </div>
 
 
+
+
         <button
           onClick={handlePasswordChange}
           disabled={passwordLoading}
@@ -486,6 +590,8 @@ const Profile = () => {
           {passwordLoading ? "Updating..." : "Update Password"}
         </button>
       </div>
+
+
 
 
       {/* Addresses */}
@@ -501,10 +607,14 @@ const Profile = () => {
         </h3>
 
 
+
+
         {addressLoading && <p className='text-sm text-gray-500'>Loading...</p>}
         {!addressLoading && addresses.length === 0 && (
           <p className='text-sm text-gray-500'>No address saved.</p>
         )}
+
+
 
 
         <div className='space-y-4'>
@@ -533,10 +643,14 @@ const Profile = () => {
       </div>
 
 
+
+
       {/* Preferences */}
       {!seller && (
         <div className='bg-white rounded-lg border border-gray-200 p-6 mb-6 gap-3'>
           <h3 className='font-semibold text-gray-900 mb-4'>Preferences</h3>
+
+
 
 
           <div className='grid grid-cols-2 gap-4 mb-4'>
@@ -554,6 +668,8 @@ const Profile = () => {
                 ))}
               </select>
             </div>
+
+
 
 
             <div>
@@ -574,6 +690,8 @@ const Profile = () => {
           </div>
 
 
+
+
           <button
             onClick={handleAddPreference}
             disabled={prefLoading}
@@ -583,14 +701,20 @@ const Profile = () => {
           </button>
 
 
+
+
           {Object.keys(grouped).length > 0 && (
             <div className='mt-6'>
               <h4 className='font-medium text-gray-900 mb-3'>Saved Preferences</h4>
 
 
+
+
               {Object.entries(grouped).map(([categoryName, prefs]) => (
                 <div key={categoryName} className='mb-4'>
                   <h5 className='text-sm font-semibold text-gray-700 mb-2'>{categoryName}</h5>
+
+
 
 
                   <div className='flex flex-wrap gap-2'>
@@ -622,13 +746,44 @@ const Profile = () => {
       )}
 
 
+
+
       {/* EXTRA SPACE BELOW — mobile only */}
       <div className="block md:hidden h-8"></div>
+
+
+   
+        {addressToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Address</h3>
+              <p className="text-gray-600 mb-6">Are you sure you want to delete this address?</p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={cancelDeleteAddress}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteAddress}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+
 
 
       {openProfileAvatarEdit && (
         <UserProfileAvatarEdit close={() => setProfileAvatarEdit(false)} />
       )}
+
+
 
 
       {openAddAddress?.mode === 'create' && (
@@ -637,6 +792,8 @@ const Profile = () => {
           fetchAddress={fetchAddresses}
         />
       )}
+
+
 
 
       {openAddAddress?.mode === 'edit' && (
@@ -650,5 +807,11 @@ const Profile = () => {
 }
 
 
+
+
 export default Profile
+
+
+
+
 

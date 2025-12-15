@@ -165,65 +165,86 @@ const AllOrders = () => {
     })
   ]
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Order Placed':
+        return 'bg-blue-100 text-blue-700 border-blue-200'
+      case 'Processing':
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+      case 'Out for Delivery':
+        return 'bg-purple-100 text-purple-700 border-purple-200'
+      case 'Ready For PickUp':
+        return 'bg-orange-100 text-orange-700 border-orange-200'
+      case 'Delivered':
+        return 'bg-green-100 text-green-700 border-green-200'
+      case 'Cancelled':
+        return 'bg-red-100 text-red-700 border-red-200'
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200'
+    }
+  }
 
-  // MODAL
+
+
   const OrderDetailsModal = () => {
-    if (!showModal || !selectedGroup) return null
+  if (!showModal || !selectedGroup) return null
 
+  const isSeller = activeTab === "seller"
+  const orderColumnHelper = createColumnHelper()
 
-    const isSeller = activeTab === "seller"
-    const orderColumnHelper = createColumnHelper()
-
-
-    let orderColumns = [
-      orderColumnHelper.display({
-        id: "serialNumber",
-        header: "No.",
-        cell: ({ row }) => <div>{row.index + 1}</div>
-      }),
-      orderColumnHelper.accessor("orderId", {
-        header: "ORDER ID",
-        cell: ({ row }) => <span>{row.original.orderId}</span>
-      }),
-      orderColumnHelper.accessor("product_details.name", {
-        header: "PRODUCT",
-        cell: ({ row }) => <span>{row.original.product_details?.name || 'N/A'}</span>
-      }),
-      ...(isSeller
-        ? [
-            orderColumnHelper.accessor("userId.name", {
-              header: "BUYER",
-              cell: ({ row }) => (
-                <span>{row.original.userId?.name || "N/A"}</span>
-              )
-            })
-          ]
-        : []),
-      orderColumnHelper.accessor("totalAmt", {
-        header: "AMOUNT",
-        cell: ({ row }) => (
-          <span className="font-semibold">₱{row.original.totalAmt}</span>
-        )
-      }),
-      orderColumnHelper.accessor("payment_status", {
-        header: "PAYMENT",
-        cell: ({ row }) => (
-          <span
-            className={`px-2 py-1 text-xs rounded-full ${
-              row.original.payment_status === "paid"
-                ? "bg-green-100 text-green-700"
-                : "bg-yellow-100 text-yellow-700"
-            }`}
-          >
-            {row.original.payment_status}
-          </span>
-        )
-      }),
-      orderColumnHelper.accessor("status", {
-        header: "STATUS",
-        cell: ({ row }) => <span>{row.original.status}</span>
-      })
-    ]
+  let orderColumns = [
+    orderColumnHelper.display({
+      id: "serialNumber",
+      header: "No.",
+      cell: ({ row }) => <div>{row.index + 1}</div>
+    }),
+    orderColumnHelper.accessor("orderId", {
+      header: "ORDER ID",
+      cell: ({ row }) => <span>{row.original.orderId}</span>
+    }),
+    orderColumnHelper.accessor("product_details.name", {
+      header: "PRODUCT",
+      cell: ({ row }) => <span>{row.original.product_details?.name || 'N/A'}</span>
+    }),
+    ...(isSeller
+      ? [
+          orderColumnHelper.accessor("userId.name", {
+            header: "BUYER",
+            cell: ({ row }) => (
+              <span>{row.original.userId?.name || "N/A"}</span>
+            )
+          })
+        ]
+      : []),
+    orderColumnHelper.accessor("totalAmt", {
+      header: "AMOUNT",
+      cell: ({ row }) => (
+        <span className="font-semibold">₱{row.original.totalAmt}</span>
+      )
+    }),
+    orderColumnHelper.accessor("payment_status", {
+      header: "PAYMENT",
+      cell: ({ row }) => (
+        <span
+          className={`px-2 py-1 text-xs rounded-full font-medium ${
+            row.original.payment_status === "paid"
+              ? "bg-green-100 text-green-700"
+              : "bg-yellow-100 text-yellow-700"
+          }`}
+        >
+          {row.original.payment_status}
+        </span>
+      )
+    }),
+    orderColumnHelper.accessor("status", {
+      header: "STATUS",
+      cell: ({ row }) => (
+        <span className={`px-3 py-1 text-xs rounded-full font-medium ${getStatusColor(row.original.status)}`}>
+          {row.original.status}
+        </span>
+      )
+    })
+  ]
 
 
     const person = isSeller ? selectedGroup.seller : selectedGroup.buyer

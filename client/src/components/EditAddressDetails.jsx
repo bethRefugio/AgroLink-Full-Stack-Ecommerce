@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useForm } from "react-hook-form"
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
@@ -8,7 +8,11 @@ import { IoClose } from "react-icons/io5";
 import { useGlobalContext } from '../provider/GlobalProvider'
 
 
+
+
 import phZipCodes from '../data/ph-zip-codes.json'
+
+
 
 
 // List of Mindanao provinces (same list as AddAddress)
@@ -22,11 +26,17 @@ const mindanaoProvinces = [
 ];
 
 
+
+
 const EditAddressDetails = ({ close, data }) => {
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm()
 
 
+
+
   const { fetchAddress } = useGlobalContext()
+
+
 
 
   // Build Mindanao city/province list from ZIP data (handles multi-word city names)
@@ -36,8 +46,12 @@ const EditAddressDetails = ({ close, data }) => {
         const area = (item.area || '').replace(/^PH\s*-\s*/i, '').trim();
 
 
+
+
         const provinceMatch = mindanaoProvinces.find(p => area.toLowerCase().startsWith(p.toLowerCase()));
         if (!provinceMatch) return null;
+
+
 
 
         let city = area.slice(provinceMatch.length).trim();
@@ -45,7 +59,11 @@ const EditAddressDetails = ({ close, data }) => {
         city = city.replace(/\s*\(.*?\)/, '').replace(/\s*,\s*incl\..*$/i, '').trim();
 
 
+
+
         if (!city) return null;
+
+
 
 
         return { city, province: provinceMatch, zip: item.zip };
@@ -53,16 +71,24 @@ const EditAddressDetails = ({ close, data }) => {
       .filter(Boolean);
 
 
+
+
     const unique = parsed.filter((value, index, self) =>
       index === self.findIndex(t => t.city === value.city && t.province === value.province)
     );
 
 
+
+
     unique.sort((a, b) => a.city.localeCompare(b.city));
+
+
 
 
     return unique;
   }, []);
+
+
 
 
   // If the current address city isn't in the list (older data), include it as the first option
@@ -76,6 +102,30 @@ const EditAddressDetails = ({ close, data }) => {
     }
     return list;
   }, [cityProvinceListBase, data]);
+
+
+  // Search state for city dropdown (align with AddAddress)
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+
+
+  useEffect(() => {
+    if (data && data.city) {
+      setSearchTerm(data.city);
+    }
+  }, [data]);
+
+
+  const filteredCities = useMemo(() => {
+    if (!searchTerm) return cityProvinceList;
+    const term = searchTerm.toLowerCase();
+    return cityProvinceList.filter(item =>
+      item.city.toLowerCase().includes(term) ||
+      (item.province || '').toLowerCase().includes(term)
+    );
+  }, [searchTerm, cityProvinceList]);
+
+
 
 
   // Ensure form updates whenever `data` changes
@@ -95,6 +145,8 @@ const EditAddressDetails = ({ close, data }) => {
   }, [data, reset])
 
 
+
+
   const onSubmit = async (formData) => {
     try {
       const response = await Axios({
@@ -103,7 +155,11 @@ const EditAddressDetails = ({ close, data }) => {
       })
 
 
+
+
       const { data: responseData } = response
+
+
 
 
       if (responseData.success) {
@@ -118,10 +174,14 @@ const EditAddressDetails = ({ close, data }) => {
   }
 
 
+
+
   // Auto-fill ZIP & province when a city is selected
   const handleCitySelect = (e) => {
     const selectedCity = e.target.value;
     setValue("city", selectedCity);
+
+
 
 
     const found = cityProvinceList.find(i => i.city === selectedCity);
@@ -129,6 +189,18 @@ const EditAddressDetails = ({ close, data }) => {
       setValue("zipcode", found.zip);
       setValue("province", found.province);
     }
+  }
+
+
+
+
+  // New: select city from filtered list (align with AddAddress)
+  const handleCitySelectItem = (item) => {
+    setValue("city", item.city, { shouldValidate: true });
+    setValue("zipcode", item.zip, { shouldValidate: true });
+    setValue("province", item.province, { shouldValidate: true });
+    setSearchTerm(item.city);
+    setShowDropdown(false);
   }
 
 
@@ -149,6 +221,8 @@ const EditAddressDetails = ({ close, data }) => {
             <IoClose size={24}/>
           </button>
         </div>
+
+
 
 
         {/* Form */}
@@ -178,6 +252,8 @@ const EditAddressDetails = ({ close, data }) => {
             </div>
 
 
+
+
             {/* Barangay */}
             <div className='grid gap-2'>
               <label htmlFor='barangay' className='text-sm font-medium text-gray-700'>
@@ -202,58 +278,65 @@ const EditAddressDetails = ({ close, data }) => {
             </div>
 
 
+
+
             {/* City and Zip Code Row */}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
-              <div className='grid gap-2'>
-                <label htmlFor='city' className='text-sm font-medium text-gray-700'>
-                  City / Municipality
-                  <span className='text-red-500 ml-1'>*</span>
-                </label>
-                <select
-                  id='city'
-                  className={`border w-full px-1 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
-                    errors.city ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'
-                  }`}
-                  {...register("city", { required: "City is required" })}
-                  onChange={handleCitySelect}
-                >
-                  <option value="">Select City/Municipality</option>
-                  {cityProvinceList.map(item => (
-                    <option key={`${item.city}-${item.province}`} value={item.city}>
-                      {item.city}{item.province ? `, ${item.province}` : ''}
-                    </option>
-                  ))}
-                </select>
-                {errors.city && (
-                  <span className='text-xs text-red-500 mt-1'>{errors.city.message}</span>
-                )}
-              </div>
-
-
-              <div className='grid gap-2'>
-                <label htmlFor='zipcode' className='text-sm font-medium text-gray-700'>
-                  Zip Code
-                  <span className='text-red-500 ml-1'>*</span>
+              {/* City / Municipality - searchable dropdown like AddAddress */}
+              <div className='grid gap-2 relative'>
+                <label className='text-sm font-medium text-gray-700'>
+                  City / Municipality <span className='text-red-500 ml-1'>*</span>
                 </label>
                 <input
                   type='text'
-                  id='zipcode'
-                  placeholder='e.g., 9600'
-                  className={`border w-full px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
-                    errors.zipcode ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'
-                  }`}
-                  {...register("zipcode", {
-                    required: "Zip code is required",
-                    pattern: { value: /^[0-9]{4,6}$/, message: "Enter a valid zip code" }
-                  })}
+                  placeholder='Type your City/Municipality'
+                  className={`border px-4 py-2.5 rounded-lg ${errors.city ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                  value={searchTerm}
+                  onChange={(e) => { setSearchTerm(e.target.value); setShowDropdown(true); }}
+                  onFocus={() => setShowDropdown(true)}
                 />
-                {errors.zipcode && (
-                  <span className='text-xs text-red-500 mt-1'>{errors.zipcode.message}</span>
+                <input type="hidden" {...register("city", { required: "City is required" })} />
+                <input type="hidden" {...register("province")} />
+
+
+                {errors.city && <p className='text-xs text-red-500'>{errors.city.message}</p>}
+
+
+                {showDropdown && filteredCities.length > 0 && (
+                  <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10'>
+                    {filteredCities.map(item => (
+                      <button
+                        key={`${item.city}-${item.province}`}
+                        type='button'
+                        className='w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors'
+                        onClick={() => handleCitySelectItem(item)}
+                      >
+                        <div className='font-medium text-gray-900'>{item.city}</div>
+                        <div className='text-xs text-gray-500'>{item.province}</div>
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-              {/* Hidden province field to be populated when selecting a city */}
-              <input type="hidden" {...register("province")} />
+
+
+              {/* ZIP Code - read-only auto-filled like AddAddress */}
+              <div className='grid gap-2'>
+                <label className='text-sm font-medium text-gray-700'>
+                  ZIP Code <span className='text-red-500 ml-1'>*</span>
+                </label>
+                <input
+                  type='text'
+                  placeholder='Auto-filled'
+                  className='border px-4 py-2.5 rounded-lg border-gray-300 bg-gray-100'
+                  {...register("zipcode", { required: "ZIP code is required" })}
+                  readOnly
+                />
+                {errors.zipcode && <p className='text-xs text-red-500'>{errors.zipcode.message}</p>}
+              </div>
             </div>
+
+
 
 
             {/* Country */}
@@ -280,6 +363,8 @@ const EditAddressDetails = ({ close, data }) => {
             </div>
           </div>
         </div>
+
+
 
 
         {/* Footer */}
@@ -321,5 +406,11 @@ const EditAddressDetails = ({ close, data }) => {
 }
 
 
+
+
 export default EditAddressDetails
+
+
+
+
 
