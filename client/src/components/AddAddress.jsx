@@ -4,12 +4,10 @@ import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
 import toast from 'react-hot-toast'
 import AxiosToastError from '../utils/AxiosToastError'
-import { IoClose } from "react-icons/io5";
+import { IoClose } from "react-icons/io5"
 import { useGlobalContext } from '../provider/GlobalProvider'
 
-
-import phZipCodes from '../data/ph-zip-codes.json';
-
+import phZipCodes from '../data/ph-zip-codes.json'
 
 // List of Mindanao provinces
 const mindanaoProvinces = [
@@ -19,8 +17,7 @@ const mindanaoProvinces = [
   "Davao Occidental", "North Cotabato", "South Cotabato", "Sultan Kudarat",
   "Agusan del Norte", "Agusan del Sur", "Surigao del Norte", "Surigao del Sur",
   "Maguindanao", "Sarangani", "Basilan", "Sulu", "Tawi-Tawi", "Camiguin", "Dinagat Islands"
-];
-
+]
 
 const AddAddress = ({ close }) => {
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm()
@@ -28,50 +25,44 @@ const AddAddress = ({ close }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
 
-
-  // Filter ZIP codes to only Mindanao cities/municipalities
+  // Build city/province list (Mindanao only), correctly parsing multi-word provinces and cities
   const cityProvinceList = useMemo(() => {
-    const parsed = phZipCodes
+    return phZipCodes
       .map(item => {
-        // Extract city and province from "PH - Province CityName" format
-        const parts = item.area.split(" - ")[1].trim();
-        const words = parts.split(" ");
-        const city = words.pop();
-        const province = words.join(" ");
+        const raw = item.area.replace(/^PH\s*-\s*/, '').trim() // e.g., "Lanao del Norte Iligan City"
+        const province = mindanaoProvinces.find(p =>
+          raw.toLowerCase().startsWith((p + ' ').toLowerCase())
+        )
+        if (!province) return null
+        const city = raw.slice(province.length).trim()
+        if (!city) return null
         return { city, province, zip: item.zip }
       })
-      .filter(item => mindanaoProvinces.includes(item.province)); // Mindanao only
-
-
-    // Remove duplicates
-    const unique = parsed.filter((value, index, self) =>
-      index === self.findIndex(t => t.city === value.city && t.province === value.province)
-    );
-
-
-    return unique;
-  }, []);
-
+      .filter(Boolean)
+      .filter((v, i, self) =>
+        i === self.findIndex(t => t.city === v.city && t.province === v.province)
+      )
+      .sort((a, b) => a.city.localeCompare(b.city))
+  }, [])
 
   // Filter cities based on search term
   const filteredCities = useMemo(() => {
-    if (!searchTerm) return cityProvinceList;
+    if (!searchTerm) return cityProvinceList
+    const term = searchTerm.toLowerCase()
     return cityProvinceList.filter(item =>
-      item.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.province.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, cityProvinceList]);
-
+      item.city.toLowerCase().includes(term) ||
+      item.province.toLowerCase().includes(term)
+    )
+  }, [searchTerm, cityProvinceList])
 
   // Handle city selection from dropdown
   const handleCitySelect = (item) => {
-    setValue("city", item.city);
-    setValue("zipcode", item.zip);
-    setValue("province", item.province);
-    setSearchTerm(item.city);
-    setShowDropdown(false);
+    setValue("city", item.city, { shouldValidate: true })
+    setValue("zipcode", item.zip, { shouldValidate: true })
+    setValue("province", item.province, { shouldValidate: true })
+    setSearchTerm(item.city)
+    setShowDropdown(false)
   }
-
 
   const onSubmit = async (data) => {
     try {
@@ -85,10 +76,9 @@ const AddAddress = ({ close }) => {
           zipcode: data.zipcode,
           country: data.country
         }
-      });
+      })
 
-
-      const { data: responseData } = response;
+      const { data: responseData } = response
       if (responseData.success) {
         toast.success(responseData.message)
         close()
@@ -99,7 +89,6 @@ const AddAddress = ({ close }) => {
       AxiosToastError(error)
     }
   }
-
 
   return (
     <section className='bg-black fixed top-0 left-0 right-0 bottom-0 z-50 bg-opacity-50 flex items-center justify-center p-4'>
@@ -115,7 +104,6 @@ const AddAddress = ({ close }) => {
           </button>
         </div>
 
-
         {/* Form */}
         <div className='px-6 py-6'>
           <div className='grid gap-5'>
@@ -130,8 +118,8 @@ const AddAddress = ({ close }) => {
                 className={`border px-4 py-2.5 rounded-lg ${errors.purok_house ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                 {...register("purok_house", { required: "Street address is required" })}
               />
+              {errors.purok_house && <p className='text-xs text-red-500'>{errors.purok_house.message}</p>}
             </div>
-
 
             {/* Barangay */}
             <div className='grid gap-2'>
@@ -144,8 +132,8 @@ const AddAddress = ({ close }) => {
                 className={`border px-4 py-2.5 rounded-lg ${errors.barangay ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                 {...register("barangay", { required: "Barangay is required" })}
               />
+              {errors.barangay && <p className='text-xs text-red-500'>{errors.barangay.message}</p>}
             </div>
-
 
             {/* City + Province - Searchable Dropdown */}
             <div className='grid gap-2 relative'>
@@ -155,16 +143,19 @@ const AddAddress = ({ close }) => {
               <input
                 type='text'
                 placeholder='Type your City/Municipality'
-                className='border px-4 py-2.5 rounded-lg border-gray-300'
+                className={`border px-4 py-2.5 rounded-lg border-gray-300 ${errors.city ? 'border-red-500 bg-red-50' : ''}`}
                 value={searchTerm}
                 onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowDropdown(true);
+                  setSearchTerm(e.target.value)
+                  setShowDropdown(true)
                 }}
                 onFocus={() => setShowDropdown(true)}
               />
               <input type="hidden" {...register("city", { required: "City is required" })} />
-              
+              <input type="hidden" {...register("province")} />
+
+              {errors.city && <p className='text-xs text-red-500'>{errors.city.message}</p>}
+
               {showDropdown && filteredCities.length > 0 && (
                 <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10'>
                   {filteredCities.map(item => (
@@ -182,11 +173,6 @@ const AddAddress = ({ close }) => {
               )}
             </div>
 
-
-            {/* Hidden Province Field */}
-            <input type="hidden" {...register("province")} />
-
-
             {/* ZIP Code */}
             <div className='grid gap-2'>
               <label className='text-sm font-medium text-gray-700'>
@@ -199,8 +185,8 @@ const AddAddress = ({ close }) => {
                 {...register("zipcode", { required: "ZIP code is required" })}
                 readOnly
               />
+              {errors.zipcode && <p className='text-xs text-red-500'>{errors.zipcode.message}</p>}
             </div>
-
 
             {/* Country */}
             <div className='grid gap-2'>
@@ -218,7 +204,6 @@ const AddAddress = ({ close }) => {
           </div>
         </div>
 
-
         {/* Footer */}
         <div className='sticky bottom-0 bg-gray-50 border-t px-6 py-4 flex justify-end gap-3'>
           <button type='button' onClick={close} className='px-5 py-2.5 text-sm font-medium bg-white border rounded-lg'>
@@ -233,5 +218,4 @@ const AddAddress = ({ close }) => {
   )
 }
 
-
-export default AddAddress;
+export default AddAddress
