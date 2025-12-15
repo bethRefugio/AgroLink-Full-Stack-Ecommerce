@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useForm } from "react-hook-form"
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
@@ -25,6 +25,8 @@ const mindanaoProvinces = [
 const AddAddress = ({ close }) => {
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm()
   const { fetchAddress } = useGlobalContext()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
 
 
   // Filter ZIP codes to only Mindanao cities/municipalities
@@ -51,17 +53,23 @@ const AddAddress = ({ close }) => {
   }, []);
 
 
-  // Auto-fill ZIP & province when a city is selected
-  const handleCitySelect = (e) => {
-    const selectedCity = e.target.value;
-    setValue("city", selectedCity);
+  // Filter cities based on search term
+  const filteredCities = useMemo(() => {
+    if (!searchTerm) return cityProvinceList;
+    return cityProvinceList.filter(item =>
+      item.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.province.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, cityProvinceList]);
 
 
-    const found = cityProvinceList.find(i => i.city === selectedCity);
-    if (found) {
-      setValue("zipcode", found.zip);
-      setValue("province", found.province);
-    }
+  // Handle city selection from dropdown
+  const handleCitySelect = (item) => {
+    setValue("city", item.city);
+    setValue("zipcode", item.zip);
+    setValue("province", item.province);
+    setSearchTerm(item.city);
+    setShowDropdown(false);
   }
 
 
@@ -139,23 +147,39 @@ const AddAddress = ({ close }) => {
             </div>
 
 
-            {/* City + Province */}
-            <div className='grid gap-2'>
+            {/* City + Province - Searchable Dropdown */}
+            <div className='grid gap-2 relative'>
               <label className='text-sm font-medium text-gray-700'>
                 City / Municipality <span className='text-red-500 ml-1'>*</span>
               </label>
-              <select
+              <input
+                type='text'
+                placeholder='Type your City/Municipality'
                 className='border px-4 py-2.5 rounded-lg border-gray-300'
-                {...register("city", { required: "City is required" })}
-                onChange={handleCitySelect}
-              >
-                <option value="">Select City/Municipality</option>
-                {cityProvinceList.map(item => (
-                  <option key={`${item.city}-${item.province}`} value={item.city}>
-                    {item.city}, {item.province}
-                  </option>
-                ))}
-              </select>
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowDropdown(true);
+                }}
+                onFocus={() => setShowDropdown(true)}
+              />
+              <input type="hidden" {...register("city", { required: "City is required" })} />
+              
+              {showDropdown && filteredCities.length > 0 && (
+                <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10'>
+                  {filteredCities.map(item => (
+                    <button
+                      key={`${item.city}-${item.province}`}
+                      type='button'
+                      className='w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors'
+                      onClick={() => handleCitySelect(item)}
+                    >
+                      <div className='font-medium text-gray-900'>{item.city}</div>
+                      <div className='text-xs text-gray-500'>{item.province}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
 
@@ -211,6 +235,3 @@ const AddAddress = ({ close }) => {
 
 
 export default AddAddress;
-
-
-
