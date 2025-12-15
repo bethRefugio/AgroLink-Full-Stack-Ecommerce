@@ -950,9 +950,6 @@ const PriceSuggestionPage = () => {
        {/* ==================== STEP 1: MODEL TRAINING PANEL ==================== */}
     <div className='bg-white border border-gray-200 rounded-lg p-6 mb-6'>
       <div className='flex items-center gap-3 mb-5'>
-        <div className='w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center'>
-          <span className='text-lg'>🤖</span>
-        </div>
         <div>
           <h2 className='text-lg font-semibold text-gray-900'>Step 1: Train AI Models</h2>
           <p className='text-xs text-gray-600'>Train Prophet, XGBoost, and LSTM models to find the best predictor</p>
@@ -1003,7 +1000,6 @@ const PriceSuggestionPage = () => {
             </>
           ) : (
             <>
-              <span>🎯</span>
               <span>Start Training Models</span>
             </>
           )}
@@ -1021,13 +1017,13 @@ const PriceSuggestionPage = () => {
                 style={{ width: `${((trainingProgress?.current || 0) / (trainingProgress?.total || trainingIterations)) * 100}%` }}
               />
             </div>
-            <p className='text-xs text-gray-500 text-center'>⏱️ This may take 5-10 minutes...</p>
+            <p className='text-xs text-gray-500 text-center'>This may take 5-10 minutes...</p>
           </div>
         )}
 
         <div className='bg-blue-50 border border-blue-200 rounded-lg p-3'>
           <p className='text-xs text-blue-800'>
-            <strong>ℹ️ How it works:</strong> System trains 3 AI models ({trainingIterations}x each) and saves the best performer for faster predictions.
+            <strong>How it works:</strong> System trains 3 AI models ({trainingIterations}x each) and saves the best performer for faster predictions.
           </p>
         </div>
       </div>
@@ -1036,9 +1032,6 @@ const PriceSuggestionPage = () => {
     {/* ==================== STEP 2: AI PRICE SUGGESTION PANEL ==================== */}
     <div className='bg-white border border-gray-200 rounded-lg p-6 mb-6'>
       <div className='flex items-center gap-3 mb-5'>
-        <div className='w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center'>
-          <span className='text-lg'>💰</span>
-        </div>
         <div>
           <h2 className='text-lg font-semibold text-gray-900'>Step 2: Get AI Price Suggestion</h2>
           <p className='text-xs text-gray-600'>Get instant price predictions using trained models</p>
@@ -1072,7 +1065,6 @@ const PriceSuggestionPage = () => {
               </>
             ) : (
               <>
-                <span>🔮</span>
                 <span>Suggest Price</span>
               </>
             )}
@@ -1114,7 +1106,7 @@ const PriceSuggestionPage = () => {
             {/* Predictions Grid */}
             <div className='grid md:grid-cols-2 gap-4'>
               <div className='p-4 border border-gray-200 rounded-lg'>
-                <h4 className='font-semibold text-gray-900 mb-3 text-sm'>📈 Predictions (Next)</h4>
+                <h4 className='font-semibold text-gray-900 mb-3 text-sm'>Predictions (Next)</h4>
                 <div className='space-y-2 text-sm'>
                   {Object.entries(suggestResult.nextPredsAll || {}).map(([m, v]) => (
                     <div key={m} className='flex justify-between items-center'>
@@ -1126,7 +1118,7 @@ const PriceSuggestionPage = () => {
               </div>
 
               <div className='p-4 border border-gray-200 rounded-lg'>
-                <h4 className='font-semibold text-gray-900 mb-3 text-sm'>💵 Recommended (5% Markup)</h4>
+                <h4 className='font-semibold text-gray-900 mb-3 text-sm'>Recommended (5% Markup)</h4>
                 <div className='space-y-2 text-sm'>
                   {Object.entries(suggestResult.recommendedAll || {}).map(([m, v]) => (
                     <div key={m} className='flex justify-between items-center'>
@@ -1147,7 +1139,7 @@ const PriceSuggestionPage = () => {
 
             {/* Model Accuracy Table */}
             <div className='p-4 border border-gray-200 rounded-lg'>
-              <h4 className='font-semibold text-gray-900 mb-3 text-sm'>🎯 Model Accuracy</h4>
+              <h4 className='font-semibold text-gray-900 mb-3 text-sm'>Model Accuracy</h4>
               <div className='overflow-x-auto'>
                 <table className='w-full text-sm'>
                   <thead>
@@ -1164,7 +1156,7 @@ const PriceSuggestionPage = () => {
                           <div className='flex items-center gap-2'>
                             <span className='text-gray-900'>{m}</span>
                             {m === suggestResult.bestModel && (
-                              <span className='text-xs text-green-600 font-semibold'>⭐ BEST</span>
+                              <span className='text-xs text-green-600 font-semibold'>BEST</span>
                             )}
                           </div>
                         </td>
@@ -1197,7 +1189,7 @@ const PriceSuggestionPage = () => {
 
             {/* Reason */}
             <div className='p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800'>
-              <p><strong>💡 Why this model?</strong> {suggestResult.reason}</p>
+              <p><strong>Why this model?</strong> {suggestResult.reason}</p>
             </div>
           </div>
         )}
