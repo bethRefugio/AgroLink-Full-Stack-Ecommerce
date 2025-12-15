@@ -17,12 +17,12 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from pymongo import MongoClient
 
-# ...existing imports...
+
 
 MODEL_SAVE_DIR = os.path.join(os.path.dirname(__file__), 'saved_models')
 os.makedirs(MODEL_SAVE_DIR, exist_ok=True)
 
-# ============ SAVE FUNCTIONS ============
+# save functions for different model types
 
 def save_prophet_model(model, item_name: str, metrics: dict, version: int = 1) -> str:
     """Save Prophet model using pickle"""
@@ -56,7 +56,7 @@ def save_lstm_model(model, scaler, item_name: str, metrics: dict, version: int =
     
     return filepath
 
-# ============ LOAD FUNCTIONS ============
+# load functions for different model types
 
 def load_prophet_model(filepath: str):
     """Load saved Prophet model"""
@@ -90,7 +90,7 @@ def load_lstm_model(filepath: str):
     
     return model, scaler
 
-# ============ LOAD SAVED MODELS FROM DB ============
+# load saved models from MongoDB
 
 # Update the load_saved_models function to add better error handling:
 
@@ -146,7 +146,7 @@ def load_saved_models(item_name: str, mongo_uri: str, mongo_db: str):
         traceback.print_exc(file=sys.stderr)
         return None
 
-# ============ USE SAVED MODELS ============
+# use saved models for prediction
 
 def use_saved_models(item_name: str, best_models: dict) -> Dict[str, Any]:
     """
@@ -223,7 +223,7 @@ def use_saved_models(item_name: str, best_models: dict) -> Dict[str, Any]:
         print(f"Error using saved models: {e}", file=sys.stderr)
         return {"error": str(e)}
 
-# ============ EXISTING FUNCTIONS (unchanged) ============
+# functions for data handling and prediction
 
 def suggest_price(price, discount_percent=5):
     """Add discount percentage to suggested price"""
@@ -237,7 +237,7 @@ def split_train_test(df, test_size=2):
     test = df.iloc[-test_size:].copy()
     return train, test
 
-# Add this to the load_from_mongo function:
+# to the load_from_mongo function:
 
 def load_from_mongo(mongo_uri, db_name, collection_name, commodity=None):
     """Load data from MongoDB with proper handling of ObjectId and dates"""
@@ -400,7 +400,7 @@ def lstm_predict(train_df, test_df):
 
     return np.array(test_pred), float(next_pred), model, all_dates, np.array(full_pred), scaler
 
-# ============ MAIN SUGGESTION FUNCTION ============
+# main suggestion function
 
 def suggest_for_item_from_df(df: pd.DataFrame, item_name: str, test_size: int = 2, 
                              save_models: bool = False, version: int = 1,
@@ -502,7 +502,7 @@ def _np_encoder(obj):
         return obj.tolist()
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
-# ============ MAIN ============
+# main suggestion function
 
 def main():
     parser = argparse.ArgumentParser(description="Price suggestion using saved or new models.")

@@ -11,6 +11,7 @@ import { MdDelete } from "react-icons/md"
 import { IoSearch } from "react-icons/io5"
 import DisplayTable from '../components/DisplayTable'
 import { createColumnHelper } from '@tanstack/react-table'
+import ConfirmBox from '../components/ConfirmBox'
 
 
 const ProductAdmin = () => {
@@ -28,6 +29,10 @@ const ProductAdmin = () => {
   // Pagination
   const pageSize = 20
   const [currentPage, setCurrentPage] = useState(1)
+
+  // Confirm delete state
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
 
 
   const columnHelper = createColumnHelper()
@@ -102,14 +107,20 @@ const ProductAdmin = () => {
   }, [search, productData])
 
 
-  const handleDelete = async (id) => {
+   // open confirm dialog
+  const askDelete = (id) => {
+    setConfirmDeleteId(id)
+    setShowConfirmDelete(true)
+  }
+
+  // perform delete after confirm
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return
     try {
       const response = await Axios({
         ...SummaryApi.deleteProduct,
-        data: { _id: id }
+        data: { _id: confirmDeleteId }
       })
-
-
       const { data: responseData } = response
       if (responseData.success) {
         toast.success(responseData.message)
@@ -117,9 +128,16 @@ const ProductAdmin = () => {
       }
     } catch (err) {
       AxiosToastError(err)
+    } finally {
+      setShowConfirmDelete(false)
+      setConfirmDeleteId(null)
     }
   }
 
+  const cancelDelete = () => {
+    setShowConfirmDelete(false)
+    setConfirmDeleteId(null)
+  }
 
   const columns = [
     columnHelper.display({
@@ -169,10 +187,9 @@ const ProductAdmin = () => {
               <HiPencil size={22} />
             </button>
 
-
             <button
               className="text-gray-500 hover:text-gray-700"
-              onClick={() => handleDelete(p._id)}
+              onClick={() => askDelete(p._id)}   // ← open confirm
             >
               <MdDelete size={22} />
             </button>
@@ -275,12 +292,21 @@ const ProductAdmin = () => {
       </div>
 
 
-      {/* EDIT MODAL */}
+       {/* EDIT MODAL */}
       {editingProduct && (
         <EditProductAdmin
           data={editingProduct}
           close={() => setEditingProduct(null)}
           fetchProductData={fetchProductData}
+        />
+      )}
+
+      {/* DELETE CONFIRMATION */}
+      {showConfirmDelete && (
+        <ConfirmBox
+          cancel={cancelDelete}
+          confirm={confirmDelete}
+          close={cancelDelete}
         />
       )}
     </section>

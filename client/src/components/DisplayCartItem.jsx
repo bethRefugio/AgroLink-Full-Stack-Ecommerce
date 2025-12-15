@@ -12,7 +12,7 @@ import imageEmpty from '../assets/empty_cart.webp'
 import toast from 'react-hot-toast'
 import Axios from '../utils/Axios'
 import SummaryApi from '../common/SummaryApi'
-import ConfirmBox from './CofirmBox'
+import ConfirmBox from './ConfirmBox'
 
 const DisplayCartItem = ({close}) => {
     const { notDiscountTotalPrice, totalPrice, totalQty, fetchCartItem } = useGlobalContext()

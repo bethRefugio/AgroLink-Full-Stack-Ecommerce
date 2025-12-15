@@ -7,7 +7,7 @@ import { IoSearch } from "react-icons/io5"
 import { MdDelete, MdEdit, MdUploadFile } from "react-icons/md"
 import { createColumnHelper } from '@tanstack/react-table'
 import DisplayTable from '../components/DisplayTable'
-import ConfirmBox from '../components/CofirmBox'
+import ConfirmBox from '../components/ConfirmBox'
 import { IoClose } from "react-icons/io5"
 
 

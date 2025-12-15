@@ -9,7 +9,7 @@ import ViewImage from '../components/ViewImage'
 import { HiPencil } from "react-icons/hi"
 import { MdDelete } from "react-icons/md"
 import EditSubCategory from '../components/EditSubCategory'
-import CofirmBox from '../components/CofirmBox'
+import ConfirmBox from '../components/ConfirmBox'
 import toast from 'react-hot-toast'
 import { IoSearch } from "react-icons/io5"
 
@@ -389,7 +389,7 @@ const SubCategoryPage = () => {
 
 
       {openDeleteConfirmBox && (
-        <CofirmBox
+        <ConfirmBox
           cancel={() => setOpenDeleteConfirmBox(false)}
           close={() => setOpenDeleteConfirmBox(false)}
           confirm={handleDeleteSubCategory}
