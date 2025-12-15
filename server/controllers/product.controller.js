@@ -314,43 +314,52 @@ export const deleteProductDetails = async(request,response)=>{
 //search product
 export const searchProduct = async(request,response)=>{
     try {
-        let { search, page , limit } = request.body 
+        let { search, page = 1, limit = 10 } = request.body
 
-        if(!page){
-            page = 1
+        // Auto-detect: if search has spaces or special chars, use partial; otherwise try exact first
+        const hasSpaces = /\s/.test(search.trim())
+        const isSimpleWord = /^[a-zA-Z]+$/.test(search.trim())
+
+        // Build query with fallback logic
+        let query
+        let matchMode = 'partial'
+
+        if (isSimpleWord && !hasSpaces) {
+            // Try exact match first for simple single words
+            matchMode = 'exact'
+            query = { name: { $regex: `^${search.trim()}$`, $options: 'i' } }
+        } else {
+            // Use partial match for phrases or complex searches
+            matchMode = 'partial'
+            query = { name: { $regex: search.trim(), $options: 'i' } }
         }
-        if(!limit){
-            limit  = 10
+
+        const skip = (page - 1) * limit
+
+        let data = await ProductModel.find(query).sort({ createdAt : -1 }).skip(skip).limit(limit)
+        let totalCount = await ProductModel.countDocuments(query)
+
+        // If exact match found nothing and it was a simple word, fallback to partial
+        if (data.length === 0 && matchMode === 'exact') {
+            matchMode = 'partial'
+            query = { name: { $regex: search.trim(), $options: 'i' } }
+            data = await ProductModel.find(query).sort({ createdAt : -1 }).skip(skip).limit(limit)
+            totalCount = await ProductModel.countDocuments(query)
         }
 
-        const query = search
-            ? {
-                $or: [
-                    { name: { $regex: search, $options: "i" } },
-                    { description: { $regex: search, $options: "i" } }
-                ]
-                }
-            : {};
-
-
-        const skip = ( page - 1) * limit
-
-        const [data,dataCount] = await Promise.all([
-            ProductModel.find(query).sort({ createdAt  : -1 }).skip(skip).limit(limit).populate('category subCategory'),
-            ProductModel.countDocuments(query)
-        ])
+        const totalPage = Math.ceil(totalCount / limit) || 1
 
         return response.json({
             message : "Product data",
             error : false,
             success : true,
             data : data,
-            totalCount :dataCount,
-            totalPage : Math.ceil(dataCount/limit),
             page : page,
-            limit : limit 
+            totalPage : totalPage,
+            totalCount: totalCount,
+            matchMode: matchMode,
+            searchTerm: search.trim()
         })
-
 
     } catch (error) {
         return response.status(500).json({
@@ -361,11 +370,11 @@ export const searchProduct = async(request,response)=>{
     }
 }
 
-// ...existing code...
+
 
 export const suggestPriceController = async (req, res) => {
   try {
-    const { item_name, test_size = 2 } = req.body || {};
+    const { item_name, test_size = 2, use_saved = true } = req.body || {}; // ✅ Added use_saved
 
     if (!item_name || typeof item_name !== "string" || !item_name.trim()) {
       return res.status(400).json({
@@ -374,43 +383,48 @@ export const suggestPriceController = async (req, res) => {
       });
     }
 
-    // External Python AI service URL (configure in Render env vars)
     const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:5000";
 
-    // Call the Python microservice
     const aiResponse = await axios.post(
       `${aiServiceUrl}/suggest-price`,
-      { item_name: item_name.trim(), test_size },
-      { timeout: 90000 }
+      { 
+        item_name: item_name.trim(), 
+        test_size,
+        use_saved // ✅ Pass to Flask
+      },
+      { 
+        timeout: 300000, // ✅ 5 minutes timeout
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
 
     const payload = aiResponse.data;
 
     if (!payload?.success) {
-      return res.status(500).json({
+      return res.status(404).json({
         success: false,
-        message: payload?.message || "Error generating price suggestion"
+        message: payload?.message || "No data available for this item"
       });
     }
 
     return res.json({
       success: true,
-      message: "Price suggestion generated",
+      message: payload.data.fromSavedModels 
+        ? "⚡ Fast prediction from saved models" 
+        : "🤖 Generated new prediction",
       data: payload.data,
       suggestedPrice: payload.suggestedPrice,
-      bestModel: payload.bestModel
+      bestModel: payload.bestModel,
+      fromSavedModels: payload.fromSavedModels || false
     });
   } catch (error) {
-    return res.status(500).json({
+    console.error('[suggestPrice] Error:', error.message);
+    return res.status(error.response?.status || 500).json({
       success: false,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "Error generating price suggestion"
+      message: error.response?.data?.message || error.message || "Price suggestion service unavailable"
     });
   }
 };
-// ...existing code...
 
 export const getProductBySubCategory = async (request, response) => {
   try {

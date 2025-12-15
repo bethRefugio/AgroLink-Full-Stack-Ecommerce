@@ -6,6 +6,7 @@ import AxiosToastError from '../utils/AxiosToastError'
 import CardProduct from '../components/CardProduct'
 import { MdStorefront, MdLocationOn, MdArrowBack } from 'react-icons/md'
 
+
 const formatAddress = (addr) => {
   if (!addr) return ''
   const parts = [
@@ -19,6 +20,7 @@ const formatAddress = (addr) => {
   return parts.join(', ')
 }
 
+
 const SellerProductPage = () => {
   const { sellerId } = useParams()
   const navigate = useNavigate()
@@ -27,6 +29,7 @@ const SellerProductPage = () => {
   const [sellerName, setSellerName] = useState('')
   const [sellerAddress, setSellerAddress] = useState('')
   const [total, setTotal] = useState(0)
+
 
   const fetchSellerProducts = async () => {
     if (!sellerId) return
@@ -41,10 +44,12 @@ const SellerProductPage = () => {
         setProducts(list)
         setTotal(list.length)
 
+
         const user = list?.[0]?.userId
         const maybeName =
           user?.name || user?.fullName || user?.sellerName || ''
         if (maybeName) setSellerName(maybeName)
+
 
         // Prefer address_details from populated user
         const addr =
@@ -59,9 +64,11 @@ const SellerProductPage = () => {
     }
   }
 
+
   useEffect(() => {
     fetchSellerProducts()
   }, [sellerId])
+
 
   const fetchSellerAddress = async () => {
     if (!sellerId) return
@@ -89,12 +96,14 @@ const SellerProductPage = () => {
     }
   }
 
+
   const handleGoBack = () => {
     navigate(-1)
   }
 
+
   return (
-    <section className="bg-gray-50 min-h-screen py-6">
+    <section className="bg-gray-50 min-h-screen py-6 overflow-x-hidden">
       <div className="container mx-auto px-4">
         {/* Back Button */}
         <button
@@ -104,6 +113,7 @@ const SellerProductPage = () => {
           <MdArrowBack className="text-xl group-hover:-translate-x-1 transition-transform" />
           <span className="font-medium text-sm">Back</span>
         </button>
+
 
         {/* Seller Header */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
@@ -130,6 +140,7 @@ const SellerProductPage = () => {
           </div>
         </div>
 
+
         {/* Product Grid */}
         {loading && products.length === 0 ? (
           <div className="text-center text-gray-500 py-12">Loading…</div>
@@ -138,9 +149,11 @@ const SellerProductPage = () => {
             No products from this seller yet.
           </div>
         ) : (
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
             {products.map((p) => (
-              <CardProduct key={p._id} data={p} />
+              <div key={p._id} className="h-full">
+                <CardProduct data={p} />
+              </div>
             ))}
           </div>
         )}
@@ -149,4 +162,6 @@ const SellerProductPage = () => {
   )
 }
 
+
 export default SellerProductPage
+

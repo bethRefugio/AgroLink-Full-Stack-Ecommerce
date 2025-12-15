@@ -86,108 +86,140 @@ export async function registerUserController(request,response){
 
 export async function verifyEmailController(request,response){
     try {
-        const { code } = request.body
+        const { code } = request.body;
 
-
-        const user = await UserModel.findOne({ _id : code})
-
-
-        if(!user){
+        if (!code) {
             return response.status(400).json({
-                message : "Invalid code",
-                error : true,
-                success : false
-            })
+                message: "Verification code is required",
+                error: true,
+                success: false
+            });
         }
 
+        const user = await UserModel.findById(code).select('_id email verify_email');
+        if (!user) {
+            return response.status(404).json({
+                message: "Invalid verification code",
+                error: true,
+                success: false
+            });
+        }
 
-        const updateUser = await UserModel.updateOne({ _id : code },{
-            verify_email : true
-        })
+        if (user.verify_email) {
+            return response.json({
+                message: "Email already verified",
+                success: true,
+                error: false
+            });
+        }
 
+        const updated = await UserModel.findByIdAndUpdate(
+            user._id,
+            { $set: { verify_email: true } },
+            { new: true }
+        ).select('_id email verify_email');
+
+        if (!updated?.verify_email) {
+            return response.status(500).json({
+                message: "Failed to update verification status",
+                error: true,
+                success: false
+            });
+        }
 
         return response.json({
-            message : "Verify email done",
-            success : true,
-            error : false
-        })
+            message: "Verify email done",
+            success: true,
+            error: false,
+            data: { _id: updated._id, email: updated.email, verify_email: updated.verify_email }
+        });
     } catch (error) {
         return response.status(500).json({
-            message : error.message || error,
-            error : true,
-            success : true
-        })
+            message: error.message || error,
+            error: true,
+            success: false
+        });
     }
 }
 
-
-//login controller
 export async function loginController(request,response){
     try {
-        const { email , password } = request.body
-
-
-
+        const { email , password } = request.body;
 
         if(!email || !password){
             return response.status(400).json({
                 message : "provide email, password",
                 error : true,
                 success : false
-            })
+            });
         }
 
-
-        const user = await UserModel.findOne({ email })
-
+        // Ensure password hash is selected
+        const user = await UserModel
+            .findOne({ email })
+            .select('+password verify_email status role refresh_token');
 
         if(!user){
             return response.status(400).json({
                 message : "User not register",
                 error : true,
                 success : false
-            })
+            });
         }
 
+        // Block if not verified
+        if(!user.verify_email){
+            return response.status(403).json({
+                message : "Please verify your email before logging in. Check your inbox for the verification link.",
+                error : true,
+                success : false,
+                needsVerification: true
+            });
+        }
 
+        // Block if not active
         if(user.status !== "Active"){
             return response.status(400).json({
                 message : "Contact to Admin",
                 error : true,
                 success : false
-            })
+            });
         }
 
+        // Guard: missing hash (shouldn't happen, but handle gracefully)
+        if (!user.password) {
+            return response.status(500).json({
+                message: "Account has no password hash. Please reset your password.",
+                error: true,
+                success: false
+            });
+        }
 
-        const checkPassword = await bcryptjs.compare(password,user.password)
-
+        const checkPassword = await bcryptjs.compare(password, user.password);
 
         if(!checkPassword){
             return response.status(400).json({
                 message : "Check your password",
                 error : true,
                 success : false
-            })
+            });
         }
 
+        const accesstoken = await generatedAccessToken(user._id);
+        const refreshToken = await genertedRefreshToken(user._id);
 
-        const accesstoken = await generatedAccessToken(user._id)
-        const refreshToken = await genertedRefreshToken(user._id)
-
-
-        const updateUser = await UserModel.findByIdAndUpdate(user?._id,{
-            last_login_date : new Date()
-        })
-
+        await UserModel.findByIdAndUpdate(user?._id, {
+            last_login_date : new Date(),
+            refresh_token: refreshToken
+        });
 
         const cookiesOption = {
             httpOnly : true,
             secure : true,
             sameSite : "None"
-        }
-        response.cookie('accessToken',accesstoken,cookiesOption)
-        response.cookie('refreshToken',refreshToken,cookiesOption)
-
+        };
+        response.cookie('accessToken',accesstoken,cookiesOption);
+        response.cookie('refreshToken',refreshToken,cookiesOption);
 
         return response.json({
             message : "Login successfully",
@@ -197,17 +229,17 @@ export async function loginController(request,response){
                 accesstoken,
                 refreshToken
             }
-        })
-
+        });
 
     } catch (error) {
         return response.status(500).json({
             message : error.message || error,
             error : true,
             success : false
-        })
+        });
     }
 }
+
 
 
 //logout controller
@@ -812,4 +844,60 @@ export async function deleteUserController(request, response) {
   } catch (error) {
     return response.status(500).json({ message: error.message || error, success: false, error: true });
   }
+}
+
+export async function resendVerificationEmail(request, response) {
+    try {
+        const { email } = request.body;
+
+        if (!email) {
+            return response.status(400).json({
+                message: "Email is required",
+                error: true,
+                success: false
+            });
+        }
+
+        const user = await UserModel.findOne({ email });
+
+        if (!user) {
+            return response.status(404).json({
+                message: "User not found",
+                error: true,
+                success: false
+            });
+        }
+
+        if (user.verify_email) {
+            return response.status(400).json({
+                message: "Email already verified",
+                error: true,
+                success: false
+            });
+        }
+
+        const VerifyEmailUrl = `${process.env.FRONTEND_URL}/verify-email?code=${user._id}`;
+
+        await sendEmail({
+            sendTo: email,
+            subject: "Verify email from AgroLink",
+            html: verifyEmailTemplate({
+                name: user.name,
+                url: VerifyEmailUrl
+            })
+        });
+
+        return response.json({
+            message: "Verification email sent successfully",
+            error: false,
+            success: true
+        });
+
+    } catch (error) {
+        return response.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        });
+    }
 }

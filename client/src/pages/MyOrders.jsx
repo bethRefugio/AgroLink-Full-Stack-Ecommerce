@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import { FaBox, FaMapMarkerAlt, FaCalendar, FaCreditCard, FaChevronDown, FaChevronUp } from 'react-icons/fa'
 import { MdCancel } from 'react-icons/md'
 
+
 const MyOrders = () => {
   const orders = useSelector(state => state.orders?.order || [])
   const [expandedOrder, setExpandedOrder] = useState(null)
@@ -14,20 +15,24 @@ const MyOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [selectedOrderStatus, setSelectedOrderStatus] = useState('')
 
+
   const handleCancelClick = (orderId, currentStatus) => {
     setSelectedOrder(orderId)
     setSelectedOrderStatus(currentStatus)
     setShowCancelModal(true)
   }
 
+
   const handleCancelConfirm = async () => {
     if (!selectedOrder) return
+
 
     if (selectedOrderStatus !== 'Order Placed') {
       toast.error('Order cannot be cancelled as it is already being processed.')
       setShowCancelModal(false)
       return
     }
+
 
     try {
       const response = await Axios({
@@ -38,6 +43,7 @@ const MyOrders = () => {
           status: 'Cancelled'
         }
       })
+
 
       if (response.data.success) {
         toast.success('Order cancelled!')
@@ -59,11 +65,13 @@ const MyOrders = () => {
     }
   }
 
+
   const handleCancelCancel = () => {
     setShowCancelModal(false)
     setSelectedOrder(null)
     setSelectedOrderStatus('')
   }
+
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -84,15 +92,18 @@ const MyOrders = () => {
     }
   }
 
+
   const toggleOrderDetails = (orderId) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId)
   }
 
+
   if (!orders || orders.length === 0) return <NoData />
 
+
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 px-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 px-4 overflow-x-hidden">
+      <div className='max-w-5xl mx-auto overflow-x-hidden py-8 px-4 lg:px-0 mb-8'>
         {/* Cancel Confirmation Modal */}
         {showCancelModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -124,6 +135,7 @@ const MyOrders = () => {
           </div>
         )}
 
+
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
           <div className="flex items-center gap-3 mb-2">
@@ -139,6 +151,7 @@ const MyOrders = () => {
           </div>
         </div>
 
+
         {/* Orders List */}
         <div className="space-y-4">
           {orders.map((order, index) => {
@@ -148,9 +161,10 @@ const MyOrders = () => {
             const canCancel = orderStatus === 'Order Placed';
             const isExpanded = expandedOrder === order._id;
 
+
             return (
-              <div 
-                key={order._id + index + "order"} 
+              <div
+                key={order._id + index + "order"}
                 className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
               >
                 {/* Order Header */}
@@ -186,6 +200,7 @@ const MyOrders = () => {
                       </div>
                     </div>
 
+
                     {/* Price & Quantity */}
                     <div className="flex sm:flex-col justify-between sm:justify-start sm:items-end gap-2">
                       <div>
@@ -198,6 +213,7 @@ const MyOrders = () => {
                       </div>
                     </div>
                   </div>
+
 
                   {/* Order Meta Info - Mobile Optimized */}
                   <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-100">
@@ -221,6 +237,7 @@ const MyOrders = () => {
                     </div>
                   </div>
 
+
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-4 pt-4 border-t border-gray-100">
                     <button
@@ -230,7 +247,7 @@ const MyOrders = () => {
                       <span>{isExpanded ? 'Hide Details' : 'View Details'}</span>
                       {isExpanded ? <FaChevronUp className="text-xs" /> : <FaChevronDown className="text-xs" />}
                     </button>
-                    
+                   
                     <div className="flex gap-2">
                       {canCancel && (
                         <button
@@ -253,6 +270,7 @@ const MyOrders = () => {
                     </div>
                   </div>
                 </div>
+
 
                 {/* Expanded Details */}
                 {isExpanded && (
@@ -284,6 +302,7 @@ const MyOrders = () => {
                         </div>
                       </div>
 
+
                       {/* Delivery Address */}
                       {address && Object.keys(address).length > 0 && (
                         <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -298,6 +317,7 @@ const MyOrders = () => {
                           </div>
                         </div>
                       )}
+
 
                       {/* Order Timeline */}
                       <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -332,4 +352,8 @@ const MyOrders = () => {
   )
 }
 
+
 export default MyOrders
+
+
+

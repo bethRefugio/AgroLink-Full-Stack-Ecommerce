@@ -43,6 +43,6 @@ productRouter.delete('/delete-product', auth, (req, res, next) => {
 
 //search product 
 productRouter.post('/search-product',searchProduct)
-productRouter.post('/suggest-price',auth,suggestPriceController)
+productRouter.post('/suggest-price', suggestPriceController)
 
 export default productRouter

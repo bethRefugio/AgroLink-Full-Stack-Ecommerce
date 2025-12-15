@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { forgotPasswordController, loginController, logoutController, refreshToken, registerUserController, resetpassword, updateUserDetails, uploadAvatar, userDetails, verifyEmailController, verifyForgotPasswordOtp, addPreferences, getPreferences, deletePreference , adminUpdateUserController, deleteUserController } from '../controllers/user.controller.js'
+import { forgotPasswordController, loginController, resendVerificationEmail, logoutController, refreshToken, registerUserController, resetpassword, updateUserDetails, uploadAvatar, userDetails, verifyEmailController, verifyForgotPasswordOtp, addPreferences, getPreferences, deletePreference , adminUpdateUserController, deleteUserController } from '../controllers/user.controller.js'
 import auth from '../middleware/auth.js'
 import upload from '../middleware/multer.js'
 import User from '../models/user.model.js'
@@ -19,12 +19,13 @@ userRouter.put('/verify-forgot-password-otp',verifyForgotPasswordOtp)
 userRouter.put('/reset-password',resetpassword)
 userRouter.post('/refresh-token',refreshToken)
 userRouter.get('/user-details',auth,userDetails)
-userRouter.post('/verify-email', verifyEmailController)
 userRouter.put('/add-preference', auth, addPreferences)
 userRouter.get('/preferences', auth, getPreferences);
 userRouter.delete('/delete-preference', auth, deletePreference);
 userRouter.put('/admin-update-user', auth, adminUpdateUserController);
 userRouter.delete('/delete-user', auth, deleteUserController);
+userRouter.post('/resend-verification', resendVerificationEmail);
+
 userRouter.get('/users-table', auth, async (req, res) => {
   try {
     if (req.user.role !== 'ADMIN') {

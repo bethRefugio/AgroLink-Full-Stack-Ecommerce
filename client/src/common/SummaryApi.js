@@ -10,6 +10,10 @@ const SummaryApi = {
         url : '/api/user/login',
         method : 'post'
     },
+    verify_email : {
+        url : '/api/user/verify-email',
+        method : 'post'
+    },
     forgot_password : {
         url : "/api/user/forgot-password",
         method : 'put'
@@ -302,6 +306,18 @@ const SummaryApi = {
     translateText: {
         url: '/api/translate',
         method: 'post'
+    },
+    resendVerification: {
+        url : '/api/user/resend-verification',
+        method : 'post'
+    },
+    trainModels: {
+        url: "/api/model-training/train",
+        method: "post",
+    },
+    getBestModels: {
+        url: "/api/model-training/best-models",
+        method: "get",
     }
 }
 

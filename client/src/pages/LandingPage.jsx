@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, Leaf, Tractor, BrainCircuit } from 'lucide-react';
 
+
 // SVG imports (use URL imports instead of SVGR ReactComponent)
 import groceryBagUrl from '../assets/grocery-bag-1.svg';
 import curvedCircleUrl from '../assets/curved-circle.svg';
@@ -10,12 +11,14 @@ import dotsUrl from '../assets/dots.svg';
 import leaf2Url from '../assets/leaf-2.svg';
 import agrolinkLogo from '../assets/agrolink-logo2.svg';
 
+
 export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div className="min-h-screen bg-white font-sans overflow-x-hidden">
       {/* Google Fonts Import */}
       <style>
         {`
@@ -36,10 +39,14 @@ export default function LandingPage() {
       </style>
 
 
+
+
       {/* Navigation */}
       <nav className="bg-gradient-to-r from-green-900 to-green-800 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
+
+
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -49,18 +56,18 @@ export default function LandingPage() {
             </button>
 
 
-             <div className="hidden md:flex space-x-10 text-white font-body font-medium text-sm tracking-wider">
-            <a href="/" className="text-green-300 border-b-2 border-green-300">HOME</a>
-            <a href="/about" className="hover:text-green-300 transition-all hover:scale-105">ABOUT US</a>
-            <a href="/services" className="hover:text-green-300 transition-all hover:scale-105">SERVICES</a>
-            <a href="/contact" className="hover:text-green-300 transition-all hover:scale-105">CONTACT US</a>
-            <a href="/blog" className="hover:text-green-300 transition-all hover:scale-105">BLOG</a>
-          </div>
+            {/* Desktop menu */}
+            <div className="hidden md:flex space-x-10 text-white font-body font-medium text-sm tracking-wider">
+              <a href="/" className="hover:text-green-300 transition-all hover:scale-105">HOME</a>
+              <a href="/about" className="hover:text-green-300 transition-all hover:scale-105">ABOUT US</a>
+              <a href="/services" className="hover:text-green-300 transition-all hover:scale-105">SERVICES</a>
+              <a href="/contact" className="hover:text-green-300 transition-all hover:scale-105">CONTACT US</a>
+              {/*<a href="/blog" className="hover:text-green-300 transition-all hover:scale-105">BLOG</a>*/}
+            </div>
 
 
-          {/* Right side icons */}
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-3 font-body">
+            {/* Login button */}
+            <div className="flex items-center space-x-6">
               <button
                 type="button"
                 onClick={() => navigate('/login')}
@@ -70,25 +77,26 @@ export default function LandingPage() {
               </button>
             </div>
           </div>
-        </div>
 
 
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className="md:hidden pb-4 space-y-2 font-body">
-            <a href="/" className="block text-green-300 py-2 tracking-wide">HOME</a>
-            <a href="/about" className="block text-white hover:text-green-300 py-2 tracking-wide">ABOUT US</a>
-            <a href="/services" className="block text-white hover:text-green-300 py-2 tracking-wide">SERVICES</a>
-            <a href="/contact" className="block text-white hover:text-green-300 py-2 tracking-wide">CONTACT US</a>
-            <a href="/blog" className="block text-white hover:text-green-300 py-2 tracking-wide">BLOG</a>
-          </div>
-        )}
+          {/* Mobile horizontal scrolling menu */}
+          {isMenuOpen && (
+            <div className="md:hidden pb-4 font-body overflow-x-auto">
+              <div className="flex space-x-6 whitespace-nowrap px-2 py-2">
+                <a href="/" className="text-white hover:text-green-300">HOME</a>
+                <a href="/about" className="text-white hover:text-green-300">ABOUT US</a>
+                <a href="/services" className="text-white hover:text-green-300">SERVICES</a>
+                <a href="/contact" className="text-white hover:text-green-300">CONTACT US</a>
+                {/*<a href="/blog" className="text-white hover:text-green-300">BLOG</a>*/}
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
 
       {/* Hero Section */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 -mt-8 lg:-mt-4">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 -mt-8 lg:-mt-4 overflow-x-hidden">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="relative z-10 space-y-8">
@@ -100,6 +108,8 @@ export default function LandingPage() {
                 className="w-40 md:w-48 lg:w-56"
               />
             </div>
+
+
 
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-black leading-tight tracking-tight">
@@ -114,6 +124,8 @@ export default function LandingPage() {
             </p>
 
 
+
+
             <button
                 type="button"
                 onClick={() => navigate('/login')}
@@ -123,6 +135,8 @@ export default function LandingPage() {
             </button>
 
 
+
+
             {/* Carousel dots */}
             <div className="flex space-x-3 pt-6">
               <div className="w-4 h-4 bg-green-800 rounded-full shadow-lg"></div>
@@ -130,6 +144,8 @@ export default function LandingPage() {
               <div className="w-4 h-4 bg-green-400 rounded-full shadow-md hover:bg-green-500 cursor-pointer transition-colors"></div>
             </div>
           </div>
+
+
 
 
           {/* Right Image Section */}
@@ -146,6 +162,8 @@ export default function LandingPage() {
             </div>
 
 
+
+
             {/* SVG composition */}
             <div className="relative z-10 w-full aspect-square max-w-lg mx-auto">
               {/* Background curved shapes */}
@@ -153,8 +171,12 @@ export default function LandingPage() {
               <img src={circleUrl} alt="circle background" className="absolute right-0 top-8 w-80 h-80 opacity-20" />
 
 
+
+
               {/* Dots SVG (pattern) positioned and slightly transparent */}
               <img src={dotsUrl} alt="dots pattern" className="absolute -left-4 top-16 w-64 h-64 opacity-15" />
+
+
 
 
               {/* Main grocery bag / produce SVG centered */}
@@ -164,12 +186,16 @@ export default function LandingPage() {
               </div>
 
 
+
+
               {/* Decorative floating vegetable / leaf SVG */}
               <img src={leaf2Url} alt="leaf decorative" className="absolute -right-10 bottom-8 w-50 h-36 opacity-25 hover:opacity-40 transition-opacity" />
             </div>
           </div>
         </div>
       </div>
+
+
 
 
       {/* Features Section */}
@@ -193,6 +219,8 @@ export default function LandingPage() {
             </div>
 
 
+
+
             {/* Card 2: Smart & Sustainable */}
             <div className="bg-white p-10 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               {/* Icon holder (Centered with mx-auto) */}
@@ -209,6 +237,8 @@ export default function LandingPage() {
             </div>
 
 
+
+
             {/* Card 3: Empowering Farmers */}
             <div className="bg-white p-10 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               {/* Icon holder (Centered with mx-auto) */}
@@ -223,6 +253,8 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
+
+
 
 
           </div>
