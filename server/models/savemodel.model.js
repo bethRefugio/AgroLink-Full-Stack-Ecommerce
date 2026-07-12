@@ -47,31 +47,30 @@ const savedModelSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  collection: 'saved_models' // ensure consistent collection name
 })
 
 // Compound index for faster lookups
 savedModelSchema.index({ item: 1, modelType: 1, isActive: 1 })
-savedModelSchema.index({ rmse: 1 }) // For finding best models
+savedModelSchema.index({ 'accuracy.rmse': 1 })
 
-// Static method to get best model for an item
-savedModelSchema.statics.getBestModel = async function(item, modelType) {
-  return this.findOne({
-    item: item.toLowerCase(),
-    modelType,
-    isActive: true
-  }).sort({ rmse: 1 }).limit(1)
-}
-
-// Static method to get all active models for an item
+// Static helpers
 savedModelSchema.statics.getBestModelsForItem = async function(item) {
-  const models = {}
-  for (const type of ['Prophet', 'XGBoost', 'LSTM']) {
-    models[type] = await this.getBestModel(item, type)
+  const types = ['Prophet', 'XGBoost', 'LSTM']
+  const result = {}
+
+  for (const t of types) {
+    const doc = await this.findOne(
+      { item: item.toLowerCase().trim(), modelType: t, isActive: true },
+      {},
+      { sort: { 'accuracy.rmse': 1 } }
+    )
+    result[t] = doc || null
   }
-  return models
+
+  return result
 }
 
-const SavedModelModel = mongoose.model('saved_model', savedModelSchema)
-
+const SavedModelModel = mongoose.models.SavedModel || mongoose.model('SavedModel', savedModelSchema)
 export default SavedModelModel

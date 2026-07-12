@@ -1,3 +1,5 @@
+import { saveTrainedModelController } from "../../../server/controllers/model_training.controller"
+
 export const baseURL = import.meta.env.VITE_API_URL
 
 
@@ -318,6 +320,10 @@ const SummaryApi = {
     getBestModels: {
         url: "/api/model-training/best-models",
         method: "get",
+    },
+    saveTrainedModel: {
+        url: "/api/model-training/save-model",
+        method: "post",
     }
 }
 

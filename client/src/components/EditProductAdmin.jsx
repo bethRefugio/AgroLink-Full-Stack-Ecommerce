@@ -304,7 +304,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   </div>
 
                   <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-2'>Business Description</label>
+                    <label className='block text-sm font-medium text-gray-700 mb-2'>Product Description</label>
                     <textarea
                       placeholder='Enter product description'
                       name='description'

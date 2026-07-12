@@ -482,13 +482,13 @@ const UploadProduct = () => {
 
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Business Description</label>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Product Description</label>
                 <textarea
                   placeholder='Enter product description'
                   name='description'
                   value={data.description}
                   onChange={handleChange}
-                  required
+                  requiredac
                   rows={4}
                   className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none'
                 />

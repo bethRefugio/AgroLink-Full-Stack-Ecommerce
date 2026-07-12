@@ -60,18 +60,16 @@ export const trainModelsController = async (req, res) => {
         // Save each model to database
         for (const [modelType, metrics] of Object.entries(result.metrics || {})) {
           try {
-            if (metrics.RMSE !== null && metrics.RMSE !== undefined && 
-                result.modelPaths && result.modelPaths[modelType]) {
-              
+            if (metrics.RMSE != null && result.modelPaths?.[modelType]) {
               const modelDoc = await SavedModelModel.create({
                 modelType,
                 item: item.toLowerCase().trim(),
                 accuracy: {
-                  mae: metrics.MAE || 0,
-                  rmse: metrics.RMSE || 0
+                  mae: metrics.MAE ?? 0,
+                  rmse: metrics.RMSE ?? 0
                 },
                 modelPath: result.modelPaths[modelType],
-                trainingDataPoints: result.dataPoints || 0,
+                trainingDataPoints: result.dataPoints ?? 0,
                 version: i,
                 isActive: true
               })
@@ -82,9 +80,11 @@ export const trainModelsController = async (req, res) => {
               if (!bestModels[modelType] || metrics.RMSE < bestModels[modelType].accuracy.rmse) {
                 bestModels[modelType] = modelDoc
               }
+            } else {
+              console.warn(`Skip save: missing metrics/modelPath for ${modelType}`, { metrics, modelPaths: result.modelPaths })
             }
           } catch (dbError) {
-            console.error(`❌ Failed to save ${modelType} model:`, dbError.message)
+            console.error(`❌ Failed to save ${modelType} model:`, dbError)
           }
         }
 
@@ -179,5 +179,68 @@ export const getBestModelsController = async (req, res) => {
       success: false,
       message: error.message
     })
+  }
+}
+
+export const saveTrainedModelController = async (req, res) => {
+  try {
+    const {
+      modelType,            // 'Prophet' | 'XGBoost' | 'LSTM'
+      item,                 // e.g. 'mango'
+      modelPath,            // filesystem path to saved file
+      metrics = {},         // { MAE, RMSE, r2_score?, mape? }
+      trainingDataPoints = 0,
+      hyperparameters = {}, // optional params used in training
+      version = 1,
+      commodity = undefined // optional category
+    } = req.body
+
+    if (!modelType || !item || !modelPath) {
+      return res.status(400).json({
+        success: false,
+        message: 'modelType, item, and modelPath are required'
+      })
+    }
+
+    if (!['Prophet', 'XGBoost', 'LSTM'].includes(modelType)) {
+      return res.status(400).json({ success: false, message: 'Invalid modelType' })
+    }
+
+    const doc = await SavedModelModel.create({
+      modelType,
+      item: String(item).toLowerCase().trim(),
+      commodity: commodity ? String(commodity).toLowerCase().trim() : undefined,
+      accuracy: {
+        mae: Number(metrics.MAE ?? metrics.mae ?? 0),
+        rmse: Number(metrics.RMSE ?? metrics.rmse ?? 0),
+        r2_score: metrics.r2_score ?? undefined,
+        mape: metrics.mape ?? undefined
+      },
+      modelPath,
+      trainingDataPoints: Number(trainingDataPoints) || 0,
+      hyperparameters,
+      version: Number(version) || 1,
+      isActive: true
+    })
+
+    // Deactivate older versions of the same type for this item (keep latest active)
+    await SavedModelModel.updateMany(
+      { item: doc.item, modelType, _id: { $ne: doc._id } },
+      { isActive: false }
+    )
+
+    return res.json({
+      success: true,
+      message: 'Model saved successfully',
+      data: {
+        _id: doc._id,
+        modelType: doc.modelType,
+        item: doc.item,
+        version: doc.version,
+        accuracy: doc.accuracy
+      }
+    })
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message })
   }
 }

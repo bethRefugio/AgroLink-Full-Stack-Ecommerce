@@ -11,7 +11,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Lazy import AI module
+# import AI module
 ai_module = None
 
 def get_ai_module():
@@ -44,7 +44,7 @@ def suggest_price():
                 "message": "item_name is required"
             }), 400
 
-        app.logger.info(f"🔍 Processing price suggestion for: {item_name} (use_saved: {use_saved})")
+        app.logger.info(f"Processing price suggestion for: {item_name} (use_saved: {use_saved})")
 
         ai = get_ai_module()
 
@@ -67,7 +67,7 @@ def suggest_price():
                 "message": f"No historical data found in database for collection: {mongo_coll}"
             }), 404
 
-        app.logger.info(f"📊 Loaded {len(df)} records from database")
+        app.logger.info(f"Loaded {len(df)} records from database")
 
         # Run prediction with saved models priority
         result = ai.suggest_for_item_from_df(
@@ -80,18 +80,18 @@ def suggest_price():
         )
 
         if "error" in result:
-            app.logger.warning(f"⚠️ Suggestion error: {result['error']}")
+            app.logger.warning(f"Suggestion error: {result['error']}")
             return jsonify({
                 "success": False,
                 "message": result["error"]
             }), 404
 
         from_saved = result.get("fromSavedModels", False)
-        app.logger.info(f"✅ Price suggestion generated: ₱{result.get('suggestedPrice')} (from_saved: {from_saved})")
+        app.logger.info(f"Price suggestion generated: ₱{result.get('suggestedPrice')} (from_saved: {from_saved})")
 
         return jsonify({
             "success": True,
-            "message": "⚡ Fast prediction from saved models" if from_saved else "🤖 Generated new prediction",
+            "message": "Fast prediction from saved models" if from_saved else "🤖 Generated new prediction",
             "data": result,
             "suggestedPrice": result.get("suggestedPrice"),
             "bestModel": result.get("bestModel"),
@@ -99,7 +99,7 @@ def suggest_price():
         }), 200
 
     except Exception as e:
-        app.logger.error(f"❌ suggest-price error: {str(e)}")
+        app.logger.error(f"suggest-price error: {str(e)}")
         traceback.print_exc()
         return jsonify({
             "success": False,
